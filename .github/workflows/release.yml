@@ -58,7 +58,7 @@ jobs:
           VER="${{ steps.bump.outputs.new_version }}"
           ZIPNAME="babel-arcaea-code-$VER.zip"
           mkdir -p /tmp/plugin
-          cp -r babel-arcaea-code.php assets lib /tmp/plugin/
+          cp -r babel-arcaea-code.php includes assets bin lib /tmp/plugin/
           cd /tmp && mv plugin "babel-arcaea-code"
           zip -r "$ZIPNAME" "babel-arcaea-code/" -x "*.git*" "*.DS_Store"
           echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"

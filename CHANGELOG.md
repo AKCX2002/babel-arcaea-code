@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **Release ZIP missing `includes/` directory**: The `Build zip` step in `release.yml` only copied `babel-arcaea-code.php assets lib` but missed the entire `includes/` directory containing all module files (`options.php`, `assets.php`, `admin.php`, `renderer-mermaid.php`, `renderer-markmap.php`, `compat-sakurairo.php`, `health.php`). After the v1.4 modular refactoring, none of the plugin functions were available — `bac_options()` undefined, frontend enqueue hooks missing, admin page inaccessible. Added `includes bin` to the zip command.
 - **Settings link broken**: Plugin action link "设置" pointed to `options-general.php?page=babel-arcaea-code` which no longer exists after the admin page was migrated to a standalone top-level menu. Fixed to point to `admin.php?page=bac-panel`.
 - **WAF 403 on admin page**: Server WAF/mod_security was blocking all admin URLs containing `babel-arcaea-code`. After discovering that even the shortened `bac` slug was problematic (possible slug conflict), changed to unique slugs: top-level `bac-panel`, Settings submenu `bac-options`. Also fixed `admin_enqueue_scripts` hook to check the new slugs instead of the old `babel-arcaea-code`.
 
