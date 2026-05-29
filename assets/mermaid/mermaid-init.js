@@ -27,6 +27,22 @@
     return window.mermaid;
   }
 
+  function getResponsiveMermaidWidth(rawWidth) {
+    if (!Number.isFinite(rawWidth) || rawWidth <= 0) return 960;
+
+    if (rawWidth <= 720) {
+      return Math.min(Math.round(rawWidth * 1.25), 720);
+    }
+
+    return Math.max(960, Math.min(Math.round(rawWidth), 1600));
+  }
+
+  function applyMermaidSvgWidth(svg, rawWidth) {
+    const readableWidth = getResponsiveMermaidWidth(rawWidth);
+    svg.style.setProperty('--bac-mermaid-width', readableWidth + 'px');
+    svg.style.width = 'var(--bac-mermaid-width)';
+  }
+
   function normalizeMermaidSvg(el) {
     const svg = el.querySelector('svg');
     if (!svg) return;
@@ -58,9 +74,7 @@
         const height = box.height + pad * 2;
 
         svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
-
-        const readableWidth = Math.max(960, Math.min(width, 1600));
-        svg.style.width = readableWidth + 'px';
+        applyMermaidSvgWidth(svg, width);
         return;
       }
     } catch (e) {
@@ -72,11 +86,7 @@
 
     const parts = viewBox.trim().split(/\s+/).map(Number);
     const viewBoxWidth = parts[2];
-
-    if (Number.isFinite(viewBoxWidth)) {
-      const readableWidth = Math.max(960, Math.min(viewBoxWidth, 1600));
-      svg.style.width = readableWidth + 'px';
-    }
+    applyMermaidSvgWidth(svg, viewBoxWidth);
   }
 
   async function renderMermaid(root) {
