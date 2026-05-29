@@ -1,0 +1,73 @@
+name: Validate
+
+on:
+  pull_request:
+    paths:
+      - '**.php'
+      - 'assets/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.php'
+      - 'assets/**'
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP lint
+        run: find . -name "*.php" -not -path "./vendor/*" -print0 | xargs -0 -n1 php -l
+
+  asset-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required assets
+        run: |
+          set -e
+          echo "=== Prism ==="
+          test -f assets/prism/prism.js
+          echo "  ✓ prism.js"
+          test -f assets/prism/prism.css
+          echo "  ✓ prism.css"
+
+          echo "=== Mermaid ==="
+          test -f assets/mermaid/mermaid.esm.min.mjs
+          echo "  ✓ mermaid.esm.min.mjs"
+          test -s assets/mermaid/chunks/mermaid.esm.min/*.mjs
+          echo "  ✓ mermaid chunks"
+
+          echo "=== MathJax ==="
+          test -f assets/mathjax/es5/tex-chtml.js
+          echo "  ✓ mathjax"
+
+          echo "=== Medium Zoom ==="
+          test -f assets/js/medium-zoom.min.js
+          echo "  ✓ medium-zoom.min.js"
+
+          echo "=== Markmap vendor ==="
+          test -f assets/markmap/vendor/d3.min.js
+          echo "  ✓ d3.min.js"
+          test -f assets/markmap/vendor/markmap-view.min.js
+          echo "  ✓ markmap-view.min.js"
+          test -f assets/markmap/vendor/markmap-lib.min.js
+          echo "  ✓ markmap-lib.min.js"
+          test -f assets/markmap/vendor/versions.json
+          echo "  ✓ versions.json"
+
+          echo ""
+          echo "✅ All required assets present."
+
+  privacy-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run privacy audit
+        run: |
+          if [ -f scripts/privacy-audit.sh ]; then
+            bash scripts/privacy-audit.sh
+          else
+            echo "scripts/privacy-audit.sh not found — skipping."
+          fi
