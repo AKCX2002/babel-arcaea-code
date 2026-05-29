@@ -1,0 +1,167 @@
+name: Release & Sync
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  schedule:
+    - cron: '0 6 * * *'       # daily 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type (patch/minor/major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ── Job 1: Auto-bump patch + release ──
+  bump-and-release:
+    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.new_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auto-bump patch version
+        id: bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Read current version
+          CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
+          echo "Current: $CUR"
+
+          # Bump patch
+          MAJOR=$(echo "$CUR" | cut -d. -f1)
+          MINOR=$(echo "$CUR" | cut -d. -f2)
+          PATCH=$(echo "$CUR" | cut -d. -f3)
+          NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+          echo "New: $NEW"
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+          # Update plugin header + constant
+          sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
+          sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
+
+          # Commit with [skip ci] to prevent re-trigger
+          git add babel-arcaea-code.php
+          git commit -m "chore: bump $CUR → $NEW [skip ci]"
+          git push
+
+      - name: Build plugin zip
+        id: build
+        run: |
+          VER="${{ steps.bump.outputs.new_version }}"
+          ZIPNAME="babel-arcaea-code-$VER.zip"
+          mkdir -p /tmp/plugin
+          cp -r \
+            babel-arcaea-code.php \
+            assets \
+            lib \
+            /tmp/plugin/
+          cd /tmp
+          mv plugin "babel-arcaea-code"
+          zip -r "$ZIPNAME" "babel-arcaea-code/" -x "*.git*" "*.DS_Store"
+          ls -lh "$ZIPNAME"
+          echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release & Upload Asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          ZIPNAME="${{ steps.build.outputs.zipname }}"
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes "See [CHANGELOG](https://github.com/${{ github.repository }}/commits/v$VERSION)" \
+            "/tmp/$ZIPNAME"
+
+  # ── Job 2: Daily Mermaid version sync ──
+  sync-mermaid:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get current pinned version
+        id: current
+        run: |
+          CUR=$(grep -oP "mermaid_version.*?'\K[0-9.]+" babel-arcaea-code.php | head -1)
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+          echo "Current: $CUR"
+
+      - name: Fetch latest Mermaid stable version
+        id: latest
+        run: |
+          LATEST=$(curl -sL "https://api.github.com/repos/mermaid-js/mermaid/releases/latest" \
+            | grep '"tag_name"' | head -1 | grep -oP '[0-9.]+')
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Latest Mermaid: $LATEST"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          CUR="${{ steps.current.outputs.current }}"
+          LAT="${{ steps.latest.outputs.latest }}"
+          if [ "$CUR" = "$LAT" ]; then
+            echo "same=true" >> "$GITHUB_OUTPUT"
+            echo "Already at $CUR, no update needed"
+          else
+            echo "same=false" >> "$GITHUB_OUTPUT"
+            echo "Update: $CUR -> $LAT"
+          fi
+
+      - name: Bump default version in PHP
+        if: steps.compare.outputs.same == 'false'
+        run: |
+          CUR="${{ steps.current.outputs.current }}"
+          LAT="${{ steps.latest.outputs.latest }}"
+          sed -i "s/mermaid_version.*'$CUR'/mermaid_version' => '$LAT'/" babel-arcaea-code.php
+          grep "mermaid_version" babel-arcaea-code.php
+
+      - name: Bump allowed versions list
+        if: steps.compare.outputs.same == 'false'
+        run: |
+          LAT="${{ steps.latest.outputs.latest }}"
+          MAJ_MIN=$(echo "$LAT" | grep -oP '^\d+\.\d+')
+          if ! grep -q "'$LAT'" babel-arcaea-code.php; then
+            sed -i "/allowed_versions/a\    '$LAT'," babel-arcaea-code.php
+            echo "Added $LAT to allowed_versions"
+          fi
+          if ! grep -q "'$MAJ_MIN'" babel-arcaea-code.php; then
+            sed -i "/allowed_versions/a\    '$MAJ_MIN'," babel-arcaea-code.php
+            echo "Added $MAJ_MIN to allowed_versions"
+          fi
+
+      - name: Create Pull Request
+        if: steps.compare.outputs.same == 'false'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          commit-message: "chore: bump Mermaid default to ${{ steps.latest.outputs.latest }}"
+          title: "chore: bump Mermaid default to ${{ steps.latest.outputs.latest }}"
+          body: |
+            Automated daily check — Mermaid.js has a new stable release.
+
+            | | Current | New |
+            |---|---:|---:|
+            | **Version** | `${{ steps.current.outputs.current }}` | `${{ steps.latest.outputs.latest }}` |
+            | **Source** | — | [mermaid-js/mermaid releases](https://github.com/mermaid-js/mermaid/releases) |
+
+            **Action required**: Review release notes for breaking changes before merging.
+          branch: chore/mermaid-bump-${{ steps.latest.outputs.latest }}
+          base: main
+          labels: automated, dependencies
