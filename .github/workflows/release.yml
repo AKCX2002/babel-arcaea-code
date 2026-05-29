@@ -40,6 +40,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Pull latest to avoid race with parallel runs
+          git pull --rebase origin main
           CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
           IFS=. read -r MAJ MIN PAT <<< "$CUR"
           NEW="$MAJ.$MIN.$((PAT+1))"
