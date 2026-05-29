@@ -20,6 +20,13 @@ if (!defined('ABSPATH')) exit;
  * @return string|null Absolute path to node, or null.
  */
 function bac_find_node() {
+    // Short-circuit: if exec() is completely disabled, don't bother probing.
+    static $exec_available = null;
+    if ($exec_available === null) {
+        $disabled = array_map('trim', explode(',', ini_get('disable_functions')));
+        $exec_available = !in_array('exec', $disabled, true);
+    }
+
     $candidates = [
         getenv('BAC_NODE_BIN'),
         '/usr/bin/node',
@@ -30,6 +37,15 @@ function bac_find_node() {
 
     foreach ($candidates as $candidate) {
         if (!$candidate) {
+            continue;
+        }
+
+        // If exec is disabled, skip the shell probe and just check file existence
+        // for absolute paths.
+        if (!$exec_available) {
+            if ($candidate[0] === '/' && is_executable($candidate)) {
+                return $candidate;
+            }
             continue;
         }
 

@@ -8,11 +8,25 @@
 if (!defined('ABSPATH')) exit;
 
 add_action('admin_menu', function () {
-    add_options_page(
+    // Primary standalone entry. This avoids hosts/WAFs that block
+    // options-general.php?page=babel-arcaea-code with a 403 response.
+    add_menu_page(
         'Babel Arcaea Code',
         'Arcaea Code',
         'manage_options',
         'babel-arcaea-code',
+        'bac_admin_page_render',
+        'dashicons-editor-code',
+        81
+    );
+
+    // Secondary Settings entry with a different slug to avoid duplicate slug
+    // conflicts and provide a fallback route.
+    add_options_page(
+        'Babel Arcaea Code',
+        'Arcaea Code',
+        'manage_options',
+        'babel-arcaea-code-settings',
         'bac_admin_page_render'
     );
 });
@@ -29,7 +43,19 @@ function bac_admin_page_render() {
     <div class="wrap"><h1>Babel Arcaea Code</h1>
     <p>统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，CDN 仅用于 Markmap 调试模式。</p>
 
-    <?php bac_health_check_table(); ?>
+    <?php
+    // Wrap health check in output buffering so any PHP warnings from
+    // file/exec checks don't leak into the page markup.
+    if (function_exists('bac_health_check_table')) {
+        ob_start();
+        bac_health_check_table();
+        $health_html = ob_get_clean();
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo $health_html;
+    } else {
+        echo '<div class="notice notice-warning"><p>Babel Arcaea Code 健康检查模块未加载，但设置页仍可使用。</p></div>';
+    }
+    ?>
 
     <form method="post" action="options.php">
     <?php settings_fields('bac_settings_group'); ?>

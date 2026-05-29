@@ -14,12 +14,19 @@
 
   /* ── Prism: PJAX-safe highlighting ── */
   function preparePrism(root) {
+    if (!asBool(config.prismEnabled, true)) return;
+
     const scope = root && root.querySelectorAll ? root : document;
     const lineNumbersEnabled = asBool(config.lineNumbers, true);
 
     scope.querySelectorAll('pre code:not([data-bac-prism-ready="1"])').forEach((code) => {
       const pre = code.closest('pre');
-      if (!pre || pre.closest('.arcaea-mermaid-box')) return;
+      if (
+        !pre ||
+        pre.closest('.arcaea-mermaid-box') ||
+        pre.closest('.arcaea-markmap-box') ||
+        pre.classList.contains('arcaea-markmap-source')
+      ) return;
 
       if (lineNumbersEnabled && !pre.classList.contains('line-numbers')) {
         pre.classList.add('line-numbers');
@@ -185,6 +192,8 @@
   }
 
   async function renderMermaid(root) {
+    if (!asBool(config.mermaidEnabled, true)) return;
+
     const scope = root && root.querySelectorAll ? root : document;
     const diagrams = scope.querySelectorAll(
       '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"]):not([data-bac-mermaid-error="1"])'
@@ -259,14 +268,19 @@
     try {
       await mermaid.run({ nodes: diagrams, suppressErrors: true });
       diagrams.forEach((el) => {
+        const box = el.closest('.arcaea-mermaid-box');
+        const svg = el.querySelector('svg');
+
+        if (!svg) {
+          markMermaidError(el, new Error('Mermaid did not produce SVG.'));
+          return;
+        }
+
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
         normalizeMermaidSvg(el);
 
-        /* ── 为每个渲染成功的图表添加全屏按钮 ── */
-        const box = el.closest('.arcaea-mermaid-box');
-        const svg = el.querySelector('svg');
-        if (box && svg) {
+        if (box) {
           addFullscreenButton(box, svg);
         }
       });

@@ -10,42 +10,53 @@ if (!defined('ABSPATH')) exit;
 /**
  * Gather system health information for the admin dashboard.
  *
+ * Every call is defensively wrapped so a single failure doesn't crash
+ * the entire admin page.
+ *
  * @return array Associative array of health check items.
  */
 function bac_health_check() {
     $health = [];
 
     // Prism core.
-    $health['prism_core'] = bac_asset_url('assets/prism/prism.js') ? 'found' : 'missing';
+    $health['prism_core'] = function_exists('bac_asset_url') && @bac_asset_url('assets/prism/prism.js') ? 'found' : 'missing';
 
     // Mermaid ESM.
-    $health['mermaid_esm'] = bac_asset_url('assets/mermaid/mermaid.esm.min.mjs') ? 'found' : 'missing';
+    $health['mermaid_esm'] = function_exists('bac_asset_url') && @bac_asset_url('assets/mermaid/mermaid.esm.min.mjs') ? 'found' : 'missing';
 
     // Mermaid chunks.
-    $mermaid_chunks = glob(BAC_PLUGIN_DIR . 'assets/mermaid/chunks/mermaid.esm.min/*.mjs');
+    $mermaid_chunks = defined('BAC_PLUGIN_DIR') ? @glob(BAC_PLUGIN_DIR . 'assets/mermaid/chunks/mermaid.esm.min/*.mjs') : false;
     $health['mermaid_chunks'] = (is_array($mermaid_chunks) && count($mermaid_chunks))
         ? count($mermaid_chunks) . ' files'
         : 'missing';
 
     // Markmap vendor.
-    $health['markmap_vendor'] = bac_asset_url('assets/markmap/vendor/d3.min.js') ? 'found' : 'missing';
+    $health['markmap_vendor'] = function_exists('bac_asset_url') && @bac_asset_url('assets/markmap/vendor/d3.min.js') ? 'found' : 'missing';
 
     // Markmap render script.
-    $render_script = BAC_PLUGIN_DIR . 'bin/markmap-render.js';
-    $health['markmap_render_script'] = file_exists($render_script) ? 'found' : 'missing';
+    $render_script = defined('BAC_PLUGIN_DIR') ? BAC_PLUGIN_DIR . 'bin/markmap-render.js' : '';
+    $health['markmap_render_script'] = ($render_script && file_exists($render_script)) ? 'found' : 'missing';
 
     // Node.js.
-    $node = bac_find_node();
-    if ($node) {
-        $node_ver = @exec(escapeshellcmd($node) . ' --version');
-        $health['node'] = 'found ' . $node . ($node_ver ? ' ' . $node_ver : '');
+    if (function_exists('bac_find_node')) {
+        $node = bac_find_node();
+        if ($node) {
+            $node_ver = function_exists('exec') ? @exec(escapeshellcmd($node) . ' --version') : '';
+            $health['node'] = 'found ' . $node . ($node_ver ? ' ' . trim($node_ver) : '');
+        } else {
+            $health['node'] = 'not found';
+        }
     } else {
-        $health['node'] = 'not found';
+        $health['node'] = 'checker unavailable';
     }
 
     // Cache directory.
-    $cache_dir = bac_markmap_cache_dir();
-    $health['cache_dir'] = (is_dir($cache_dir) && is_writable($cache_dir)) ? 'writable' : 'unavailable';
+    if (function_exists('bac_markmap_cache_dir')) {
+        $cache_dir = @bac_markmap_cache_dir();
+        $health['cache_dir'] = ($cache_dir && is_dir($cache_dir) && is_writable($cache_dir)) ? 'writable' : 'unavailable';
+    } else {
+        $health['cache_dir'] = 'checker unavailable';
+    }
 
     // proc_open availability.
     $health['proc_open'] = function_exists('proc_open') && function_exists('proc_close')
@@ -72,10 +83,15 @@ function bac_health_check_table() {
         <table class="widefat striped" style="width:auto;min-width:400px">
             <thead><tr><th>项目</th><th>状态</th></tr></thead>
             <tbody>
-            <?php foreach ($health as $label => $status): ?>
+            <?php foreach ($health as $label => $status):
+                $is_ok = (strpos($status, 'not found') === false)
+                    && (strpos($status, 'missing') === false)
+                    && (strpos($status, 'disabled') === false)
+                    && (strpos($status, 'unavailable') === false);
+                ?>
                 <tr>
                     <td><?php echo esc_html($label); ?></td>
-                    <td style="color:<?php echo (strpos($status, 'not found') === false && strpos($status, 'missing') === false && strpos($status, 'disabled') === false && strpos($status, 'unavailable') === false) ? '#4caf50' : '#ef5350'; ?>">
+                    <td style="color:<?php echo $is_ok ? '#4caf50' : '#ef5350'; ?>">
                         <?php echo esc_html($status); ?>
                     </td>
                 </tr>

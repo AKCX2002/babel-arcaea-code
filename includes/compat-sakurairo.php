@@ -16,8 +16,18 @@ add_action('wp_enqueue_scripts', function () {
     $o = bac_options();
     if (!$o['enabled'] || !$o['disable_sakurairo_prism']) return;
 
-    $styles  = ['prism-style', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader', 'code-highlight'];
-    $scripts = ['prism-script', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader', 'code-highlight'];
+    // Sakurairo v3.x uses these handles for its built-in Prism/Highlight.js.
+    // Also cover common variant names from child themes and older versions.
+    $styles  = [
+        'prism-style', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader',
+        'code-highlight', 'highlight-style', 'highlightjs-style',
+        'sakurairo-prism', 'sakura-prism',
+    ];
+    $scripts = [
+        'prism-script', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader',
+        'code-highlight', 'highlight-script', 'highlightjs-script',
+        'sakurairo-prism', 'sakura-prism',
+    ];
 
     bac_disable_handles('style', $styles);
     bac_disable_handles('script', $scripts);

@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.4.3
+
+### Fixed
+
+- **JS dependency chain**: `bac-mermaid-init` now declares explicit dependencies on `bac-prism-core` and `bac-medium-zoom` via `wp_script_is('...', 'registered')` guard — fixes script loading order where Prism/medium-zoom could load after the init script.
+- **Removed broken `script_loader_tag` filter**: Previous dependency injection fired too late (post dependency resolution) and was silently ineffective.
+- **Safe asset enqueue helpers**: New `bac_enqueue_style_asset()` and `bac_enqueue_script_asset()` verify file existence before enqueuing, with `WP_DEBUG` error logging for missing files. All enqueue calls migrated to these helpers.
+- **Admin page resilience**: Added `add_menu_page` as standalone top-level entry (avoids hosts/WAFs that 403 on `options-general.php`), secondary `babel-arcaea-code-settings` fallback slug, and `function_exists('bac_health_check_table')` guard.
+- **Health check defense**: Added `function_exists` guards for `bac_asset_url`, `bac_find_node`, `bac_markmap_cache_dir`; "missing" status now correctly shows red; node.js probe caches `exec()` availability.
+- **Sakurairo Prism handle coverage**: Expanded disable handle list to include `highlight-style`, `highlightjs-style`, `sakurairo-prism`, `sakura-prism` variants.
+- **Mermaid init JS**: Added `prismEnabled`/`mermaidEnabled` config guards; skip Prism scanning inside `.arcaea-markmap-box`/`.arcaea-markmap-source`; null-check SVG before adding fullscreen button.
+
+### Changed
+
+- **BAC_Config localized object** now includes `prismEnabled` and `mermaidEnabled` booleans alongside existing `lineNumbers`.
+- **Enqueue order**: `bac-medium-zoom` now registered before `bac-mermaid-init` in the main action for stable dependency ordering.
+- **`bac_find_node()`**: Short-circuits when `exec()` is in `disable_functions`, falls back to `is_executable()` for absolute paths.
+
 ## 1.4.0
 
 ### Added
