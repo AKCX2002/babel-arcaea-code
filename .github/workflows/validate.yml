@@ -38,9 +38,9 @@ jobs:
           echo "=== Mermaid ==="
           test -f assets/mermaid/mermaid.esm.min.mjs
           echo "  ✓ mermaid.esm.min.mjs"
-          count=\$(find assets/mermaid/chunks/mermaid.esm.min/ -name '*.mjs' | wc -l)
-          test "\$count" -gt 0 || exit 1
-          echo "  ✓ \$count mermaid chunks"
+          count=$(find assets/mermaid/chunks/mermaid.esm.min/ -name '*.mjs' | wc -l)
+          test "$count" -gt 0 || exit 1
+          echo "  ✓ $count mermaid chunks"
 
           echo "=== MathJax ==="
           test -f assets/mathjax/es5/tex-chtml.js

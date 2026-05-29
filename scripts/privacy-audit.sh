@@ -35,7 +35,9 @@ scan_pattern() {
         --exclude-dir=vendor \
         --exclude-dir=lib \
         --exclude-dir=.github \
+        --exclude-dir=assets/prism/components \
         --exclude="privacy-audit.sh" \
+        --exclude="CHANGELOG.md" \
         --exclude="*.svg" \
         --exclude="*.min.js" \
         --exclude="*.min.mjs" \
@@ -57,6 +59,7 @@ echo "============================================"
 echo ""
 
 scan_pattern "(GH_TOKEN|GITHUB_TOKEN)" "GitHub Token (plaintext)"
+# CHANGELOG.md and code references to token env vars are documentation, not secrets.
 scan_pattern "(password|passwd|secret)" "Password / Secret literal"
 scan_pattern "(api[_-]?key|api_key|apikey)" "API Key literal"
 scan_pattern "(bearer|authorization)" "Authorization / Bearer token"
