@@ -23,7 +23,9 @@ function bac_health_check() {
 
     // Mermaid chunks.
     $mermaid_chunks = glob(BAC_PLUGIN_DIR . 'assets/mermaid/chunks/mermaid.esm.min/*.mjs');
-    $health['mermaid_chunks'] = count($mermaid_chunks) ? count($mermaid_chunks) . ' files' : 'missing';
+    $health['mermaid_chunks'] = (is_array($mermaid_chunks) && count($mermaid_chunks))
+        ? count($mermaid_chunks) . ' files'
+        : 'missing';
 
     // Markmap vendor.
     $health['markmap_vendor'] = bac_asset_url('assets/markmap/vendor/d3.min.js') ? 'found' : 'missing';

@@ -72,6 +72,7 @@ function bac_enqueue_prism_css() {
     wp_enqueue_style('bac-prism-arcaea-theme', $base . 'prism/themes/' . $theme_file, ['bac-prism-arcaea-common'], BAC_VERSION);
 
     // Soft-wrap for code blocks (white-space: pre-wrap).
+    // Must depend on bac-prism-arcaea-theme so it loads AFTER theme CSS and can override overflow.
     wp_enqueue_style('bac-prism-wrap', $base . 'css/bac-prism-wrap.css', ['bac-prism-arcaea-theme'], BAC_VERSION);
 
     if ($o['prism_line_numbers']) {
@@ -140,8 +141,9 @@ function bac_enqueue_frontend_init() {
     $base = BAC_PLUGIN_URL . 'assets/';
 
     // Mermaid bootstrap also owns Prism re-scan, PJAX re-init and image zoom.
+    // No hard dependency on bac-prism-core — init script checks for Prism at runtime.
     if ($o['mermaid_enabled'] || $o['prism_enabled']) {
-        wp_enqueue_script('bac-mermaid-init', $base . 'mermaid/mermaid-init.js', ['bac-prism-core'], BAC_VERSION, true);
+        wp_enqueue_script('bac-mermaid-init', $base . 'mermaid/mermaid-init.js', [], BAC_VERSION, true);
         wp_localize_script('bac-mermaid-init', 'BAC_Config', [
             'lineNumbers' => !empty($o['prism_line_numbers']),
         ]);
