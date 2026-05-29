@@ -8,7 +8,7 @@
   margin: 2rem 0;
   padding: 0;
   max-width: 100%;
-  min-height: 460px;
+  min-height: 180px;
   max-height: 82vh;
   overflow: hidden;
   border: 1px solid rgba(230, 238, 255, 0.78);
@@ -53,7 +53,7 @@
   display: block;
   width: 100%;
   height: min(72vh, 720px);
-  min-height: 460px;
+  min-height: 240px;
 }
 
 .arcaea-markmap-source {

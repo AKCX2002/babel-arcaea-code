@@ -39,9 +39,13 @@
   margin: 2rem 0;
   padding: 1rem;
 
-  /* 超宽图横向滚动 */
+  /* 响应式滚动策略：
+   *   超宽图 → 横向滚动
+   *   超高图 → 纵向滚动（max-height 限制 + overflow-y auto）
+   */
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto;
+  max-height: min(85vh, 640px);
 
   /* 悬停动效准备 */
   -webkit-transition: -webkit-transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
@@ -67,12 +71,15 @@
 }
 
 /* ── Mermaid 图表内部容器 ──
- * fit-content → 小图自然居中，大图保持真实宽度触发 wrapper 滚动
+ * 响应式策略（v2）：
+ *   窄屏 → SVG 自动缩放适配容器宽度（max-width: 100%）
+ *   宽屏 → SVG 以自然宽高比渲染，不超出容器
+ *   超高图 → 由父容器 max-height + overflow-y 控制（不再用绝对 px）
  */
 .arcaea-mermaid-diagram,
 .mermaid.arcaea-mermaid-diagram {
-  min-width: fit-content;
-  min-width: -moz-fit-content;
+  width: 100%;
+  max-width: 100%;
 
   display: flex;
   justify-content: center;
@@ -91,17 +98,14 @@
 }
 
 /* ── SVG 基本样式 ──
- * 不设定固定宽度/最大宽度，让 SVG 以自然尺寸渲染。
- * normalizeMermaidSvg() 会设定 style.width 为 viewBox 宽度，
- * 因此 SVG 保持原图尺寸，文字始终可读。
- * 超宽图由父容器 .arcaea-mermaid-box 的 overflow-x: auto 处理滚动。
+ * normalizeMermaidSvg() 设置 style.maxWidth = '100%' + height = 'auto'，
+ * 依赖 viewBox 维持宽高比。超宽图由 .arcaea-mermaid-box 的
+ * overflow-x: auto 提供横向滚动（仅当 SVG 自身宽度 > 容器）。
  */
 .arcaea-mermaid-diagram svg {
   display: block;
-
-  max-width: none !important;
-  width: auto !important;
-  height: auto !important;
+  height: auto;
+  max-width: 100%;
 
   margin: 0 auto;
   padding: 14px;
@@ -119,7 +123,10 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* ── 文字样式 ── */
+/* ── 文字样式 ──
+ * Mermaid 初始化 JS 的 themeVariables 已注入内联样式作为基准，
+ * 此处 CSS 提高优先级（选择器特异性）而非滥用 !important。
+ */
 .arcaea-mermaid-diagram svg text,
 .arcaea-mermaid-diagram .label,
 .arcaea-mermaid-diagram .nodeLabel,
@@ -127,10 +134,10 @@
 .arcaea-mermaid-diagram .actor,
 .arcaea-mermaid-diagram .messageText,
 .arcaea-mermaid-diagram .noteText {
-  fill: rgba(238, 244, 255, 0.94) !important;
-  color: rgba(238, 244, 255, 0.94) !important;
+  fill: rgba(238, 244, 255, 0.94);
+  color: rgba(238, 244, 255, 0.94);
 
-  font-size: 15px !important;
+  font-size: 15px;
   font-weight: 500;
 
   font-family:
@@ -139,7 +146,7 @@
     "JetBrains Mono",
     "Noto Sans SC",
     "Microsoft YaHei",
-    sans-serif !important;
+    sans-serif;
 }
 
 /* ── 节点边框 ── */
@@ -148,23 +155,23 @@
 .arcaea-mermaid-diagram .node ellipse,
 .arcaea-mermaid-diagram .node polygon,
 .arcaea-mermaid-diagram .node path {
-  stroke: rgba(160, 220, 255, 0.45) !important;
-  stroke-width: 1.6px !important;
+  stroke: rgba(160, 220, 255, 0.45);
+  stroke-width: 1.6px;
 }
 
 /* ── 连线 ── */
 .arcaea-mermaid-diagram .edgePath path,
 .arcaea-mermaid-diagram .flowchart-link {
-  stroke: rgba(160, 220, 255, 0.55) !important;
-  stroke-width: 1.8px !important;
+  stroke: rgba(160, 220, 255, 0.55);
+  stroke-width: 1.8px;
 }
 
 /* ── 箭头标记 ── */
 .arcaea-mermaid-diagram marker path,
 .arcaea-mermaid-diagram marker polygon,
 .arcaea-mermaid-diagram marker circle {
-  fill: rgba(160, 220, 255, 0.55) !important;
-  stroke: rgba(160, 220, 255, 0.55) !important;
+  fill: rgba(160, 220, 255, 0.55);
+  stroke: rgba(160, 220, 255, 0.55);
 }
 
 /* ── 边标签背景 ── */
@@ -174,8 +181,8 @@
 
 /* ── 集群盒子 ── */
 .arcaea-mermaid-diagram .cluster rect {
-  fill: transparent !important;
-  stroke: rgba(141, 199, 255, 0.70) !important;
+  fill: transparent;
+  stroke: rgba(141, 199, 255, 0.70);
 }
 
 /* ── 错误状态 ── */
@@ -272,9 +279,8 @@
 }
 
 .arcaea-mermaid-overlay .arcaea-mermaid-overlay-content svg {
-  max-width: none !important;
-  width: auto !important;
-  height: auto !important;
+  max-width: 100%;
+  height: auto;
   display: block;
   margin: 0 auto;
 }
@@ -344,7 +350,6 @@
 
   .arcaea-mermaid-diagram svg {
     padding: 10px;
-    box-sizing: content-box !important;
   }
 
   .arcaea-mermaid-fullscreen-btn {
@@ -372,7 +377,6 @@
   .arcaea-mermaid-diagram svg {
     padding: 8px;
     border-radius: 10px;
-    box-sizing: content-box !important;
   }
 }
 

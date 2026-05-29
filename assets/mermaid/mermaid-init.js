@@ -56,7 +56,14 @@
     return window.mermaid;
   }
 
-  /* ── 规范化 SVG：移除固定宽高，设 viewBox 确保 CSS 响应式生效 ── */
+  /* ── 规范化 SVG：裁剪 viewBox 留白，设置响应式尺寸策略 ──
+   *
+   * 策略：
+   *   1. viewBox 紧贴内容裁剪（去除 Mermaid 多余留白）
+   *   2. SVG 自身 max-width:100% 确保窄屏自动缩放
+   *   3. 不设固定 px 宽高 → 自然宽高比由 viewBox 维持
+   *   4. 高图由父容器 .arcaea-mermaid-box 的 max-height + overflow 控制
+   */
   function normalizeMermaidSvg(el) {
     const svg = el.querySelector('svg');
     if (!svg) return;
@@ -65,8 +72,6 @@
     svg.removeAttribute('height');
     svg.style.removeProperty('width');
     svg.style.removeProperty('height');
-    svg.style.removeProperty('max-width');
-    svg.style.removeProperty('max-height');
 
     /* 用 viewBox 精确裁剪，去掉 Mermaid 自带的额外留白 */
     try {
@@ -87,10 +92,9 @@
         svg.setAttribute('viewBox',
           `${box.x - pad} ${box.y - pad} ${vw} ${vh}`
         );
-        /* 设置显式宽度使 SVG 按自然尺寸渲染，不再被 CSS 压缩 */
-        svg.style.width = vw + 'px';
-        svg.style.height = vh + 'px';
-        svg.style.maxWidth = 'none';
+        /* 响应式：窄屏自动缩小，宽屏显示自然尺寸 */
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
         return;
       }
     } catch (e) {
@@ -332,8 +336,22 @@
     }, 80);
   }
 
+  /* ── 统一启动策略 ──
+   * 只在 DOMContentLoaded 执行一次完整启动。
+   * PJAX 事件只触发 Prism 重扫 + Zoom 重绑（不再重复渲染 Mermaid），
+   * 避免重复的 DOM 查询和 Mermaid 初始化。
+   */
   document.addEventListener('DOMContentLoaded', () => scheduleBoot(document));
-  window.addEventListener('load', () => scheduleBoot(document));
-  document.addEventListener('pjax:complete', () => scheduleBoot(document));
-  document.addEventListener('pjax:end', () => scheduleBoot(document));
+
+  /* PJAX 导航后：仅重扫 Prism 和 zoom，不重跑 Mermaid */
+  document.addEventListener('pjax:complete', () => {
+    const scope = document;
+    preparePrism(scope);
+    initZoom(scope);
+  });
+  document.addEventListener('pjax:end', () => {
+    const scope = document;
+    preparePrism(scope);
+    initZoom(scope);
+  });
 })();
