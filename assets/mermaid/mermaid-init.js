@@ -274,11 +274,12 @@
       theme: 'base',
       flowchart: {
         htmlLabels: false,
-        useMaxWidth: false,
+        useMaxWidth: true,
         curve: 'basis',
-        padding: 4,
-        nodeSpacing: 12,
-        rankSpacing: 16
+        padding: 2,
+        nodeSpacing: 4,
+        rankSpacing: 8,
+        subGraphMargin: 6
       },
       sequence: {
         useMaxWidth: false,
