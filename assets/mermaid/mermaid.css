@@ -1,15 +1,108 @@
 /* ============================================================
  * Babel Arcaea Code — Mermaid container styles
- * Matches sakurairo-arcaea-blog-skill visual tokens exactly
+ * Refactor:
+ * - Remove oversized blue gradient wrapper
+ * - Prevent SVG from being scaled into a tiny diagram
+ * - Keep Mermaid readable on desktop and mobile
+ * - Let outer wrapper scroll instead of shrinking SVG
  * ============================================================ */
 
-/* SVG sizing */
-.arcaea-mermaid-diagram svg {
-  display: block;
-  max-width: 100% !important;
+/* Mermaid outer wrapper */
+.arcaea-mermaid-box {
+  position: relative;
+
+  margin: 1.8rem 0;
+  padding: 0;
+
+  max-width: 100%;
+  max-height: 82vh;
+
+  overflow: auto;
+
+  border-radius: 14px;
+
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+
+  overscroll-behavior: contain;
+}
+
+/* Disable old ambient glow overlay */
+.arcaea-mermaid-box::before {
+  display: none !important;
+  content: none !important;
+}
+
+/* Mermaid diagram container */
+.arcaea-mermaid-diagram,
+.mermaid.arcaea-mermaid-diagram {
+  position: relative;
+  z-index: 1;
+
+  display: block !important;
+
+  min-height: 0 !important;
   height: auto !important;
-  min-height: 180px;
-  margin: 0 auto;
+  max-height: none !important;
+
+  margin: 1.4rem 0 !important;
+  padding: 0 !important;
+
+  overflow: visible !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+
+  color: rgba(238, 244, 255, 0.94);
+
+  font-family:
+    "FiraCode Nerd Font",
+    "Fira Code",
+    "JetBrains Mono",
+    "Noto Sans SC",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+/*
+ * Important:
+ * Do NOT use width:100% + max-height on SVG.
+ * For very tall Mermaid flowcharts, that forces the whole graph to shrink.
+ * The wrapper should scroll; the SVG should keep readable size.
+ */
+.arcaea-mermaid-diagram svg {
+  display: block !important;
+
+  width: auto !important;
+  min-width: 960px !important;
+  max-width: none !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 0 auto !important;
+  padding: 14px !important;
+  box-sizing: border-box !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15, 24, 42, 0.32),
+      rgba(8, 16, 32, 0.20)
+    ) !important;
+
+  border: 1px solid rgba(230, 238, 255, 0.28) !important;
+  border-radius: 14px !important;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Force text readability */
@@ -20,10 +113,19 @@
 .arcaea-mermaid-diagram .actor,
 .arcaea-mermaid-diagram .messageText,
 .arcaea-mermaid-diagram .noteText {
-  fill: rgba(238,244,255,0.94) !important;
+  fill: rgba(238, 244, 255, 0.94) !important;
+  color: rgba(238, 244, 255, 0.94) !important;
+
   font-size: 15px !important;
   font-weight: 500;
-  font-family: "FiraCode Nerd Font","Fira Code","JetBrains Mono","Noto Sans SC","Microsoft YaHei",sans-serif !important;
+
+  font-family:
+    "FiraCode Nerd Font",
+    "Fira Code",
+    "JetBrains Mono",
+    "Noto Sans SC",
+    "Microsoft YaHei",
+    sans-serif !important;
 }
 
 /* Node borders */
@@ -32,104 +134,79 @@
 .arcaea-mermaid-diagram .node ellipse,
 .arcaea-mermaid-diagram .node polygon,
 .arcaea-mermaid-diagram .node path {
-  stroke: rgba(160,220,255,0.45) !important;
+  stroke: rgba(160, 220, 255, 0.45) !important;
   stroke-width: 1.6px !important;
 }
 
 /* Edge lines */
 .arcaea-mermaid-diagram .edgePath path,
 .arcaea-mermaid-diagram .flowchart-link {
-  stroke: rgba(160,220,255,0.55) !important;
+  stroke: rgba(160, 220, 255, 0.55) !important;
   stroke-width: 1.8px !important;
 }
 
-.arcaea-mermaid-diagram marker path {
-  fill: rgba(160,220,255,0.55) !important;
-  stroke: rgba(160,220,255,0.55) !important;
+/* Arrow markers */
+.arcaea-mermaid-diagram marker path,
+.arcaea-mermaid-diagram marker polygon,
+.arcaea-mermaid-diagram marker circle {
+  fill: rgba(160, 220, 255, 0.55) !important;
+  stroke: rgba(160, 220, 255, 0.55) !important;
 }
 
+/* Edge label background */
 .arcaea-mermaid-diagram .edgeLabel {
   border-radius: 8px;
 }
 
+/* Keep cluster boxes subtle */
+.arcaea-mermaid-diagram .cluster rect {
+  fill: transparent !important;
+  stroke: rgba(141, 199, 255, 0.70) !important;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
-  .arcaea-mermaid-box { margin: 1.4rem 0; }
-  .arcaea-mermaid-diagram { padding: 14px; justify-content: flex-start; }
-  .arcaea-mermaid-diagram svg { min-width: 560px; }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .arcaea-mermaid-box, .arcaea-mermaid-box:hover { transition: none; }
-}
-/* ==============================
-   Refactor: Fix Mermaid blue gradient and container height
-   ============================== */
-
-.arcaea-mermaid-box {
-  margin: 1.8rem 0;
-  padding: 1px;
-  max-width: 100%;
-  overflow: hidden;
-  border-radius: 10px;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.arcaea-mermaid-box::before {
-  display: none !important;
-  content: none !important;
-}
-
-.arcaea-mermaid-diagram, .mermaid.arcaea-mermaid-diagram {
-  position: relative;
-  z-index: 1;
-  min-height: 0 !important;
-  height: auto !important;
-  max-height: none !important;
-  display: block !important;
-  padding: 0 !important;
-  margin: 1.4rem 0 !important;
-  border-radius: 9px;
-  overflow-x: auto;
-  background: transparent !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  color: rgba(238,244,255,0.94);
-  font-family: "FiraCode Nerd Font","Fira Code","JetBrains Mono","Noto Sans SC","Microsoft YaHei",sans-serif;
-}
-
-.arcaea-mermaid-diagram svg {
-  display: block !important;
-  max-width: 100% !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: 78vh !important;
-  min-height: 0 !important;
-  margin: 0 auto !important;
-  padding: 14px !important;
-  box-sizing: border-box !important;
-  background: linear-gradient(180deg, rgba(15, 24, 42, 0.32), rgba(8, 16, 32, 0.20)) !important;
-  border: 1px solid rgba(230, 238, 255, 0.28) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-@media (max-width: 768px) {
   .arcaea-mermaid-box {
+    margin: 1.4rem 0;
+
     max-height: 70vh !important;
     overflow: auto !important;
+
+    border-radius: 12px;
   }
+
+  .arcaea-mermaid-diagram,
+  .mermaid.arcaea-mermaid-diagram {
+    margin: 1.2rem 0 !important;
+    padding: 0 !important;
+  }
+
   .arcaea-mermaid-diagram svg {
+    width: auto !important;
     min-width: 720px !important;
-    width: 720px !important;
     max-width: none !important;
-    max-height: 68vh !important;
+
+    height: auto !important;
+    max-height: none !important;
+
     padding: 10px !important;
   }
 }
 
+/* Small phones */
+@media (max-width: 420px) {
+  .arcaea-mermaid-diagram svg {
+    min-width: 680px !important;
+  }
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .arcaea-mermaid-box, .arcaea-mermaid-box:hover { transition: none; }
+  .arcaea-mermaid-box,
+  .arcaea-mermaid-box:hover,
+  .arcaea-mermaid-diagram,
+  .arcaea-mermaid-diagram:hover {
+    transition: none !important;
+    animation: none !important;
+  }
 }
