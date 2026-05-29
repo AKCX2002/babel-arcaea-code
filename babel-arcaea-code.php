@@ -45,6 +45,7 @@ function bac_defaults() {
         'prism_line_numbers' => 1,
         'prism_copy'        => 1,
         'prism_braces'      => 1,
+        'prism_previewers'  => 1,
         'prism_theme'       => 'arcaea_dark',
         'disable_sakurairo_prism' => 1,
     ];
@@ -63,6 +64,8 @@ add_action('admin_init', function () {
         $out['mermaid_version'] = in_array($in['mermaid_version'] ?? '', ['11.15.0','11','10.9.6']) ? $in['mermaid_version'] : $d['mermaid_version'];
         $out['prism_line_numbers'] = !empty($in['prism_line_numbers']) ? 1 : 0;
         $out['prism_copy'] = !empty($in['prism_copy']) ? 1 : 0;
+        $out['prism_braces'] = !empty($in['prism_braces']) ? 1 : 0;
+        $out['prism_previewers'] = !empty($in['prism_previewers']) ? 1 : 0;
         $out['prism_theme'] = in_array($in['prism_theme'] ?? '', ['arcaea_dark','arcaea_light']) ? $in['prism_theme'] : $d['prism_theme'];
         $out['disable_sakurairo_prism'] = !empty($in['disable_sakurairo_prism']) ? 1 : 0;
         return $out;
@@ -90,12 +93,13 @@ add_action('admin_menu', function () {
             <tr><th>行号</th><td><label><input type="checkbox" name="bac_options[prism_line_numbers]" value="1" <?php checked($o['prism_line_numbers'],1); ?>> 显示行号</label></td></tr>
             <tr><th>复制</th><td><label><input type="checkbox" name="bac_options[prism_copy]" value="1" <?php checked($o['prism_copy'],1); ?>> 代码块复制按钮</label></td></tr>
             <tr><th>括号匹配</th><td><label><input type="checkbox" name="bac_options[prism_braces]" value="1" <?php checked($o['prism_braces'],1); ?>> Prism Match Braces</label></td></tr>
+            <tr><th>Previewers</th><td><label><input type="checkbox" name="bac_options[prism_previewers]" value="1" <?php checked($o['prism_previewers'],1); ?>> Prism Previewers（颜色/渐变/角度/时间/缓动实时预览）</label></td></tr>
         </table>
         <hr style="border-color:rgba(230,238,255,0.20);margin:24px 0">
         <h3 style="color:rgba(238,244,255,0.85);font-weight:400">已安装插件</h3>
         <p style="color:rgba(238,244,255,0.55);font-size:13px">
         Toolbar · Show Language · Copy · Line Numbers · Line Highlight · Match Braces ·<br>
-        Normalize Whitespace · Command Line · Treeview · Autoloader
+        Normalize Whitespace · Command Line · Treeview · Previewers · Autoloader
         </p>
         <?php submit_button(); ?>
         </form></div>
@@ -135,6 +139,11 @@ add_action('wp_enqueue_scripts', function () {
             wp_enqueue_style('bac-prism-ln', $base . 'prism/prism-line-numbers.css', [], BAC_VERSION);
             wp_enqueue_style('bac-prism-lh', $base . 'prism/prism-line-highlight.css', [], BAC_VERSION);
         }
+        // Previewers CSS
+        if ($o['prism_previewers']) {
+            wp_enqueue_style('bac-prism-previewers', $base . 'prism/prism-previewers.css', [], BAC_VERSION);
+            wp_enqueue_style('bac-prism-previewers-arcaea', $base . 'prism/prism-previewers-arcaea.css', ['bac-prism-previewers'], BAC_VERSION);
+        }
     }
 
     // Prism JS — correct loading order
@@ -144,10 +153,6 @@ add_action('wp_enqueue_scripts', function () {
         wp_enqueue_script('bac-prism-toolbar', $base . 'prism/prism-toolbar.js', ['bac-prism-core'], BAC_VERSION, true);
         // Show Language (dep: toolbar)
         wp_enqueue_script('bac-prism-lang', $base . 'prism/prism-show-language.js', ['bac-prism-toolbar'], BAC_VERSION, true);
-        // Copy (dep: toolbar)
-        if ($o['prism_copy']) {
-            wp_enqueue_script('bac-prism-copy', $base . 'prism/prism-copy.js', ['bac-prism-toolbar'], BAC_VERSION, true);
-        }
         // Line Numbers, Line Highlight (dep: core)
         if ($o['prism_line_numbers']) {
             wp_enqueue_script('bac-prism-ln', $base . 'prism/prism-line-numbers.js', ['bac-prism-core'], BAC_VERSION, true);
@@ -159,6 +164,14 @@ add_action('wp_enqueue_scripts', function () {
         // Command Line, Treeview (dep: core)
         wp_enqueue_script('bac-prism-cmd', $base . 'prism/prism-command-line.js', ['bac-prism-core'], BAC_VERSION, true);
         wp_enqueue_script('bac-prism-tree', $base . 'prism/prism-treeview.js', ['bac-prism-core'], BAC_VERSION, true);
+        // Previewers (dep: core) — Color · Gradient · Angle · Time · Easing
+        if ($o['prism_previewers']) {
+            wp_enqueue_script('bac-prism-previewers', $base . 'prism/prism-previewers.js', ['bac-prism-core'], BAC_VERSION, true);
+        }
+        // Copy (dep: toolbar)
+        if ($o['prism_copy']) {
+            wp_enqueue_script('bac-prism-copy', $base . 'prism/prism-copy.js', ['bac-prism-toolbar'], BAC_VERSION, true);
+        }
         // Autoloader LAST (dep: core)
         wp_enqueue_script('bac-prism-autoloader', $base . 'prism/prism-autoloader.js', ['bac-prism-core'], BAC_VERSION, true);
         wp_localize_script('bac-prism-autoloader', 'BAC_Prism', [

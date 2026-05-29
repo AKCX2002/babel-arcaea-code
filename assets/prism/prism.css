@@ -249,3 +249,6 @@ div.code-toolbar > .toolbar .toolbar-item > span {
 /* ── Treeview ── */
 .language-treeview .token.selector { color: rgba(238, 244, 255, 0.85); }
 .language-treeview .token.url { color: #82aaff; }
+
+/* ── Previewers z-index — stay above LightGallery, APlayer, Live2D ── */
+.prism-previewer { z-index: 9999 !important; }
