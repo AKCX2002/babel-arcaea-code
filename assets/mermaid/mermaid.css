@@ -91,18 +91,21 @@
 }
 
 /* ── SVG 基本样式 ──
- * 不设 min-width，让 SVG 自然渲染
- * 小图自动缩小适配容器，大图保持原始宽高
+ * 不设定固定宽度/最大宽度，让 SVG 以自然尺寸渲染。
+ * normalizeMermaidSvg() 会设定 style.width 为 viewBox 宽度，
+ * 因此 SVG 保持原图尺寸，文字始终可读。
+ * 超宽图由父容器 .arcaea-mermaid-box 的 overflow-x: auto 处理滚动。
  */
 .arcaea-mermaid-diagram svg {
   display: block;
 
-  max-width: 100% !important;
+  max-width: none !important;
+  width: auto !important;
   height: auto !important;
 
   margin: 0 auto;
   padding: 14px;
-  box-sizing: border-box;
+  box-sizing: content-box;
 
   background:
     linear-gradient(180deg,
@@ -341,6 +344,7 @@
 
   .arcaea-mermaid-diagram svg {
     padding: 10px;
+    box-sizing: content-box !important;
   }
 
   .arcaea-mermaid-fullscreen-btn {
@@ -368,6 +372,7 @@
   .arcaea-mermaid-diagram svg {
     padding: 8px;
     border-radius: 10px;
+    box-sizing: content-box !important;
   }
 }
 

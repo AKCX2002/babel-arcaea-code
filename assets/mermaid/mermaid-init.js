@@ -81,10 +81,16 @@
         box.width > 0 &&
         box.height > 0
       ) {
-        const pad = 32;
+        const pad = 24;
+        const vw = box.width + pad * 2;
+        const vh = box.height + pad * 2;
         svg.setAttribute('viewBox',
-          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${box.height + pad * 2}`
+          `${box.x - pad} ${box.y - pad} ${vw} ${vh}`
         );
+        /* 设置显式宽度使 SVG 按自然尺寸渲染，不再被 CSS 压缩 */
+        svg.style.width = vw + 'px';
+        svg.style.height = vh + 'px';
+        svg.style.maxWidth = 'none';
         return;
       }
     } catch (e) {
