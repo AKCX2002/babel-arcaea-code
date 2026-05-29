@@ -158,12 +158,30 @@ add_action('wp_enqueue_scripts', function () {
     }
 
     // Image zoom
+    // Medium-zoom: image zoom, replaces LightGallery functionality
     wp_enqueue_script('bac-medium-zoom', $base . 'js/medium-zoom.min.js', [], '1.1.0', true);
-    // Make mermaid-init.js depend on medium-zoom
     if ($o['mermaid_enabled']) {
         $deps = wp_scripts()->query('bac-mermaid-init');
         if ($deps) $deps->deps[] = 'bac-medium-zoom';
     }
+
+    // Suppress LightGallery license warning (Sakurairo theme bundled)
+    add_action('wp_head', function () {
+        ?><script>
+(function(){var cw=console.warn;console.warn=function(){var m=Array.prototype.join.call(arguments,' ');
+if(m.indexOf('license key')>=0||m.indexOf('LightGallery')>=0)return;return cw.apply(console,arguments);};})();
+</script><?php
+    }, 999);
+
+    // Safe-patch APlayer init: skip if container missing (Sakurairo theme)
+    add_action('wp_footer', function () {
+        ?><script>
+(function(){var A=window.APlayer;if(!A)return;
+var O=A.prototype.init;A.prototype.init=function(){
+if(typeof this.options.container==='string'&&!document.querySelector(this.options.container))return;
+return O.apply(this,arguments);};})();
+</script><?php
+    }, 1);
 
     // MathJax
     if ($o['mathjax_enabled']) {
