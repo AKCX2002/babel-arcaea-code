@@ -29,7 +29,7 @@ def walk(files, prefix=''):
         name = prefix + '/' + f['name'] if prefix else f['name']
         if f['type'] == 'directory':
             walk(f.get('files',[]), name)
-        elif '/plugins/' in name and (name.endswith('.min.js') or name.endswith('.min.css')):
+        elif 'plugins/' in name and (name.endswith('.min.js') or name.endswith('.min.css')):
             basename = name.split('/')[-1].replace('.min', '')
             url = BASE_URL + '/' + name
             out_path = os.path.join(OUT_DIR, basename)
