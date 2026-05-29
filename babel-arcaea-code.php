@@ -3,14 +3,14 @@
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
  * Description: Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
- * Version: 1.0.23
+ * Version: 1.0.24
  * Author: Babel36acl
  * License: GPL-2.0-or-later
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('BAC_VERSION', '1.0.23');
+define('BAC_VERSION', '1.0.24');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -55,7 +55,7 @@ function bac_defaults() {
         'mermaid_enabled'          => 1,
         'mathjax_enabled'          => 0,
         'markmap_enabled'          => 0,
-        'markmap_runtime'          => 'cdn',
+        'markmap_runtime'          => 'local',
         'mermaid_version'          => '11.15.0',
         'prism_version'            => '1.30.0',
         'mathjax_version'          => '3.2.2',
@@ -111,7 +111,7 @@ add_action('admin_menu', function () {
         if (!current_user_can('manage_options')) return;
         $o = bac_options(); ?>
         <div class="wrap"><h1>Babel Arcaea Code</h1>
-        <p>统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，CDN 仅用于 Markmap 调试模式。</p>
+        <p>统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，CDN 仅作为 Markmap 调试回退。</p>
         <form method="post" action="options.php">
         <?php settings_fields('bac_settings_group'); ?>
         <table class="form-table">
@@ -121,9 +121,9 @@ add_action('admin_menu', function () {
             <tr><th>MathJax</th><td><label><input type="checkbox" name="bac_options[mathjax_enabled]" value="1" <?php checked($o['mathjax_enabled'],1); ?>> 启用 MathJax 数学公式</label><p class="description">需先在 Githuber MD 设置中开启 MathJax，插件负责本地化加载。</p></td></tr>
             <tr><th>Markmap</th><td><label><input type="checkbox" name="bac_options[markmap_enabled]" value="1" <?php checked($o['markmap_enabled'],1); ?>> 启用 Markmap 思维导图</label><p class="description">支持 language-markmap 代码块和 [markmap]...[/markmap]。大型图建议后续使用 iframe/预渲染模式。</p></td></tr>
             <tr><th>Markmap Runtime</th><td><select name="bac_options[markmap_runtime]">
+                <option value="local" <?php selected($o['markmap_runtime'],'local'); ?>>本地资源模式（推荐）</option>
                 <option value="cdn" <?php selected($o['markmap_runtime'],'cdn'); ?>>CDN 调试模式</option>
-                <option value="local" <?php selected($o['markmap_runtime'],'local'); ?>>本地资源模式</option>
-            </select><p class="description">正式站点推荐本地资源；当前 local 需要自行放置 assets/markmap/vendor 运行时文件。</p></td></tr>
+            </select><p class="description">v1.0.24 默认使用本地 vendor。请先运行 Sync Markmap Assets 工作流生成 assets/markmap/vendor 运行时文件。</p></td></tr>
             <tr><th>Sakurairo Prism</th><td><label><input type="checkbox" name="bac_options[disable_sakurairo_prism]" value="1" <?php checked($o['disable_sakurairo_prism'],1); ?>> 禁用主题自带 Prism</label></td></tr>
             <tr><th>Prism 主题</th><td><select name="bac_options[prism_theme]">
                 <option value="arcaea_dark" <?php selected($o['prism_theme'],'arcaea_dark'); ?>>Arcaea Dark</option>
@@ -256,7 +256,7 @@ add_action('wp_enqueue_scripts', function () {
     if (!empty($o['markmap_enabled'])) {
         wp_enqueue_style('bac-markmap', $base . 'markmap/markmap.css', [], BAC_VERSION);
 
-        if (($o['markmap_runtime'] ?? 'cdn') === 'cdn') {
+        if (($o['markmap_runtime'] ?? 'local') === 'cdn') {
             wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7', [], '7', true);
             wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view', ['bac-markmap-d3'], BAC_VERSION, true);
             wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib', ['bac-markmap-view'], BAC_VERSION, true);
