@@ -202,7 +202,7 @@ add_filter('the_content', function ($content) {
         $code = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if (!$code) return $m[0];
         return '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
-            . esc_html($code) . '</div></div>';
+            . $code . '</div></div>';
     }, $content);
 }, 1);
 
@@ -211,7 +211,7 @@ add_shortcode('mermaid', function ($atts, $content = null) {
     $content = html_entity_decode(trim((string)$content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     if (!$content) return '';
     return '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
-        . esc_html($content) . '</div></div>';
+        . $content . '</div></div>';
 });
 
 /* ── Autoloader path filter for Prism ── */
