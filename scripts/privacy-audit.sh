@@ -33,6 +33,8 @@ scan_pattern() {
         --exclude-dir=.git \
         --exclude-dir=node_modules \
         --exclude-dir=vendor \
+        --exclude-dir=lib \
+        --exclude-dir=.github \
         --exclude="privacy-audit.sh" \
         --exclude="*.svg" \
         --exclude="*.min.js" \
