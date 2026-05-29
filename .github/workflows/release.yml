@@ -99,6 +99,10 @@ jobs:
           curl -sL "$B/plugins/show-language/prism-show-language.min.js" -o assets/prism/prism-show-language.js
           curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.js" -o assets/prism/prism-line-highlight.js
           curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.css" -o assets/prism/prism-line-highlight.css
+          curl -sL "$B/plugins/match-braces/prism-match-braces.min.js" -o assets/prism/prism-match-braces.js
+          curl -sL "$B/plugins/normalize-whitespace/prism-normalize-whitespace.min.js" -o assets/prism/prism-normalize-whitespace.js
+          curl -sL "$B/plugins/command-line/prism-command-line.min.js" -o assets/prism/prism-command-line.js
+          curl -sL "$B/plugins/treeview/prism-treeview.min.js" -o assets/prism/prism-treeview.js
           for lang in c cpp bash python json yaml cmake makefile dart javascript typescript rust go php markdown css diff ini toml xml; do
             curl -sL "$B/components/prism-${lang}.min.js" -o "assets/prism/components/prism-${lang}.js"
           done

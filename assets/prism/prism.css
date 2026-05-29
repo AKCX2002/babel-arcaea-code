@@ -1,6 +1,6 @@
 /* ============================================================
- * Babel Arcaea Code — Arcaea Dark Prism Theme
- * Glassmorphism code blocks matching sakurairo-arcaea-blog-skill
+ * Babel Arcaea Code — Arcaea × Night Owl Prism Theme
+ * Token colors adapted for STM32 / FreeRTOS / Rust / CMake
  * ============================================================ */
 
 /* ── Override Sakurairo theme defaults ── */
@@ -72,29 +72,15 @@ pre.line-numbers {
     padding-left: 4em !important;
     counter-reset: linenumber;
 }
-
-pre.line-numbers > code {
-    position: relative !important;
-    white-space: inherit;
-}
-
+pre.line-numbers > code { position: relative !important; white-space: inherit; }
 .line-numbers .line-numbers-rows {
     position: absolute !important;
-    pointer-events: none;
-    top: 0;
-    left: 0;
-    width: 3.2em;
-    letter-spacing: -1px;
+    pointer-events: none; top: 0; left: 0;
+    width: 3.2em; letter-spacing: -1px;
     border-right: 1px solid rgba(230, 238, 255, 0.30) !important;
-    padding: 1.35rem 0;
-    user-select: none;
+    padding: 1.35rem 0; user-select: none;
 }
-
-.line-numbers-rows > span {
-    display: block !important;
-    counter-increment: linenumber;
-}
-
+.line-numbers-rows > span { display: block !important; counter-increment: linenumber; }
 .line-numbers-rows > span:before {
     content: counter(linenumber);
     color: rgba(210, 230, 255, 0.55) !important;
@@ -105,11 +91,7 @@ pre.line-numbers > code {
 }
 
 /* ── Toolbar ── */
-div.code-toolbar > .toolbar {
-    top: 8px;
-    right: 12px;
-}
-
+div.code-toolbar > .toolbar { top: 8px; right: 12px; }
 div.code-toolbar > .toolbar button {
     background: rgba(255, 255, 255, 0.08) !important;
     border: 1px solid rgba(230, 238, 255, 0.30) !important;
@@ -120,78 +102,134 @@ div.code-toolbar > .toolbar button {
     backdrop-filter: blur(8px);
     box-shadow: none;
 }
-
 div.code-toolbar > .toolbar button:hover {
     background: rgba(255, 255, 255, 0.14) !important;
     border-color: rgba(230, 238, 255, 0.55) !important;
 }
 
-/* ── Token colors (Arcaea palette) ── */
+/* Show language label */
+div.code-toolbar > .toolbar .toolbar-item > span {
+    background: rgba(139, 167, 255, 0.15) !important;
+    border: 1px solid rgba(139, 167, 255, 0.25) !important;
+    color: rgba(210, 233, 255, 0.85) !important;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 12px;
+    backdrop-filter: blur(6px);
+}
+
+/* ── Night Owl × Arcaea token colors ── */
 .token.comment,
 .token.prolog,
 .token.doctype,
 .token.cdata {
-    color: rgba(155, 175, 210, 0.55);
+    color: rgba(130, 155, 190, 0.60);
     font-style: italic;
 }
 
-.token.punctuation { color: rgba(200, 220, 245, 0.70); }
+.token.punctuation {
+    color: #6fa0d0;
+}
 
 .token.property,
 .token.tag,
 .token.constant,
 .token.symbol,
-.token.deleted { color: #ffa0b0; }
+.token.deleted {
+    color: #ff869a;
+}
 
 .token.boolean,
-.token.number { color: #b8d0ff; }
+.token.number {
+    color: #f78c6c;
+}
 
 .token.selector,
 .token.attr-name,
-.token.string,
 .token.char,
 .token.builtin,
-.token.inserted { color: #a8e0c0; }
+.token.inserted {
+    color: #a8e0c0;
+}
+
+.token.string {
+    color: #c3e88d;
+}
 
 .token.operator,
 .token.entity,
-.token.url,
+.token.url {
+    color: #89ddff;
+    background: transparent !important;
+}
+
 .token.variable {
-    color: rgba(200, 220, 245, 0.80);
+    color: #e0e0e0;
     background: transparent !important;
 }
 
 .token.atrule,
-.token.attr-value,
-.token.keyword { color: #c0b0ff; }
+.token.attr-value {
+    color: #c792ea;
+}
 
-.token.function,
-.token.class-name { color: #8ad8ff; }
+.token.keyword {
+    color: #c792ea;
+    font-weight: 600;
+}
+
+.token.function {
+    color: #82aaff;
+}
+
+.token.class-name,
+.token.maybe-class-name {
+    color: #7dcfff;
+}
 
 .token.regex,
-.token.important { color: #ffc080; }
+.token.important {
+    color: #ffcb6b;
+}
 
 .token.important,
 .token.bold { font-weight: 700; }
 .token.italic { font-style: italic; }
-
 .token.entity { cursor: help; }
-
-/* ── namespace / preprocessor ── */
 .token.namespace { opacity: 0.7; }
 
+/* ── C/C++/Rust specific ── */
+.language-c .token.macro,
+.language-cpp .token.macro,
+.language-rust .token.macro {
+    color: #d291ff;
+}
+
+.language-c .token.preprocessor,
+.language-cpp .token.preprocessor {
+    color: #a0b0c0;
+}
+
 /* ── Markdown ── */
-.token.language-markdown .token.title,
-.token.language-markdown .token.blockquote,
-.token.language-markdown .token.list { color: rgba(238, 244, 255, 0.85); }
+.token.language-markdown .token.title { color: #82aaff; }
+.token.language-markdown .token.url { color: #89ddff; }
+.token.language-markdown .token.bold { color: #e0e0e0; }
+.token.language-markdown .token.italic { color: #e0e0e0; }
 
 /* ── JSON ── */
-.language-json .token.property { color: #c0d0f0; }
-.language-json .token.string { color: #a8e0c0; }
+.language-json .token.property { color: #82aaff; }
+.language-json .token.string { color: #c3e88d; }
 
 /* ── Diff ── */
 .token.deleted { background: rgba(255, 100, 120, 0.12); }
 .token.inserted { background: rgba(120, 220, 160, 0.12); }
+
+/* ── Match braces ── */
+.token.punctuation.brace-hover,
+.token.punctuation.brace-selected {
+    outline: solid 1px rgba(160, 220, 255, 0.40);
+    background: rgba(160, 220, 255, 0.06);
+}
 
 /* ── Line highlight ── */
 .line-highlight {
@@ -199,8 +237,15 @@ div.code-toolbar > .toolbar button:hover {
     border-left: 3px solid rgba(160, 220, 255, 0.40);
 }
 
-/* ── Match braces ── */
-.token.punctuation.brace-hover,
-.token.punctuation.brace-selected {
-    outline: solid 1px rgba(160, 220, 255, 0.40);
+/* ── Command line ── */
+.command-line-prompt {
+    border-right: 1px solid rgba(230, 238, 255, 0.20);
+    margin-right: 0.5em;
+    padding-right: 0.5em;
+    color: rgba(210, 230, 255, 0.55);
+    user-select: none;
 }
+
+/* ── Treeview ── */
+.language-treeview .token.selector { color: rgba(238, 244, 255, 0.85); }
+.language-treeview .token.url { color: #82aaff; }

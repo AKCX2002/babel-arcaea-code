@@ -44,6 +44,7 @@ function bac_defaults() {
         'mathjax_version'   => '3.2.2',
         'prism_line_numbers' => 1,
         'prism_copy'        => 1,
+        'prism_braces'      => 1,
         'prism_theme'       => 'arcaea_dark',
         'disable_sakurairo_prism' => 1,
     ];
@@ -88,7 +89,14 @@ add_action('admin_menu', function () {
             </select></td></tr>
             <tr><th>行号</th><td><label><input type="checkbox" name="bac_options[prism_line_numbers]" value="1" <?php checked($o['prism_line_numbers'],1); ?>> 显示行号</label></td></tr>
             <tr><th>复制</th><td><label><input type="checkbox" name="bac_options[prism_copy]" value="1" <?php checked($o['prism_copy'],1); ?>> 代码块复制按钮</label></td></tr>
+            <tr><th>括号匹配</th><td><label><input type="checkbox" name="bac_options[prism_braces]" value="1" <?php checked($o['prism_braces'],1); ?>> Prism Match Braces</label></td></tr>
         </table>
+        <hr style="border-color:rgba(230,238,255,0.20);margin:24px 0">
+        <h3 style="color:rgba(238,244,255,0.85);font-weight:400">已安装插件</h3>
+        <p style="color:rgba(238,244,255,0.55);font-size:13px">
+        Toolbar · Show Language · Copy · Line Numbers · Line Highlight · Match Braces ·<br>
+        Normalize Whitespace · Command Line · Treeview · Autoloader
+        </p>
         <?php submit_button(); ?>
         </form></div>
     <?php });
@@ -129,20 +137,30 @@ add_action('wp_enqueue_scripts', function () {
         }
     }
 
-    // Prism JS — explicit dependency chain
+    // Prism JS — correct loading order
     if ($o['prism_enabled']) {
         wp_enqueue_script('bac-prism-core', $base . 'prism/prism.js', [], BAC_VERSION, true);
-        wp_enqueue_script('bac-prism-autoloader', $base . 'prism/prism-autoloader.js', ['bac-prism-core'], BAC_VERSION, true);
+        // Toolbar (dep: core)
         wp_enqueue_script('bac-prism-toolbar', $base . 'prism/prism-toolbar.js', ['bac-prism-core'], BAC_VERSION, true);
-        // Show language name on code blocks
+        // Show Language (dep: toolbar)
         wp_enqueue_script('bac-prism-lang', $base . 'prism/prism-show-language.js', ['bac-prism-toolbar'], BAC_VERSION, true);
+        // Copy (dep: toolbar)
         if ($o['prism_copy']) {
             wp_enqueue_script('bac-prism-copy', $base . 'prism/prism-copy.js', ['bac-prism-toolbar'], BAC_VERSION, true);
         }
+        // Line Numbers, Line Highlight (dep: core)
         if ($o['prism_line_numbers']) {
             wp_enqueue_script('bac-prism-ln', $base . 'prism/prism-line-numbers.js', ['bac-prism-core'], BAC_VERSION, true);
             wp_enqueue_script('bac-prism-lh', $base . 'prism/prism-line-highlight.js', ['bac-prism-core'], BAC_VERSION, true);
         }
+        // Match Braces, Normalize Whitespace (dep: core)
+        wp_enqueue_script('bac-prism-braces', $base . 'prism/prism-match-braces.js', ['bac-prism-core'], BAC_VERSION, true);
+        wp_enqueue_script('bac-prism-norm', $base . 'prism/prism-normalize-whitespace.js', ['bac-prism-core'], BAC_VERSION, true);
+        // Command Line, Treeview (dep: core)
+        wp_enqueue_script('bac-prism-cmd', $base . 'prism/prism-command-line.js', ['bac-prism-core'], BAC_VERSION, true);
+        wp_enqueue_script('bac-prism-tree', $base . 'prism/prism-treeview.js', ['bac-prism-core'], BAC_VERSION, true);
+        // Autoloader LAST (dep: core)
+        wp_enqueue_script('bac-prism-autoloader', $base . 'prism/prism-autoloader.js', ['bac-prism-core'], BAC_VERSION, true);
         wp_localize_script('bac-prism-autoloader', 'BAC_Prism', [
             'langPath' => $base . 'prism/components/',
         ]);
