@@ -101,6 +101,15 @@ add_action('admin_menu', function () {
         Toolbar · Show Language · Copy · Line Numbers · Line Highlight · Match Braces ·<br>
         Normalize Whitespace · Command Line · Treeview · Previewers · Autoloader
         </p>
+        <p style="color:rgba(238,244,255,0.40);font-size:12px">
+        Prism 语言组件: <?php
+            $langs = glob(BAC_PLUGIN_DIR . 'assets/prism/components/prism-*.js');
+            echo count($langs) ?: '—';
+        ?> 种 · Mermaid chunks: <?php
+            $chunks = glob(BAC_PLUGIN_DIR . 'assets/mermaid/chunks/mermaid.esm.min/*.mjs');
+            echo count($chunks) ?: '—';
+        ?> 个 · CI 自动同步 ✓
+        </p>
         <?php submit_button(); ?>
         </form></div>
     <?php });

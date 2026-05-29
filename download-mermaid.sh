@@ -1,36 +1,47 @@
 #!/bin/bash
-# Download ALL Mermaid chunks from jsDelivr (complete clone)
+# Download ALL Mermaid chunks from jsDelivr (complete clone).
+# On version change, all files are new (different hash filenames).
+# On same version, only downloads missing files (fast).
 set -e
-LAT="$1"
-[ -z "$LAT" ] && echo "Usage: $0 <version>" && exit 1
+VER="$1"
+[ -z "$VER" ] && echo "Usage: $0 <version>" && exit 1
 
-BASE="https://cdn.jsdelivr.net/npm/mermaid@${LAT}/dist"
+BASE="https://cdn.jsdelivr.net/npm/mermaid@${VER}/dist"
 DIR="assets/mermaid/chunks/mermaid.esm.min"
 mkdir -p "$DIR"
 
-echo "Downloading mermaid.esm.min.mjs..."
+echo "=== Mermaid $VER: main ==="
 curl -sL "$BASE/mermaid.esm.min.mjs" -o assets/mermaid/mermaid.esm.min.mjs
+echo "  mermaid.esm.min.mjs"
 
-echo "Downloading ALL chunk files from jsDelivr API..."
-curl -sL "https://data.jsdelivr.com/v1/packages/npm/mermaid@${LAT}" | python3 -c "
+echo "=== Mermaid $VER: all chunk files ==="
+curl -sL "https://data.jsdelivr.com/v1/packages/npm/mermaid@${VER}" | python3 -c "
 import sys, json, os, urllib.request
 d = json.load(sys.stdin)
-CHUNK_DIR = 'dist/chunks/mermaid.esm.min/'
 BASE_URL = '$BASE'
 OUT_DIR = '$DIR'
+count = 0
 
-files = [f['name'] for f in d.get('files', [])
-         if CHUNK_DIR in f.get('name', '') and f['name'].endswith('.mjs')]
-print(f'Total chunks in package: {len(files)}')
+# Also get .mjs.map files alongside .mjs
+extensions = ['.mjs', '.mjs.map']
+files_dl = set()
+for f in d.get('files', []):
+    name = f.get('name', '')
+    for ext in extensions:
+        if 'dist/chunks/mermaid.esm.min/' in name and name.endswith(ext):
+            files_dl.add(name)
 
-for full_path in files:
+for full_path in sorted(files_dl):
     filename = full_path.split('/')[-1]
     url = BASE_URL + '/' + full_path.split('dist/')[1]
     out_path = os.path.join(OUT_DIR, filename)
-    urllib.request.urlretrieve(url, out_path)
-    print(f'  {filename}')
+    if not os.path.exists(out_path):
+        urllib.request.urlretrieve(url, out_path)
+        count += 1
+        print(f'  + {filename}')
 
-print(f'Done: {len(files)} chunks')
+total_mjs = len([x for x in os.listdir(OUT_DIR) if x.endswith('.mjs')])
+print(f'  Downloaded {count} new, {total_mjs} .mjs chunks total')
 "
 
-echo "Complete: $(ls \"$DIR\"/*.mjs 2>/dev/null | wc -l) chunks total"
+echo "=== Done. Mermaid $VER assets ready ==="

@@ -23,6 +23,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Refresh Mermaid assets
+        run: bash download-mermaid.sh $(grep -oP "mermaid_version.*?'\K[0-9.]+" babel-arcaea-code.php)
+
+      - name: Refresh Prism assets
+        run: bash download-prism.sh $(grep -oP "prism_version.*?'\K[0-9.]+" babel-arcaea-code.php)
+
+      - name: Refresh MathJax
+        run: |
+          VER=$(grep -oP "mathjax_version.*?'\K[0-9.]+" babel-arcaea-code.php)
+          curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${VER}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
+          echo "MathJax $VER: $(du -sh assets/mathjax/es5/tex-chtml.js)"
+
       - name: Auto-bump
         id: bump
         run: |
@@ -58,7 +70,7 @@ jobs:
           gh release create "v$VERSION" --title "v$VERSION" \
             --notes "See [CHANGELOG](https://github.com/${{ github.repository }}/commits/v$VERSION)" "/tmp/$ZIPNAME"
 
-  # ── Daily sync ALL JS deps ──
+  # ── Daily sync ALL deps ──
   sync-deps:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -66,67 +78,41 @@ jobs:
       - uses: actions/checkout@v4
 
       # ── 1. Mermaid ──
-      - name: Check Mermaid
+      - name: Download Mermaid
         id: mermaid
         run: |
           CUR=$(grep -oP "mermaid_version.*?'\K[0-9.]+" babel-arcaea-code.php)
           LAT=$(curl -sL "https://api.github.com/repos/mermaid-js/mermaid/releases/latest" | grep '"tag_name"' | head -1 | grep -oP '[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Download Mermaid
-        if: steps.mermaid.outputs.changed == 'true'
-        run: |
-          bash download-mermaid.sh "${{ steps.mermaid.outputs.latest }}"
-          sed -i "s/mermaid_version.*'[0-9.]\+'/mermaid_version' => '${{ steps.mermaid.outputs.latest }}'/" babel-arcaea-code.php
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          bash download-mermaid.sh "$LAT"
+          [ "$CUR" != "$LAT" ] && sed -i "s/mermaid_version.*'[0-9.]\+'/mermaid_version' => '$LAT'/" babel-arcaea-code.php
 
       # ── 2. Prism.js ──
-      - name: Check Prism
+      - name: Download Prism
         id: prism
         run: |
           CUR=$(grep -oP "prism_version.*?'\K[0-9.]+" babel-arcaea-code.php)
           LAT=$(curl -sL "https://registry.npmjs.org/prismjs/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Download Prism
-        if: steps.prism.outputs.changed == 'true'
-        run: |
-          LAT="${{ steps.prism.outputs.latest }}"; B="https://cdn.jsdelivr.net/npm/prismjs@${LAT}"
-          for f in prism.min.js prism.css prism-toolbar.min.js prism-toolbar.min.css prism-copy-to-clipboard.min.js prism-line-numbers.min.js prism-line-numbers.min.css prism-autoloader.min.js; do
-            curl -sL "$B/$(echo $f | sed 's/prism/prism/' | sed 's/-copy-to-clipboard/-copy/')" -o "assets/prism/$(echo $f | sed 's/^prism-//' | sed 's/^prism/prism/' | sed 's/^prism/prism/')" 2>/dev/null || :
-          done
-          curl -sL "$B/plugins/show-language/prism-show-language.min.js" -o assets/prism/prism-show-language.js
-          curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.js" -o assets/prism/prism-line-highlight.js
-          curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.css" -o assets/prism/prism-line-highlight.css
-          curl -sL "$B/plugins/match-braces/prism-match-braces.min.js" -o assets/prism/prism-match-braces.js
-          curl -sL "$B/plugins/normalize-whitespace/prism-normalize-whitespace.min.js" -o assets/prism/prism-normalize-whitespace.js
-          curl -sL "$B/plugins/command-line/prism-command-line.min.js" -o assets/prism/prism-command-line.js
-          curl -sL "$B/plugins/treeview/prism-treeview.min.js" -o assets/prism/prism-treeview.js
-          curl -sL "$B/plugins/previewers/prism-previewers.min.js" -o assets/prism/prism-previewers.js
-          curl -sL "$B/plugins/previewers/prism-previewers.min.css" -o assets/prism/prism-previewers.css
-          for lang in c cpp bash python json yaml cmake makefile dart javascript typescript rust go php markdown css diff ini toml xml; do
-            curl -sL "$B/components/prism-${lang}.min.js" -o "assets/prism/components/prism-${lang}.js"
-          done
-          curl -sL "https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" -o assets/js/medium-zoom.min.js
-          sed -i "s/prism_version.*'[0-9.]\+'/prism_version' => '$LAT'/" babel-arcaea-code.php
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          bash download-prism.sh "$LAT"
+          [ "$CUR" != "$LAT" ] && sed -i "s/prism_version.*'[0-9.]\+'/prism_version' => '$LAT'/" babel-arcaea-code.php
 
       # ── 3. MathJax ──
-      - name: Check MathJax
+      - name: Download MathJax
         id: mathjax
         run: |
           CUR=$(grep -oP "mathjax_version.*?'\K[0-9.]+" babel-arcaea-code.php)
           LAT=$(curl -sL "https://registry.npmjs.org/mathjax/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Download MathJax
-        if: steps.mathjax.outputs.changed == 'true'
-        run: |
-          LAT="${{ steps.mathjax.outputs.latest }}"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"
+          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${LAT}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
           echo "MathJax $LAT: $(du -sh assets/mathjax/es5/tex-chtml.js)"
-          sed -i "s/mathjax_version.*'[0-9.]\+'/mathjax_version' => '$LAT'/" babel-arcaea-code.php
+          [ "$CUR" != "$LAT" ] && sed -i "s/mathjax_version.*'[0-9.]\+'/mathjax_version' => '$LAT'/" babel-arcaea-code.php
 
       # ── PR if any dep changed ──
       - name: Create PR
