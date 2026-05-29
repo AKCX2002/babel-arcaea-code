@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
- * Description: Unified Prism.js + Mermaid renderer. Local assets, no CDN. Replaces Sakurairo's built-in Prism.
+ * Description: Unified Prism.js + Mermaid + MathJax renderer. Local assets, no CDN. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
  * Version: 1.0.9
  * Author: Babel36acl
  * License: GPL-2.0-or-later
