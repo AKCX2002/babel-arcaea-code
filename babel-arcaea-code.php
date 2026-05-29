@@ -3,14 +3,14 @@
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
  * Description: Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Babel36acl
  * License: GPL-2.0-or-later
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('BAC_VERSION', '1.1.1');
+define('BAC_VERSION', '1.2.0');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -59,6 +59,7 @@ function bac_defaults() {
         'mathjax_enabled'             => 0,
         'markmap_enabled'             => 0,
         'markmap_runtime'             => 'local',
+        'markmap_prerender'           => 0,
         'mermaid_version'             => '11.15.0',
         'prism_version'               => '1.30.0',
         'mathjax_version'             => '3.2.2',
@@ -91,6 +92,7 @@ add_action('admin_init', function () {
         $out['markmap_runtime'] = in_array($in['markmap_runtime'] ?? '', ['cdn','local'], true)
             ? sanitize_key($in['markmap_runtime'])
             : $d['markmap_runtime'];
+        $out['markmap_prerender'] = !empty($in['markmap_prerender']) ? 1 : 0;
 
         $out['mermaid_version'] = in_array($in['mermaid_version'] ?? '', ['11.15.0'], true)
             ? sanitize_text_field($in['mermaid_version'])
@@ -131,6 +133,7 @@ add_action('admin_menu', function () {
                 <option value="local" <?php selected($o['markmap_runtime'],'local'); ?>>本地资源模式</option>
                 <option value="cdn" <?php selected($o['markmap_runtime'],'cdn'); ?>>CDN 调试模式</option>
             </select><p class="description">正式站点推荐本地资源；CDN 仅建议临时调试。local 需要存在 assets/markmap/vendor 运行时文件。</p></td></tr>
+            <tr><th>Markmap 服务端预渲染</th><td><label><input type="checkbox" name="bac_options[markmap_prerender]" value="1" <?php checked($o['markmap_prerender'],1); ?>> 启用 CLI 预渲染</label><p class="description">在页面输出时调用 Node.js 将 markmap 内容预渲染为 SVG 并缓存，前端无需加载 markmap JS 运行时。大幅提升 SEO 和 PJAX 稳定性。需要服务端安装 Node.js。</p></td></tr>
             <tr><th>Sakurairo Prism</th><td><label><input type="checkbox" name="bac_options[disable_sakurairo_prism]" value="1" <?php checked($o['disable_sakurairo_prism'],1); ?>> 禁用主题自带 Prism</label></td></tr>
             <tr><th>Sakurairo APlayer 兼容</th><td><label><input type="checkbox" name="bac_options[aplayer_safe_patch]" value="1" <?php checked($o['aplayer_safe_patch'],1); ?>> APlayer 容器缺失时跳过初始化</label><p class="description">仅在主题 APlayer 报 container missing / init 错误时启用，默认关闭。</p></td></tr>
             <tr><th>LightGallery 警告抑制</th><td><label><input type="checkbox" name="bac_options[suppress_lightgallery_warn]" value="1" <?php checked($o['suppress_lightgallery_warn'],1); ?>> 抑制 LightGallery license warning</label><p class="description">调试阶段建议关闭，避免隐藏真实前端警告。</p></td></tr>
@@ -269,16 +272,19 @@ add_action('wp_enqueue_scripts', function () {
     if (!empty($o['markmap_enabled'])) {
         wp_enqueue_style('bac-markmap', $base . 'markmap/markmap.css', [], BAC_VERSION);
 
-        if (($o['markmap_runtime'] ?? 'local') === 'cdn') {
-            wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js', [], '7.9.0', true);
-            wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js', ['bac-markmap-d3'], '0.18.12', true);
-            wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.12/dist/browser/index.js', ['bac-markmap-view'], '0.18.12', true);
-            wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
-        } else {
-            wp_enqueue_script('bac-markmap-d3', $base . 'markmap/vendor/d3.min.js', [], BAC_VERSION, true);
-            wp_enqueue_script('bac-markmap-view', $base . 'markmap/vendor/markmap-view.min.js', ['bac-markmap-d3'], BAC_VERSION, true);
-            wp_enqueue_script('bac-markmap-lib', $base . 'markmap/vendor/markmap-lib.min.js', ['bac-markmap-view'], BAC_VERSION, true);
-            wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
+        // Pre-rendered mode: no client-side JS needed for markmap.
+        if (empty($o['markmap_prerender'])) {
+            if (($o['markmap_runtime'] ?? 'local') === 'cdn') {
+                wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js', [], '7.9.0', true);
+                wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js', ['bac-markmap-d3'], '0.18.12', true);
+                wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.12/dist/browser/index.js', ['bac-markmap-view'], '0.18.12', true);
+                wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
+            } else {
+                wp_enqueue_script('bac-markmap-d3', $base . 'markmap/vendor/d3.min.js', [], BAC_VERSION, true);
+                wp_enqueue_script('bac-markmap-view', $base . 'markmap/vendor/markmap-view.min.js', ['bac-markmap-d3'], BAC_VERSION, true);
+                wp_enqueue_script('bac-markmap-lib', $base . 'markmap/vendor/markmap-lib.min.js', ['bac-markmap-view'], BAC_VERSION, true);
+                wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
+            }
         }
     }
 
@@ -361,6 +367,16 @@ add_filter('the_content', function ($content) {
         $code = preg_replace('/<br\s*\/?>/i', "\n", $code);
         $code = strip_tags($code);
 
+        $o = bac_options();
+        if (!empty($o['markmap_prerender'])) {
+            $cached = bac_markmap_render_svg($code);
+            if ($cached) {
+                return '<div class="arcaea-markmap-box arcaea-markmap-prerendered">'
+                    . $cached
+                    . '</div>';
+            }
+        }
+
         return '<div class="arcaea-markmap-box">'
             . '<pre class="arcaea-markmap-source">' . esc_html($code) . '</pre>'
             . '<svg class="arcaea-markmap-diagram"></svg>'
@@ -390,8 +406,117 @@ add_shortcode('markmap', function ($atts, $content = null) {
     $content = strip_tags($content);
     if (!$content) return '';
 
+    // Pre-rendered mode: use cached SVG if available.
+    if (!empty($o['markmap_prerender'])) {
+        $cached = bac_markmap_render_svg($content);
+        if ($cached) {
+            return '<div class="arcaea-markmap-box arcaea-markmap-prerendered">'
+                . $cached
+                . '</div>';
+        }
+        // Fall through to client-side render if pre-render fails.
+    }
+
     return '<div class="arcaea-markmap-box">'
         . '<pre class="arcaea-markmap-source">' . esc_html($content) . '</pre>'
         . '<svg class="arcaea-markmap-diagram"></svg>'
         . '</div>';
+});
+
+/* ── Markmap CLI pre-render engine ── */
+
+/**
+ * Get the cache directory path for pre-rendered SVGs.
+ * Uses WordPress uploads directory to persist across plugin updates.
+ */
+function bac_markmap_cache_dir() {
+    $upload_dir = wp_upload_dir();
+    $dir = $upload_dir['basedir'] . '/bac-markmap-cache';
+    if (!file_exists($dir)) {
+        wp_mkdir_p($dir);
+    }
+    return $dir;
+}
+
+/**
+ * Render markmap content to SVG using Node.js CLI.
+ * Caches results by content hash for fast subsequent loads.
+ *
+ * @param string $content Markdown markmap content.
+ * @return string|null SVG markup, or null on failure.
+ */
+function bac_markmap_render_svg($content) {
+    $cache_dir = bac_markmap_cache_dir();
+    $hash = md5($content);
+    $cache_file = $cache_dir . '/' . $hash . '.svg';
+
+    // Serve from cache if available.
+    if (file_exists($cache_file)) {
+        $svg = file_get_contents($cache_file);
+        if ($svg !== false && strpos($svg, '<svg') !== false) {
+            return $svg;
+        }
+    }
+
+    // Locate the Node.js render script.
+    $render_script = BAC_PLUGIN_DIR . 'bin/markmap-render.js';
+    if (!file_exists($render_script)) {
+        return null;
+    }
+
+    // Locate node executable.
+    $node = function_exists('bac_find_node')
+        ? bac_find_node()
+        : (getenv('BAC_NODE_BIN') ?: 'node');
+
+    $descriptors = [
+        0 => ['pipe', 'r'],  // stdin
+        1 => ['pipe', 'w'],  // stdout
+        2 => ['pipe', 'w'],  // stderr
+    ];
+
+    $proc = proc_open(
+        escapeshellcmd($node) . ' ' . escapeshellarg($render_script) . ' --theme arcaea-dark',
+        $descriptors,
+        $pipes
+    );
+
+    if (!is_resource($proc)) {
+        return null;
+    }
+
+    fwrite($pipes[0], $content);
+    fclose($pipes[0]);
+
+    $svg = stream_get_contents($pipes[1]);
+    $err = stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $exit_code = proc_close($proc);
+
+    if ($exit_code !== 0 || !$svg || strpos($svg, '<svg') === false) {
+        return null;
+    }
+
+    // Write to cache.
+    file_put_contents($cache_file, $svg);
+
+    return $svg;
+}
+
+/**
+ * Clear all cached pre-rendered SVGs.
+ */
+function bac_markmap_clear_cache() {
+    $cache_dir = bac_markmap_cache_dir();
+    if (!is_dir($cache_dir)) return;
+    $files = glob($cache_dir . '/*.svg');
+    foreach ($files as $f) {
+        @unlink($f);
+    }
+}
+
+// Clear cache when settings are saved.
+add_action('update_option_bac_options', function () {
+    bac_markmap_clear_cache();
 });

@@ -118,3 +118,23 @@
     transition: none !important;
   }
 }
+
+/* ── Pre-rendered (static SVG) markmap ── */
+
+.arcaea-markmap-box.arcaea-markmap-prerendered {
+  min-height: auto;
+  overflow: visible;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.arcaea-markmap-box.arcaea-markmap-prerendered svg.arcaea-markmap-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}

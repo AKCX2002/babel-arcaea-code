@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.0
+
+### Added
+
+- Markmap CLI server-side pre-render engine (`bin/markmap-render.js`).
+- Markmap pre-rendered SVG cache in `wp-content/uploads/bac-markmap-cache/`.
+- Settings toggle for server-side pre-render mode ("Markmap 服务端预渲染").
+- Front-end JS dependencies (d3, markmap-view, markmap-lib) are skipped when pre-render is enabled.
+- Pre-rendered SVG styling in `markmap.css`.
+- CI validation for CLI renderer in validate.yml.
+
+### Changed
+
+- Version bumped from 1.1.1 to 1.2.0.
+
 ## 1.1.0
 
 ### Added

@@ -1,0 +1,27 @@
+{
+  "name": "babel-arcaea-code",
+  "version": "1.0.0",
+  "description": "统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，适配 Sakurairo WordPress 技术博客。",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AKCX2002/babel-arcaea-code.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AKCX2002/babel-arcaea-code/issues"
+  },
+  "homepage": "https://github.com/AKCX2002/babel-arcaea-code#readme",
+  "dependencies": {
+    "markmap-lib": "0.18.12"
+  }
+}

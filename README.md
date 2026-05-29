@@ -146,6 +146,11 @@ ini, toml, xml (+ autoloader 按需加载其他语言)
 - 正式站点推荐 local 模式
 - CDN 仅用于调试
 - local 模式必须存在 assets/markmap/vendor/ 运行时文件
+- 预渲染模式（推荐）：在插件设置中启用"服务端预渲染"
+  - 需要服务器安装 Node.js
+  - SVG 缓存于 wp-content/uploads/bac-markmap-cache/
+  - 前端无需加载 d3 / markmap-view / markmap-lib JS
+  - 大幅提升 SEO 和 PJAX 稳定性
 ```
 
 ## 发布包检查

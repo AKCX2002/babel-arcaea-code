@@ -5,12 +5,14 @@ on:
     paths:
       - '**.php'
       - 'assets/**'
+      - 'bin/**'
   push:
     branches:
       - main
     paths:
       - '**.php'
       - 'assets/**'
+      - 'bin/**'
 
 jobs:
   php-lint:
@@ -59,6 +61,25 @@ jobs:
 
           echo ""
           echo "✅ All required assets present."
+
+  cli-render-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: |
+          test -f package.json && npm install --ignore-scripts 2>/dev/null || true
+      - name: Verify CLI renderer
+        run: |
+          set -e
+          test -f bin/markmap-render.js
+          echo "  ✓ bin/markmap-render.js exists"
+          echo '# Test' | node bin/markmap-render.js > /tmp/test.svg
+          grep -q '<svg' /tmp/test.svg
+          echo "  ✓ CLI renderer produces valid SVG"
 
   privacy-audit:
     runs-on: ubuntu-latest
