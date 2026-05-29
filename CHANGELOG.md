@@ -4,8 +4,8 @@
 
 ### Fixed
 
-- **Settings link broken**: Plugin action link "设置" pointed to `options-general.php?page=babel-arcaea-code` which no longer exists after the admin page was migrated to a standalone top-level menu. Fixed to point to `admin.php?page=bac`.
-- **WAF 403 on admin page**: Server WAF/mod_security was blocking all admin URLs containing `babel-arcaea-code` (both `options-general.php` and `admin.php` paths). Changed the top-level menu slug from `babel-arcaea-code` to `bac` and the Settings submenu slug from `babel-arcaea-code-settings` to `bac-settings` to bypass overly aggressive WAF rules.
+- **Settings link broken**: Plugin action link "设置" pointed to `options-general.php?page=babel-arcaea-code` which no longer exists after the admin page was migrated to a standalone top-level menu. Fixed to point to `admin.php?page=bac-panel`.
+- **WAF 403 on admin page**: Server WAF/mod_security was blocking all admin URLs containing `babel-arcaea-code`. After discovering that even the shortened `bac` slug was problematic (possible slug conflict), changed to unique slugs: top-level `bac-panel`, Settings submenu `bac-options`. Also fixed `admin_enqueue_scripts` hook to check the new slugs instead of the old `babel-arcaea-code`.
 
 ## 1.4.3
 

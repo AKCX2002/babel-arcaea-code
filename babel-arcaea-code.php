@@ -45,7 +45,7 @@ add_action('plugins_loaded', function () {
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
     array_unshift(
         $links,
-        '<a href="' . esc_url(admin_url('admin.php?page=bac')) . '">设置</a>'
+        '<a href="' . esc_url(admin_url('admin.php?page=bac-panel')) . '">设置</a>'
     );
     return $links;
 });

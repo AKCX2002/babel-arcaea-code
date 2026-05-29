@@ -9,8 +9,8 @@ if (!defined('ABSPATH')) exit;
 
 /* ── Enqueue admin styles ── */
 add_action('admin_enqueue_scripts', function ($hook) {
-    // Only load on our plugin pages.
-    if (strpos($hook, 'babel-arcaea-code') === false) {
+    // Only load on our plugin pages (top-level or settings submenu).
+    if (strpos($hook, 'bac-panel') === false && strpos($hook, 'bac-options') === false) {
         return;
     }
     $css = BAC_PLUGIN_URL . 'assets/css/bac-admin.css';
@@ -19,13 +19,13 @@ add_action('admin_enqueue_scripts', function ($hook) {
 });
 
 add_action('admin_menu', function () {
-    // Primary standalone entry using a short slug (bac) to avoid WAF/host
-    // rules that 403 on long slugs like babel-arcaea-code.
+    // Primary standalone entry using 'bac-panel' slug — short enough to
+    // avoid WAF false positives, unique enough to avoid slug conflicts.
     add_menu_page(
         'Babel Arcaea Code',
         'Arcaea Code',
         'manage_options',
-        'bac',
+        'bac-panel',
         'bac_admin_page_render',
         'dashicons-editor-code',
         81
@@ -37,7 +37,7 @@ add_action('admin_menu', function () {
         'Babel Arcaea Code',
         'Arcaea Code',
         'manage_options',
-        'bac-settings',
+        'bac-options',
         'bac_admin_page_render'
     );
 });
