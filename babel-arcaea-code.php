@@ -38,8 +38,10 @@ function bac_defaults() {
         'enabled'           => 1,
         'prism_enabled'     => 1,
         'mermaid_enabled'   => 1,
+        'mathjax_enabled'   => 0,
         'mermaid_version'   => '11.15.0',
         'prism_version'     => '1.30.0',
+        'mathjax_version'   => '3.2.2',
         'prism_line_numbers' => 1,
         'prism_copy'        => 1,
         'prism_theme'       => 'arcaea_dark',
@@ -78,6 +80,7 @@ add_action('admin_menu', function () {
             <tr><th>启用</th><td><label><input type="checkbox" name="bac_options[enabled]" value="1" <?php checked($o['enabled'],1); ?>> 总开关</label></td></tr>
             <tr><th>Prism.js</th><td><label><input type="checkbox" name="bac_options[prism_enabled]" value="1" <?php checked($o['prism_enabled'],1); ?>> 启用 Prism 代码高亮</label></td></tr>
             <tr><th>Mermaid</th><td><label><input type="checkbox" name="bac_options[mermaid_enabled]" value="1" <?php checked($o['mermaid_enabled'],1); ?>> 启用 Mermaid 图表</label></td></tr>
+            <tr><th>MathJax</th><td><label><input type="checkbox" name="bac_options[mathjax_enabled]" value="1" <?php checked($o['mathjax_enabled'],1); ?>> 启用 MathJax 数学公式</label><p class="description">需先在 Githuber MD 设置中开启 MathJax，插件负责本地化加载</p></td></tr>
             <tr><th>Sakurairo Prism</th><td><label><input type="checkbox" name="bac_options[disable_sakurairo_prism]" value="1" <?php checked($o['disable_sakurairo_prism'],1); ?>> 禁用主题自带 Prism</label></td></tr>
             <tr><th>Prism 主题</th><td><select name="bac_options[prism_theme]">
                 <option value="arcaea_dark" <?php selected($o['prism_theme'],'arcaea_dark'); ?>>Arcaea Dark</option>
@@ -145,11 +148,19 @@ add_action('wp_enqueue_scripts', function () {
     // Mermaid
     if ($o['mermaid_enabled']) {
         wp_enqueue_style('bac-mermaid', $base . 'mermaid/mermaid.css', [], BAC_VERSION);
-        $mermaid_url = $base . 'mermaid/mermaid.esm.min.mjs';
         wp_enqueue_script('bac-mermaid-init', $base . 'mermaid/mermaid-init.js', [], BAC_VERSION, true);
         wp_localize_script('bac-mermaid-init', 'BAC_Mermaid', [
-            'mermaidUrl' => $mermaid_url,
+            'mermaidUrl' => $base . 'mermaid/mermaid.esm.min.mjs',
         ]);
+    }
+
+    // MathJax
+    if ($o['mathjax_enabled']) {
+        wp_enqueue_script('bac-mathjax', $base . 'mathjax/es5/tex-chtml.js', [], BAC_VERSION, true);
+        // Configure MathJax before script loads
+        add_action('wp_head', function () {
+            echo '<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\(","\\)"]]},svg:{fontCache:"global"},options:{ignoreHtmlClass:"no-mathjax"}};</script>';
+        }, 0);
     }
 });
 

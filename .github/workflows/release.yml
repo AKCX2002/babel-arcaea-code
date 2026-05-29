@@ -93,10 +93,19 @@ jobs:
         if: steps.mermaid.outputs.changed == 'true'
         run: |
           LAT="${{ steps.mermaid.outputs.latest }}"
-          curl -sL "https://cdn.jsdelivr.net/npm/mermaid@${LAT}/dist/mermaid.esm.min.mjs" \
-            -o assets/mermaid/mermaid.esm.min.mjs
+          BASE="https://cdn.jsdelivr.net/npm/mermaid@${LAT}/dist"
+          # Main ESM module
+          curl -sL "$BASE/mermaid.esm.min.mjs" -o assets/mermaid/mermaid.esm.min.mjs
+          # Chunk files (required by ESM dynamic import)
+          mkdir -p assets/mermaid/chunks/mermaid.esm.min
+          # Fetch chunk list from API
+          CHUNKS=$(curl -sL "https://data.jsdelivr.com/v1/packages/npm/mermaid@${LAT}" | \
+            grep -oP 'dist/chunks/mermaid\.esm\.min/\K[^"]+\.mjs' | sort -u)
+          for chunk in $CHUNKS; do
+            curl -sL "$BASE/chunks/mermaid.esm.min/$chunk" -o "assets/mermaid/chunks/mermaid.esm.min/$chunk"
+          done
+          echo "Mermaid $LAT: downloaded $(echo "$CHUNKS" | wc -l) chunks"
           sed -i "s/mermaid_version.*'[0-9.]\+'/mermaid_version' => '$LAT'/" babel-arcaea-code.php
-          echo "Mermaid $LAT downloaded"
 
       # ── Prism.js ──
       - name: Check Prism.js
