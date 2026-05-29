@@ -27,6 +27,30 @@
     return window.mermaid;
   }
 
+  function normalizeMermaidSvg(el) {
+    const svg = el.querySelector('svg');
+    if (!svg) return;
+
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+
+    svg.style.width = 'auto';
+    svg.style.height = 'auto';
+    svg.style.maxWidth = 'none';
+    svg.style.maxHeight = 'none';
+
+    const viewBox = svg.getAttribute('viewBox');
+    if (!viewBox) return;
+
+    const parts = viewBox.trim().split(/\s+/).map(Number);
+    const viewBoxWidth = parts[2];
+
+    if (Number.isFinite(viewBoxWidth)) {
+      const readableWidth = Math.max(960, Math.min(viewBoxWidth, 1600));
+      svg.style.width = readableWidth + 'px';
+    }
+  }
+
   async function renderMermaid(root) {
     const diagrams = root.querySelectorAll(
       '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"])'
@@ -38,8 +62,21 @@
       startOnLoad: false,
       securityLevel: 'strict',
       theme: 'base',
-      flowchart: { htmlLabels: false, curve: 'basis', padding: 24, nodeSpacing: 48, rankSpacing: 64 },
-      sequence: { mirrorActors: false, rightAngles: false, diagramMarginX: 32, diagramMarginY: 24 },
+      flowchart: {
+        htmlLabels: false,
+        useMaxWidth: false,
+        curve: 'basis',
+        padding: 8,
+        nodeSpacing: 24,
+        rankSpacing: 32
+      },
+      sequence: {
+        useMaxWidth: false,
+        mirrorActors: false,
+        rightAngles: false,
+        diagramMarginX: 16,
+        diagramMarginY: 16
+      },
       themeVariables: {
         darkMode: true, background: 'transparent',
         primaryColor: '#202a40', primaryTextColor: '#f2f8ff', primaryBorderColor: '#9fd2ff',
@@ -58,8 +95,7 @@
 
     diagrams.forEach((el) => {
       el.dataset.arcaeaRendered = '1';
-      const svg = el.querySelector('svg');
-      if (svg) { svg.removeAttribute('height'); svg.style.maxWidth = '100%'; svg.style.height = 'auto'; }
+      normalizeMermaidSvg(el);
     });
     console.log(LOG, 'Mermaid rendered:', diagrams.length);
   }
