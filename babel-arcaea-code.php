@@ -125,21 +125,24 @@ add_action('wp_enqueue_scripts', function () {
         wp_enqueue_style('bac-prism-toolbar', $base . 'prism/prism-toolbar.css', [], BAC_VERSION);
         if ($o['prism_line_numbers']) {
             wp_enqueue_style('bac-prism-ln', $base . 'prism/prism-line-numbers.css', [], BAC_VERSION);
+            wp_enqueue_style('bac-prism-lh', $base . 'prism/prism-line-highlight.css', [], BAC_VERSION);
         }
     }
 
-    // Prism JS (footer)
+    // Prism JS — explicit dependency chain
     if ($o['prism_enabled']) {
         wp_enqueue_script('bac-prism-core', $base . 'prism/prism.js', [], BAC_VERSION, true);
         wp_enqueue_script('bac-prism-autoloader', $base . 'prism/prism-autoloader.js', ['bac-prism-core'], BAC_VERSION, true);
         wp_enqueue_script('bac-prism-toolbar', $base . 'prism/prism-toolbar.js', ['bac-prism-core'], BAC_VERSION, true);
+        // Show language name on code blocks
+        wp_enqueue_script('bac-prism-lang', $base . 'prism/prism-show-language.js', ['bac-prism-toolbar'], BAC_VERSION, true);
         if ($o['prism_copy']) {
             wp_enqueue_script('bac-prism-copy', $base . 'prism/prism-copy.js', ['bac-prism-toolbar'], BAC_VERSION, true);
         }
         if ($o['prism_line_numbers']) {
             wp_enqueue_script('bac-prism-ln', $base . 'prism/prism-line-numbers.js', ['bac-prism-core'], BAC_VERSION, true);
+            wp_enqueue_script('bac-prism-lh', $base . 'prism/prism-line-highlight.js', ['bac-prism-core'], BAC_VERSION, true);
         }
-        // Set autoloader language path
         wp_localize_script('bac-prism-autoloader', 'BAC_Prism', [
             'langPath' => $base . 'prism/components/',
         ]);
@@ -152,6 +155,14 @@ add_action('wp_enqueue_scripts', function () {
         wp_localize_script('bac-mermaid-init', 'BAC_Mermaid', [
             'mermaidUrl' => $base . 'mermaid/mermaid.esm.min.mjs',
         ]);
+    }
+
+    // Image zoom
+    wp_enqueue_script('bac-medium-zoom', $base . 'js/medium-zoom.min.js', [], '1.1.0', true);
+    // Make mermaid-init.js depend on medium-zoom
+    if ($o['mermaid_enabled']) {
+        $deps = wp_scripts()->query('bac-mermaid-init');
+        if ($deps) $deps->deps[] = 'bac-medium-zoom';
     }
 
     // MathJax
