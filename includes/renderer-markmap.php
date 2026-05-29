@@ -285,12 +285,14 @@ function bac_markmap_prerender_on_save($post_id, $post, $update) {
 add_action('save_post', 'bac_markmap_prerender_on_save', 10, 3);
 
 /* ── the_content filter: serve pre-rendered SVG or client-side fallback ── */
-
+// Priority 11 to match original behavior — run after wpautop.
 add_filter('the_content', function ($content) {
     $o = bac_options();
     if (!$o['enabled'] || empty($o['markmap_enabled'])) return $content;
 
     // Match language-markmap, lang-markmap, or bare markmap class.
+    // Priority 11 ensures we run after wpautop so we can strip its <br /> tags.
+// priority 11
     $pattern = '/<pre[^>]*>\s*<code[^>]*class=(["\'])(?=[^"\']*\b(?:language-markmap|lang-markmap|markmap)\b)[^"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
 
     return preg_replace_callback($pattern, function ($m) {

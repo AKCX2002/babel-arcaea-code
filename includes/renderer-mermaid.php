@@ -18,6 +18,7 @@ if (!defined('ABSPATH')) exit;
 add_filter('the_content', function ($content) {
     $o = bac_options();
     if (!$o['enabled'] || !$o['mermaid_enabled']) return $content;
+// priority 11
 
     // Match language-mermaid, lang-mermaid, or bare mermaid class.
     $pattern = '/<pre[^>]*>\s*<code[^>]*class=(["\'])(?=[^"\']*\b(?:language-mermaid|lang-mermaid|mermaid)\b)[^"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
