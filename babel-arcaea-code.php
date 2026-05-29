@@ -50,21 +50,23 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links)
 /* ── Options ── */
 function bac_defaults() {
     return [
-        'enabled'                  => 1,
-        'prism_enabled'            => 1,
-        'mermaid_enabled'          => 1,
-        'mathjax_enabled'          => 0,
-        'markmap_enabled'          => 0,
-        'markmap_runtime'          => 'cdn',
-        'mermaid_version'          => '11.15.0',
-        'prism_version'            => '1.30.0',
-        'mathjax_version'          => '3.2.2',
-        'prism_line_numbers'       => 1,
-        'prism_copy'               => 1,
-        'prism_braces'             => 1,
-        'prism_previewers'         => 1,
-        'prism_theme'              => 'arcaea_dark',
-        'disable_sakurairo_prism'  => 1,
+        'enabled'                     => 1,
+        'prism_enabled'               => 1,
+        'mermaid_enabled'             => 1,
+        'mathjax_enabled'             => 0,
+        'markmap_enabled'             => 0,
+        'markmap_runtime'             => 'local',
+        'mermaid_version'             => '11.15.0',
+        'prism_version'               => '1.30.0',
+        'mathjax_version'             => '3.2.2',
+        'prism_line_numbers'          => 1,
+        'prism_copy'                  => 1,
+        'prism_braces'                => 1,
+        'prism_previewers'            => 1,
+        'prism_theme'                 => 'arcaea_dark',
+        'disable_sakurairo_prism'     => 1,
+        'aplayer_safe_patch'          => 0,
+        'suppress_lightgallery_warn'  => 0,
     ];
 }
 
@@ -101,6 +103,8 @@ add_action('admin_init', function () {
             ? sanitize_key($in['prism_theme'])
             : $d['prism_theme'];
         $out['disable_sakurairo_prism'] = !empty($in['disable_sakurairo_prism']) ? 1 : 0;
+        $out['aplayer_safe_patch'] = !empty($in['aplayer_safe_patch']) ? 1 : 0;
+        $out['suppress_lightgallery_warn'] = !empty($in['suppress_lightgallery_warn']) ? 1 : 0;
 
         return $out;
     });
@@ -121,10 +125,12 @@ add_action('admin_menu', function () {
             <tr><th>MathJax</th><td><label><input type="checkbox" name="bac_options[mathjax_enabled]" value="1" <?php checked($o['mathjax_enabled'],1); ?>> 启用 MathJax 数学公式</label><p class="description">需先在 Githuber MD 设置中开启 MathJax，插件负责本地化加载。</p></td></tr>
             <tr><th>Markmap</th><td><label><input type="checkbox" name="bac_options[markmap_enabled]" value="1" <?php checked($o['markmap_enabled'],1); ?>> 启用 Markmap 思维导图</label><p class="description">支持 language-markmap 代码块和 [markmap]...[/markmap]。大型图建议后续使用 iframe/预渲染模式。</p></td></tr>
             <tr><th>Markmap Runtime</th><td><select name="bac_options[markmap_runtime]">
-                <option value="cdn" <?php selected($o['markmap_runtime'],'cdn'); ?>>CDN 调试模式</option>
                 <option value="local" <?php selected($o['markmap_runtime'],'local'); ?>>本地资源模式</option>
-            </select><p class="description">正式站点推荐本地资源；当前 local 需要自行放置 assets/markmap/vendor 运行时文件。</p></td></tr>
+                <option value="cdn" <?php selected($o['markmap_runtime'],'cdn'); ?>>CDN 调试模式</option>
+            </select><p class="description">正式站点推荐本地资源；CDN 仅建议临时调试。local 需要存在 assets/markmap/vendor 运行时文件。</p></td></tr>
             <tr><th>Sakurairo Prism</th><td><label><input type="checkbox" name="bac_options[disable_sakurairo_prism]" value="1" <?php checked($o['disable_sakurairo_prism'],1); ?>> 禁用主题自带 Prism</label></td></tr>
+            <tr><th>Sakurairo APlayer 兼容</th><td><label><input type="checkbox" name="bac_options[aplayer_safe_patch]" value="1" <?php checked($o['aplayer_safe_patch'],1); ?>> APlayer 容器缺失时跳过初始化</label><p class="description">仅在主题 APlayer 报 container missing / init 错误时启用，默认关闭。</p></td></tr>
+            <tr><th>LightGallery 警告抑制</th><td><label><input type="checkbox" name="bac_options[suppress_lightgallery_warn]" value="1" <?php checked($o['suppress_lightgallery_warn'],1); ?>> 抑制 LightGallery license warning</label><p class="description">调试阶段建议关闭，避免隐藏真实前端警告。</p></td></tr>
             <tr><th>Prism 主题</th><td><select name="bac_options[prism_theme]">
                 <option value="arcaea_dark" <?php selected($o['prism_theme'],'arcaea_dark'); ?>>Arcaea Dark</option>
                 <option value="arcaea_light" <?php selected($o['prism_theme'],'arcaea_light'); ?>>Arcaea Light</option>
@@ -159,18 +165,17 @@ add_action('wp_enqueue_scripts', function () {
     $o = bac_options();
     if (!$o['enabled'] || !$o['disable_sakurairo_prism']) return;
 
-    wp_dequeue_style('prism-style');
-    wp_dequeue_script('prism-script');
-    wp_dequeue_style('prism-toolbar');
-    wp_dequeue_script('prism-toolbar');
-    wp_dequeue_style('prism-line-numbers');
-    wp_dequeue_script('prism-line-numbers');
-    wp_dequeue_style('prism-autoloader');
-    wp_dequeue_script('prism-autoloader');
+    $styles = ['prism-style', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader', 'code-highlight'];
+    foreach ($styles as $handle) {
+        wp_dequeue_style($handle);
+        wp_deregister_style($handle);
+    }
 
-    // Sakurairo uses webpack-bundled names.
-    wp_dequeue_script('code-highlight');
-    wp_dequeue_style('code-highlight');
+    $scripts = ['prism-script', 'prism-toolbar', 'prism-line-numbers', 'prism-autoloader', 'code-highlight'];
+    foreach ($scripts as $handle) {
+        wp_dequeue_script($handle);
+        wp_deregister_script($handle);
+    }
 }, 999);
 
 /* ── Enqueue local Prism + Mermaid ── */
@@ -236,6 +241,11 @@ add_action('wp_enqueue_scripts', function () {
         wp_localize_script('bac-prism-autoloader', 'BAC_Prism', [
             'langPath' => esc_url_raw($base . 'prism/components/'),
         ]);
+        wp_add_inline_script(
+            'bac-prism-autoloader',
+            'if(window.Prism&&Prism.plugins&&Prism.plugins.autoloader&&window.BAC_Prism){Prism.plugins.autoloader.languages_path=BAC_Prism.langPath;}',
+            'after'
+        );
     }
 
     // Mermaid bootstrap also owns Prism re-scan, PJAX re-init and image zoom.
@@ -256,10 +266,10 @@ add_action('wp_enqueue_scripts', function () {
     if (!empty($o['markmap_enabled'])) {
         wp_enqueue_style('bac-markmap', $base . 'markmap/markmap.css', [], BAC_VERSION);
 
-        if (($o['markmap_runtime'] ?? 'cdn') === 'cdn') {
-            wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7', [], '7', true);
-            wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view', ['bac-markmap-d3'], BAC_VERSION, true);
-            wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib', ['bac-markmap-view'], BAC_VERSION, true);
+        if (($o['markmap_runtime'] ?? 'local') === 'cdn') {
+            wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js', [], '7.9.0', true);
+            wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js', ['bac-markmap-d3'], '0.18.12', true);
+            wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib@0.18.12/dist/browser/index.js', ['bac-markmap-view'], '0.18.12', true);
             wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
         } else {
             wp_enqueue_script('bac-markmap-d3', $base . 'markmap/vendor/d3.min.js', [], BAC_VERSION, true);
@@ -276,28 +286,32 @@ add_action('wp_enqueue_scripts', function () {
         $deps->deps[] = 'bac-medium-zoom';
     }
 
-    // Suppress LightGallery license warning (Sakurairo theme bundled).
-    add_action('wp_head', function () {
-        ?><script>
+    // Optional: suppress LightGallery license warning (Sakurairo theme bundled).
+    if (!empty($o['suppress_lightgallery_warn'])) {
+        add_action('wp_head', function () {
+            ?><script>
 (function(){var cw=console.warn;console.warn=function(){var m=Array.prototype.join.call(arguments,' ');
 if(m.indexOf('license key')>=0||m.indexOf('LightGallery')>=0)return;return cw.apply(console,arguments);};})();
 </script><?php
-    }, 999);
+        }, 999);
+    }
 
-    // Safe-patch APlayer init: skip if container missing (Sakurairo theme).
-    add_action('wp_head', function () {
-        ?><script>
+    // Optional: safe-patch APlayer init, skip if container missing (Sakurairo theme).
+    if (!empty($o['aplayer_safe_patch'])) {
+        add_action('wp_head', function () {
+            ?><script>
 (function(){
 var _A=window.APlayer;
 Object.defineProperty(window,'APlayer',{get:function(){return _A;},set:function(v){
 if(v&&v.prototype&&v.prototype.init){
 var O=v.prototype.init;v.prototype.init=function(){
-if(typeof this.options.container==='string'&&!document.querySelector(this.options.container))return;
+if(this.options&&typeof this.options.container==='string'&&!document.querySelector(this.options.container))return;
 return O.apply(this,arguments);};}
 _A=v;},configurable:true});
 if(_A)window.APlayer=_A;})();
 </script><?php
-    }, 0);
+        }, 0);
+    }
 
     // MathJax.
     if ($o['mathjax_enabled']) {
@@ -314,10 +328,10 @@ add_filter('the_content', function ($content) {
     $o = bac_options();
     if (!$o['enabled'] || !$o['mermaid_enabled']) return $content;
 
-    $pattern = '/<pre[^>]*>\s*<code[^>]*class="[^"]*language-mermaid[^"]*"[^>]*>(.*?)<\/code>\s*<\/pre>/si';
+    $pattern = '/<pre[^>]*>\s*<code[^>]*class=(["\'])(?=[^"\']*\blanguage-mermaid\b)[^"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
 
     return preg_replace_callback($pattern, function ($m) {
-        $code = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $code = trim(html_entity_decode($m[2], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if (!$code) return $m[0];
 
         // Strip <br /> that wpautop inserted inside the code block.
@@ -335,10 +349,10 @@ add_filter('the_content', function ($content) {
     $o = bac_options();
     if (!$o['enabled'] || empty($o['markmap_enabled'])) return $content;
 
-    $pattern = '/<pre[^>]*>\s*<code[^>]*class="[^"]*language-markmap[^"]*"[^>]*>(.*?)<\/code>\s*<\/pre>/si';
+    $pattern = '/<pre[^>]*>\s*<code[^>]*class=(["\'])(?=[^"\']*\blanguage-markmap\b)[^"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
 
     return preg_replace_callback($pattern, function ($m) {
-        $code = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $code = trim(html_entity_decode($m[2], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if (!$code) return $m[0];
 
         $code = preg_replace('/<br\s*\/?>/i', "\n", $code);
@@ -353,6 +367,9 @@ add_filter('the_content', function ($content) {
 
 /* ── Shortcode ── */
 add_shortcode('mermaid', function ($atts, $content = null) {
+    $o = bac_options();
+    if (!$o['enabled'] || empty($o['mermaid_enabled'])) return '';
+
     $content = html_entity_decode(trim((string)$content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $content = strip_tags($content);
     if (!$content) return '';
@@ -375,16 +392,3 @@ add_shortcode('markmap', function ($atts, $content = null) {
         . '<svg class="arcaea-markmap-diagram"></svg>'
         . '</div>';
 });
-
-/* ── Autoloader path filter for Prism ── */
-add_action('wp_footer', function () {
-    if (!bac_options()['prism_enabled']) return;
-    ?>
-    <script>
-    (function(){
-    if(window.Prism&&Prism.plugins.autoloader){
-    Prism.plugins.autoloader.languages_path=window.BAC_Prism?BAC_Prism.langPath:
-    '<?php echo esc_js(BAC_PLUGIN_URL); ?>assets/prism/components/';}})();
-    </script>
-    <?php
-}, 1);
