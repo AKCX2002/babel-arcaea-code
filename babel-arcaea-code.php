@@ -3,14 +3,14 @@
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
  * Description: Unified Prism.js + Mermaid + MathJax renderer. Local assets, no CDN. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
- * Version: 1.0.20
+ * Version: 1.0.21
  * Author: Babel36acl
  * License: GPL-2.0-or-later
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('BAC_VERSION', '1.0.20');
+define('BAC_VERSION', '1.0.21');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -117,7 +117,7 @@ add_action('admin_menu', function () {
             <tr><th>Prism 主题</th><td><select name="bac_options[prism_theme]">
                 <option value="arcaea_dark" <?php selected($o['prism_theme'],'arcaea_dark'); ?>>Arcaea Dark</option>
                 <option value="arcaea_light" <?php selected($o['prism_theme'],'arcaea_light'); ?>>Arcaea Light</option>
-            </select></td></tr>
+            </select><p class="description">Sakurairo 默认建议使用 Arcaea Dark。</p></td></tr>
             <tr><th>行号</th><td><label><input type="checkbox" name="bac_options[prism_line_numbers]" value="1" <?php checked($o['prism_line_numbers'],1); ?>> 显示行号</label></td></tr>
             <tr><th>复制</th><td><label><input type="checkbox" name="bac_options[prism_copy]" value="1" <?php checked($o['prism_copy'],1); ?>> 代码块复制按钮</label></td></tr>
             <tr><th>括号匹配</th><td><label><input type="checkbox" name="bac_options[prism_braces]" value="1" <?php checked($o['prism_braces'],1); ?>> Prism Match Braces</label></td></tr>
@@ -173,16 +173,23 @@ add_action('wp_enqueue_scripts', function () {
 
     // Prism CSS.
     if ($o['prism_enabled']) {
-        wp_enqueue_style('bac-prism', $base . 'prism/prism.css', [], BAC_VERSION);
-        wp_enqueue_style('bac-prism-toolbar', $base . 'prism/prism-toolbar.css', [], BAC_VERSION);
+        $theme = in_array($o['prism_theme'] ?? '', ['arcaea_dark','arcaea_light'], true)
+            ? $o['prism_theme']
+            : 'arcaea_dark';
+        $theme_file = $theme === 'arcaea_light' ? 'arcaea-light.css' : 'arcaea-dark.css';
+
+        wp_enqueue_style('bac-prism-base', $base . 'prism/prism.css', [], BAC_VERSION);
+        wp_enqueue_style('bac-prism-toolbar', $base . 'prism/prism-toolbar.css', ['bac-prism-base'], BAC_VERSION);
+        wp_enqueue_style('bac-prism-arcaea-common', $base . 'prism/themes/arcaea-common.css', ['bac-prism-toolbar'], BAC_VERSION);
+        wp_enqueue_style('bac-prism-arcaea-theme', $base . 'prism/themes/' . $theme_file, ['bac-prism-arcaea-common'], BAC_VERSION);
 
         if ($o['prism_line_numbers']) {
-            wp_enqueue_style('bac-prism-ln', $base . 'prism/prism-line-numbers.css', [], BAC_VERSION);
-            wp_enqueue_style('bac-prism-lh', $base . 'prism/prism-line-highlight.css', [], BAC_VERSION);
+            wp_enqueue_style('bac-prism-ln', $base . 'prism/prism-line-numbers.css', ['bac-prism-arcaea-theme'], BAC_VERSION);
+            wp_enqueue_style('bac-prism-lh', $base . 'prism/prism-line-highlight.css', ['bac-prism-arcaea-theme'], BAC_VERSION);
         }
 
         if ($o['prism_previewers']) {
-            wp_enqueue_style('bac-prism-previewers', $base . 'prism/prism-previewers.css', [], BAC_VERSION);
+            wp_enqueue_style('bac-prism-previewers', $base . 'prism/prism-previewers.css', ['bac-prism-arcaea-theme'], BAC_VERSION);
             wp_enqueue_style('bac-prism-previewers-arcaea', $base . 'prism/prism-previewers-arcaea.css', ['bac-prism-previewers'], BAC_VERSION);
         }
     }
