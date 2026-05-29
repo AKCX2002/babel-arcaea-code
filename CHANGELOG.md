@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.4
+
+### Fixed
+
+- **Settings link broken**: Plugin action link "设置" pointed to `options-general.php?page=babel-arcaea-code` which no longer exists after the admin page was migrated to a standalone top-level menu (`add_menu_page`). Fixed to point to `admin.php?page=babel-arcaea-code`.
+
 ## 1.4.3
 
 ### Fixed
