@@ -1,0 +1,62 @@
+name: Sync Markmap Assets
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '26 3 * * 1'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-markmap-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pinned Markmap runtime packages
+        run: |
+          npm init -y
+          npm install --save-exact d3@7 markmap-lib markmap-view
+
+      - name: Copy browser runtime assets
+        run: |
+          mkdir -p assets/markmap/vendor
+
+          cp node_modules/d3/dist/d3.min.js assets/markmap/vendor/d3.min.js
+          cp node_modules/markmap-view/dist/browser/index.js assets/markmap/vendor/markmap-view.min.js
+          cp node_modules/markmap-lib/dist/browser/index.js assets/markmap/vendor/markmap-lib.min.js
+
+          cat > assets/markmap/vendor/versions.json <<EOF
+          {
+            "d3": "$(node -p "require('./node_modules/d3/package.json').version")",
+            "markmap-lib": "$(node -p "require('./node_modules/markmap-lib/package.json').version")",
+            "markmap-view": "$(node -p "require('./node_modules/markmap-view/package.json').version")"
+          }
+          EOF
+
+      - name: Verify vendor files
+        run: |
+          test -s assets/markmap/vendor/d3.min.js
+          test -s assets/markmap/vendor/markmap-view.min.js
+          test -s assets/markmap/vendor/markmap-lib.min.js
+          test -s assets/markmap/vendor/versions.json
+
+      - name: Commit updated Markmap assets
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: sync Markmap vendor assets [skip ci]"
+          file_pattern: |
+            package.json
+            package-lock.json
+            assets/markmap/vendor/d3.min.js
+            assets/markmap/vendor/markmap-view.min.js
+            assets/markmap/vendor/markmap-lib.min.js
+            assets/markmap/vendor/versions.json
