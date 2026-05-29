@@ -214,14 +214,21 @@ if(m.indexOf('license key')>=0||m.indexOf('LightGallery')>=0)return;return cw.ap
     }, 999);
 
     // Safe-patch APlayer init: skip if container missing (Sakurairo theme)
-    add_action('wp_footer', function () {
+    // Uses Object.defineProperty to intercept APlayer constructor assignment,
+    // regardless of when the theme's webpack chunk loads it asynchronously.
+    add_action('wp_head', function () {
         ?><script>
-(function(){var A=window.APlayer;if(!A)return;
-var O=A.prototype.init;A.prototype.init=function(){
+(function(){
+var _A=window.APlayer;
+Object.defineProperty(window,'APlayer',{get:function(){return _A;},set:function(v){
+if(v&&v.prototype&&v.prototype.init){
+var O=v.prototype.init;v.prototype.init=function(){
 if(typeof this.options.container==='string'&&!document.querySelector(this.options.container))return;
-return O.apply(this,arguments);};})();
+return O.apply(this,arguments);};}
+_A=v;},configurable:true});
+if(_A)window.APlayer=_A;})();
 </script><?php
-    }, 1);
+    }, 0);
 
     // MathJax
     if ($o['mathjax_enabled']) {
