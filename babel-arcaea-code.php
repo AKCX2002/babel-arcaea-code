@@ -3,14 +3,14 @@
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
  * Description: Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
- * Version: 1.0.26
+ * Version: 1.1.0
  * Author: Babel36acl
  * License: GPL-2.0-or-later
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('BAC_VERSION', '1.0.26');
+define('BAC_VERSION', '1.1.0');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -28,12 +28,15 @@ add_action('plugins_loaded', function () {
     );
     $uc->getVcsApi()->enableReleaseAssets();
 
-    $token = getenv('GH_TOKEN') ?: getenv('GITHUB_TOKEN');
-    if ($token) {
-        try {
-            $uc->getVcsApi()->setAuthentication($token);
-        } catch (\Exception $e) {
-            // Keep plugin boot safe even if PUC auth fails.
+    if (defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
+        $token = getenv('GH_TOKEN') ?: getenv('GITHUB_TOKEN');
+
+        if ($token) {
+            try {
+                $uc->getVcsApi()->setAuthentication($token);
+            } catch (\Exception $e) {
+                // Keep plugin boot safe even if PUC auth fails.
+            }
         }
     }
 });

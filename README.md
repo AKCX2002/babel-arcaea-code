@@ -122,6 +122,51 @@ c, cpp, bash, python, json, yaml, cmake, makefile, dart,
 javascript, typescript, rust, go, php, markdown, css, diff,
 ini, toml, xml (+ autoloader 按需加载其他语言)
 
+## WordPress 推荐配置
+
+### WP Githuber MD
+
+```
+- 关闭内置 Prism / Highlight.js
+- 关闭内置 Mermaid 渲染
+- MathJax 可只保留语法输出，脚本由本插件加载
+```
+
+### Sakurairo
+
+```
+- 禁用主题自带 Prism（插件默认已勾选）
+- 如使用 medium-zoom，可关闭 LightGallery
+- APlayer 修复开关仅在报错时开启
+```
+
+### Markmap
+
+```
+- 正式站点推荐 local 模式
+- CDN 仅用于调试
+- local 模式必须存在 assets/markmap/vendor/ 运行时文件
+```
+
+## 发布包检查
+
+发布前确认以下文件完整：
+
+```
+babel-arcaea-code.php
+assets/prism/prism.js
+assets/prism/components/
+assets/mermaid/mermaid.esm.min.mjs
+assets/mermaid/chunks/
+assets/markmap/vendor/d3.min.js
+assets/markmap/vendor/markmap-view.min.js
+assets/markmap/vendor/markmap-lib.min.js
+assets/markmap/vendor/versions.json
+assets/mathjax/es5/tex-chtml.js
+assets/js/medium-zoom.min.js
+lib/plugin-update-checker.php
+```
+
 ## License
 
 GPL-2.0-or-later
