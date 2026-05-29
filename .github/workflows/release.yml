@@ -9,20 +9,12 @@ on:
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Version bump type (patch/minor/major)'
-        required: true
-        default: 'patch'
-        type: choice
-        options: [patch, minor, major]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  # ── Job 1: Auto-bump + release (unchanged) ──
   bump-and-release:
     if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
@@ -31,16 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Auto-bump patch version
+      - name: Auto-bump
         id: bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
-          MAJOR=$(echo "$CUR" | cut -d. -f1)
-          MINOR=$(echo "$CUR" | cut -d. -f2)
-          PATCH=$(echo "$CUR" | cut -d. -f3)
-          NEW="$MAJOR.$MINOR.$((PATCH + 1))"
+          IFS=. read -r MAJ MIN PAT <<< "$CUR"
+          NEW="$MAJ.$MIN.$((PAT+1))"
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
           sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
           sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
@@ -48,7 +38,7 @@ jobs:
           git commit -m "chore: bump $CUR → $NEW [skip ci]"
           git push
 
-      - name: Build plugin zip
+      - name: Build zip
         id: build
         run: |
           VER="${{ steps.bump.outputs.new_version }}"
@@ -57,7 +47,6 @@ jobs:
           cp -r babel-arcaea-code.php assets lib /tmp/plugin/
           cd /tmp && mv plugin "babel-arcaea-code"
           zip -r "$ZIPNAME" "babel-arcaea-code/" -x "*.git*" "*.DS_Store"
-          ls -lh "$ZIPNAME"
           echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
@@ -66,97 +55,89 @@ jobs:
           VERSION: ${{ steps.bump.outputs.new_version }}
           ZIPNAME: ${{ steps.build.outputs.zipname }}
         run: |
-          gh release create "v$VERSION" \
-            --title "v$VERSION" \
-            --notes "See [CHANGELOG](https://github.com/${{ github.repository }}/commits/v$VERSION)" \
-            "/tmp/$ZIPNAME"
+          gh release create "v$VERSION" --title "v$VERSION" \
+            --notes "See [CHANGELOG](https://github.com/${{ github.repository }}/commits/v$VERSION)" "/tmp/$ZIPNAME"
 
-  # ── Job 2: Daily sync Prism.js + Mermaid.js ──
+  # ── Daily sync ALL JS deps ──
   sync-deps:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # ── Mermaid ──
+      # ── 1. Mermaid ──
       - name: Check Mermaid
         id: mermaid
         run: |
-          CUR=$(grep -oP "mermaid_version.*?'\K[0-9.]+" babel-arcaea-code.php | head -1)
+          CUR=$(grep -oP "mermaid_version.*?'\K[0-9.]+" babel-arcaea-code.php)
           LAT=$(curl -sL "https://api.github.com/repos/mermaid-js/mermaid/releases/latest" | grep '"tag_name"' | head -1 | grep -oP '[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          if [ "$CUR" = "$LAT" ]; then echo "changed=false" >> "$GITHUB_OUTPUT"; else echo "changed=true" >> "$GITHUB_OUTPUT"; fi
-          echo "Mermaid: $CUR → $LAT"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Download new Mermaid
+      - name: Download Mermaid
         if: steps.mermaid.outputs.changed == 'true'
         run: |
-          LAT="${{ steps.mermaid.outputs.latest }}"
-          BASE="https://cdn.jsdelivr.net/npm/mermaid@${LAT}/dist"
-          # Main ESM module
-          curl -sL "$BASE/mermaid.esm.min.mjs" -o assets/mermaid/mermaid.esm.min.mjs
-          # Chunk files (required by ESM dynamic import)
-          mkdir -p assets/mermaid/chunks/mermaid.esm.min
-          # Fetch chunk list from API
-          CHUNKS=$(curl -sL "https://data.jsdelivr.com/v1/packages/npm/mermaid@${LAT}" | \
-            grep -oP 'dist/chunks/mermaid\.esm\.min/\K[^"]+\.mjs' | sort -u)
-          for chunk in $CHUNKS; do
-            curl -sL "$BASE/chunks/mermaid.esm.min/$chunk" -o "assets/mermaid/chunks/mermaid.esm.min/$chunk"
-          done
-          echo "Mermaid $LAT: downloaded $(echo "$CHUNKS" | wc -l) chunks"
-          sed -i "s/mermaid_version.*'[0-9.]\+'/mermaid_version' => '$LAT'/" babel-arcaea-code.php
+          bash download-mermaid.sh "${{ steps.mermaid.outputs.latest }}"
+          sed -i "s/mermaid_version.*'[0-9.]\+'/mermaid_version' => '${{ steps.mermaid.outputs.latest }}'/" babel-arcaea-code.php
 
-      # ── Prism.js ──
-      - name: Check Prism.js
+      # ── 2. Prism.js ──
+      - name: Check Prism
         id: prism
         run: |
-          CUR=$(grep -oP "prism_version.*?'\K[0-9.]+" babel-arcaea-code.php | head -1)
+          CUR=$(grep -oP "prism_version.*?'\K[0-9.]+" babel-arcaea-code.php)
           LAT=$(curl -sL "https://registry.npmjs.org/prismjs/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          if [ "$CUR" = "$LAT" ]; then echo "changed=false" >> "$GITHUB_OUTPUT"; else echo "changed=true" >> "$GITHUB_OUTPUT"; fi
-          echo "Prism.js: $CUR → $LAT"
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Download new Prism
+      - name: Download Prism
         if: steps.prism.outputs.changed == 'true'
         run: |
-          LAT="${{ steps.prism.outputs.latest }}"
-          BASE="https://cdn.jsdelivr.net/npm/prismjs@${LAT}"
-          curl -sL "$BASE/prism.min.js" -o assets/prism/prism.js
-          curl -sL "$BASE/themes/prism-okaidia.min.css" -o assets/prism/prism.css
-          curl -sL "$BASE/plugins/toolbar/prism-toolbar.min.js" -o assets/prism/prism-toolbar.js
-          curl -sL "$BASE/plugins/toolbar/prism-toolbar.min.css" -o assets/prism/prism-toolbar.css
-          curl -sL "$BASE/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js" -o assets/prism/prism-copy.js
-          curl -sL "$BASE/plugins/line-numbers/prism-line-numbers.min.js" -o assets/prism/prism-line-numbers.js
-          curl -sL "$BASE/plugins/line-numbers/prism-line-numbers.min.css" -o assets/prism/prism-line-numbers.css
-          curl -sL "$BASE/plugins/autoloader/prism-autoloader.min.js" -o assets/prism/prism-autoloader.js
-          for lang in c cpp bash python json yaml cmake makefile dart javascript typescript rust go php markdown css diff ini toml xml; do
-            curl -sL "$BASE/components/prism-${lang}.min.js" -o "assets/prism/components/prism-${lang}.js"
+          LAT="${{ steps.prism.outputs.latest }}"; B="https://cdn.jsdelivr.net/npm/prismjs@${LAT}"
+          for f in prism.min.js prism.css prism-toolbar.min.js prism-toolbar.min.css prism-copy-to-clipboard.min.js prism-line-numbers.min.js prism-line-numbers.min.css prism-autoloader.min.js; do
+            curl -sL "$B/$(echo $f | sed 's/prism/prism/' | sed 's/-copy-to-clipboard/-copy/')" -o "assets/prism/$(echo $f | sed 's/^prism-//' | sed 's/^prism/prism/' | sed 's/^prism/prism/')" 2>/dev/null || :
           done
-          # Medium-zoom
-          curl -sL "https://cdn.jsdelivr.net/npm/medium-zoom@latest/dist/medium-zoom.min.js" -o assets/js/medium-zoom.min.js
+          curl -sL "$B/plugins/show-language/prism-show-language.min.js" -o assets/prism/prism-show-language.js
+          curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.js" -o assets/prism/prism-line-highlight.js
+          curl -sL "$B/plugins/line-highlight/prism-line-highlight.min.css" -o assets/prism/prism-line-highlight.css
+          for lang in c cpp bash python json yaml cmake makefile dart javascript typescript rust go php markdown css diff ini toml xml; do
+            curl -sL "$B/components/prism-${lang}.min.js" -o "assets/prism/components/prism-${lang}.js"
+          done
+          curl -sL "https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" -o assets/js/medium-zoom.min.js
           sed -i "s/prism_version.*'[0-9.]\+'/prism_version' => '$LAT'/" babel-arcaea-code.php
-          echo "Prism.js $LAT downloaded"
 
-      # ── Any dep changed → PR ──
+      # ── 3. MathJax ──
+      - name: Check MathJax
+        id: mathjax
+        run: |
+          CUR=$(grep -oP "mathjax_version.*?'\K[0-9.]+" babel-arcaea-code.php)
+          LAT=$(curl -sL "https://registry.npmjs.org/mathjax/latest" | grep -oP '"version":"\K[0-9.]+')
+          echo "current=$CUR" >> "$GITHUB_OUTPUT"; echo "latest=$LAT" >> "$GITHUB_OUTPUT"
+          [ "$CUR" = "$LAT" ] && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Download MathJax
+        if: steps.mathjax.outputs.changed == 'true'
+        run: |
+          LAT="${{ steps.mathjax.outputs.latest }}"
+          curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${LAT}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
+          echo "MathJax $LAT: $(du -sh assets/mathjax/es5/tex-chtml.js)"
+          sed -i "s/mathjax_version.*'[0-9.]\+'/mathjax_version' => '$LAT'/" babel-arcaea-code.php
+
+      # ── PR if any dep changed ──
       - name: Create PR
-        if: steps.mermaid.outputs.changed == 'true' || steps.prism.outputs.changed == 'true'
+        if: steps.mermaid.outputs.changed == 'true' || steps.prism.outputs.changed == 'true' || steps.mathjax.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ github.token }}
           commit-message: "chore: update deps [skip ci]"
-          title: |
-            chore: update deps${{ steps.mermaid.outputs.changed == 'true' && format(' | Mermaid {0}', steps.mermaid.outputs.latest) || '' }}${{ steps.prism.outputs.changed == 'true' && format(' | Prism.js {0}', steps.prism.outputs.latest) || '' }}
+          title: "chore: update deps${{ steps.mermaid.outputs.changed == 'true' && format(' Mermaid {0}', steps.mermaid.outputs.latest) || '' }}${{ steps.prism.outputs.changed == 'true' && format(' Prism {0}', steps.prism.outputs.latest) || '' }}${{ steps.mathjax.outputs.changed == 'true' && format(' MathJax {0}', steps.mathjax.outputs.latest) || '' }}"
           body: |
-            Automated daily dependency check.
+            Automated daily dependency update.
 
             | Dep | Current | Latest |
             |---|---|---:|
-            | **Mermaid** | `${{ steps.mermaid.outputs.current }}` | `${{ steps.mermaid.outputs.latest }}` |
-            | **Prism.js** | `${{ steps.prism.outputs.current }}` | `${{ steps.prism.outputs.latest }}` |
-
-            **Action required**: Review before merging.
+            | Mermaid | `${{ steps.mermaid.outputs.current }}` | `${{ steps.mermaid.outputs.latest }}` |
+            | Prism.js | `${{ steps.prism.outputs.current }}` | `${{ steps.prism.outputs.latest }}` |
+            | MathJax | `${{ steps.mathjax.outputs.current }}` | `${{ steps.mathjax.outputs.latest }}` |
           branch: chore/deps-bump
           base: main
           labels: automated, dependencies
