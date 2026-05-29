@@ -74,45 +74,44 @@
     svg.style.removeProperty('height');
 
     /* 精确裁剪 viewBox：
-     * 1. 跳过根级 <g>（它的 getBBox 包含空 edgePaths 的虚高）
-     * 2. 只检查实际的子内容组（clusters, nodes 等）
-     * 3. 排除 width≈0 的 phantom 元素（空 edgePaths 等）
+     * 遍历所有叶子图形元素（rect/path/text/foreignObject），
+     * 跳过 <g> 等容器组（它们的 getBBox 可能包含空 edgePaths 的虚高）。
+     * 只累加有实际宽高（>2px）的叶子元素的 bbox 范围。
      */
     try {
-      /* 找到 SVG 根下的第一个实际内容 <g> */
-      const rootG = svg.querySelector('g.root, g.clusters, g.nodes, g.edgePaths, g.edgeLabels, g.defs');
-      const contentParent = rootG ? rootG.parentElement : svg;
-
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       let found = false;
 
-      for (const child of contentParent.children) {
-        if (child.tagName === 'defs' || child.tagName === 'style') continue;
+      const collectLeafBBox = (parent) => {
+        for (const child of parent.children) {
+          if (child.tagName === 'defs' || child.tagName === 'style') continue;
 
-        /* 对每个子内容组，遍历其下所有图形元素，
-         * 只累加有实际宽高的元素的 bbox */
-        const accumulateBBox = (el) => {
-          try {
-            const bbox = el.getBBox();
-            // 排除空 edgePaths：width≈0 的不可见组
-            if (bbox.width > 2 && bbox.height > 2) {
-              if (bbox.x < minX) minX = bbox.x;
-              if (bbox.y < minY) minY = bbox.y;
-              const r = bbox.x + bbox.width;
-              const b = bbox.y + bbox.height;
-              if (r > maxX) maxX = r;
-              if (b > maxY) maxY = b;
-              found = true;
+          if (child.tagName === 'g') {
+            // 容器组：不查自身 bbox（可能含虚高），只递归进子元素
+            collectLeafBBox(child);
+          } else {
+            // 叶子图形元素：检查实际 bbox
+            try {
+              const bbox = child.getBBox();
+              if (bbox.width > 2 && bbox.height > 2) {
+                if (bbox.x < minX) minX = bbox.x;
+                if (bbox.y < minY) minY = bbox.y;
+                const r = bbox.x + bbox.width;
+                const b = bbox.y + bbox.height;
+                if (r > maxX) maxX = r;
+                if (b > maxY) maxY = b;
+                found = true;
+              }
+            } catch (e) { /* skip */ }
+            // 某些叶子元素也有子元素（如 foreignObject > div）
+            if (child.children.length > 0) {
+              collectLeafBBox(child);
             }
-          } catch (e) { /* skip elements that don't support getBBox */ }
-
-          for (const sub of el.children) {
-            accumulateBBox(sub);
           }
-        };
+        }
+      };
 
-        accumulateBBox(child);
-      }
+      collectLeafBBox(svg);
 
       if (found && Number.isFinite(minX) && Number.isFinite(minY) &&
           Number.isFinite(maxX) && Number.isFinite(maxY) &&
@@ -131,22 +130,7 @@
       console.warn(LOG, 'Mermaid SVG bbox crop skipped:', e);
     }
 
-    /* fallback: 用根 group 的 bbox */
-    try {
-      const root = svg.querySelector('g.root') || svg.querySelector('g') || svg;
-      const box = root.getBBox();
-      if (box.width > 0 && box.height > 0) {
-        const pad = 12;
-        svg.setAttribute('viewBox',
-          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${box.height + pad * 2}`
-        );
-        svg.style.maxWidth = '100%';
-        svg.style.height = 'auto';
-        return;
-      }
-    } catch (e) { /* silent */ }
-
-    /* 极端 fallback */
+    /* fallback */
     const viewBox = svg.getAttribute('viewBox');
     if (!viewBox) {
       svg.setAttribute('viewBox', '0 0 960 600');
