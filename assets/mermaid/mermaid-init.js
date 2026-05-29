@@ -73,24 +73,45 @@
     svg.style.removeProperty('width');
     svg.style.removeProperty('height');
 
-    /* 用 viewBox 精确裁剪，去掉 Mermaid 自带的额外留白 */
+    /* 精确裁剪 viewBox：遍历所有子元素，忽略不可见元素（如
+     * Mermaid 产生的空 edgePaths/edgeLabels）以免撑大 viewBox。
+     * 仅保留有实际宽高的内容节点（cluster / node / label）。 */
     try {
-      const root = svg.querySelector('g.root') || svg.querySelector('g') || svg;
-      const box = root.getBBox();
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let found = false;
 
-      if (
-        Number.isFinite(box.x) &&
-        Number.isFinite(box.y) &&
-        Number.isFinite(box.width) &&
-        Number.isFinite(box.height) &&
-        box.width > 0 &&
-        box.height > 0
-      ) {
-        const pad = 24;
-        const vw = box.width + pad * 2;
-        const vh = box.height + pad * 2;
+      const walk = (parent) => {
+        for (const child of parent.children) {
+          if (child.tagName === 'defs' || child.tagName === 'style') continue;
+          const bbox = child.getBBox();
+          const isSubTree = child.querySelector('g.cluster, g.node, g.edgePath, g.edgeLabel, g.label');
+
+          if (bbox.width > 1 || bbox.height > 1) {
+            if (bbox.x < minX) minX = bbox.x;
+            if (bbox.y < minY) minY = bbox.y;
+            const r = bbox.x + bbox.width;
+            const b = bbox.y + bbox.height;
+            if (r > maxX) maxX = r;
+            if (b > maxY) maxY = b;
+            found = true;
+          }
+          // Recurse into non-leaf groups to find child content
+          if (child.tagName === 'g' && isSubTree) {
+            walk(child);
+          }
+        }
+      };
+
+      walk(svg);
+
+      if (found && Number.isFinite(minX) && Number.isFinite(minY) &&
+          Number.isFinite(maxX) && Number.isFinite(maxY) &&
+          maxX > minX && maxY > minY) {
+        const pad = 16;
+        const vw = maxX - minX + pad * 2;
+        const vh = maxY - minY + pad * 2;
         svg.setAttribute('viewBox',
-          `${box.x - pad} ${box.y - pad} ${vw} ${vh}`
+          `${minX - pad} ${minY - pad} ${vw} ${vh}`
         );
         /* 响应式：窄屏自动缩小，宽屏显示自然尺寸 */
         svg.style.maxWidth = '100%';
@@ -101,10 +122,24 @@
       console.warn(LOG, 'Mermaid SVG bbox crop skipped:', e);
     }
 
-    /* fallback: 保留已有 viewBox */
+    /* fallback: 用根 group 的 bbox */
+    try {
+      const root = svg.querySelector('g.root') || svg.querySelector('g') || svg;
+      const box = root.getBBox();
+      if (box.width > 0 && box.height > 0) {
+        const pad = 16;
+        svg.setAttribute('viewBox',
+          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${box.height + pad * 2}`
+        );
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
+        return;
+      }
+    } catch (e) { /* silent */ }
+
+    /* 极端 fallback */
     const viewBox = svg.getAttribute('viewBox');
     if (!viewBox) {
-      /* 极端 fallback：给一个默认 viewBox */
       svg.setAttribute('viewBox', '0 0 960 600');
     }
   }
@@ -232,9 +267,9 @@
         htmlLabels: false,
         useMaxWidth: false,
         curve: 'basis',
-        padding: 8,
-        nodeSpacing: 24,
-        rankSpacing: 32
+        padding: 4,
+        nodeSpacing: 12,
+        rankSpacing: 16
       },
       sequence: {
         useMaxWidth: false,

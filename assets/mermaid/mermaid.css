@@ -108,7 +108,7 @@
   max-width: 100%;
 
   margin: 0 auto;
-  padding: 14px;
+  padding: 8px;
   box-sizing: content-box;
 
   background:
@@ -349,7 +349,7 @@
   }
 
   .arcaea-mermaid-diagram svg {
-    padding: 10px;
+    padding: 6px;
   }
 
   .arcaea-mermaid-fullscreen-btn {
@@ -375,7 +375,7 @@
   }
 
   .arcaea-mermaid-diagram svg {
-    padding: 8px;
+    padding: 4px;
     border-radius: 10px;
   }
 }
