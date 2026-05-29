@@ -1,27 +1,47 @@
 (function () {
   'use strict';
-  const LOG = '[Babel Arcaea Code]';
 
-  /* ── Prism: add line-numbers to all code blocks, detect unlabeled ── */
+  const LOG = '[Babel Arcaea Code]';
+  const config = window.BAC_Config || {};
+
+  function asBool(value, fallback) {
+    if (typeof value === 'boolean') return value;
+    if (value === 1 || value === '1') return true;
+    if (value === 0 || value === '0') return false;
+    return fallback;
+  }
+
+  /* ── Prism: PJAX-safe highlighting ── */
   function preparePrism(root) {
-    root.querySelectorAll('pre code').forEach((code) => {
+    const lineNumbersEnabled = asBool(config.lineNumbers, true);
+
+    root.querySelectorAll('pre code:not([data-bac-prism-ready="1"])').forEach((code) => {
       const pre = code.closest('pre');
-      if (!pre) return;
-      if (!pre.classList.contains('line-numbers') && !pre.closest('.arcaea-mermaid-box')) {
+      if (!pre || pre.closest('.arcaea-mermaid-box')) return;
+
+      if (lineNumbersEnabled && !pre.classList.contains('line-numbers')) {
         pre.classList.add('line-numbers');
       }
-      if (!code.className.includes('language-')) {
+
+      if (!/\blanguage-/.test(code.className)) {
         code.classList.add('language-text');
       }
+
+      code.dataset.bacPrismReady = '1';
+
+      if (window.Prism && typeof Prism.highlightElement === 'function') {
+        Prism.highlightElement(code);
+      }
     });
-    if (window.Prism) Prism.highlightAll();
   }
 
   /* ── Mermaid ── */
   async function loadMermaid() {
     if (window.mermaid) return window.mermaid;
-    var url = (window.BAC_Mermaid && window.BAC_Mermaid.mermaidUrl)
+
+    const url = (window.BAC_Mermaid && window.BAC_Mermaid.mermaidUrl)
       || '/wp-content/plugins/babel-arcaea-code/assets/mermaid/mermaid.esm.min.mjs';
+
     const mod = await import(url);
     window.mermaid = mod.default;
     return window.mermaid;
@@ -91,9 +111,13 @@
 
   async function renderMermaid(root) {
     const diagrams = root.querySelectorAll(
-      '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"])'
+      '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"])'
     );
     if (!diagrams.length) return;
+
+    diagrams.forEach((el) => {
+      el.dataset.bacMermaidRendering = '1';
+    });
 
     const mermaid = await loadMermaid();
     mermaid.initialize({
@@ -116,37 +140,68 @@
         diagramMarginY: 16
       },
       themeVariables: {
-        darkMode: true, background: 'transparent',
-        primaryColor: '#202a40', primaryTextColor: '#f2f8ff', primaryBorderColor: '#9fd2ff',
-        lineColor: '#9fd2ff', secondaryColor: '#26334d', tertiaryColor: '#121827',
-        textColor: '#f2f8ff', mainBkg: '#202a40', secondBkg: '#26334d',
-        nodeBorder: '#9fd2ff', clusterBkg: 'rgba(32,42,64,0.92)', clusterBorder: '#8dc7ff',
-        edgeLabelBackground: '#151d2c', titleColor: '#f2f8ff', labelTextColor: '#f2f8ff',
-        actorBkg: '#202a40', actorBorder: '#9fd2ff', actorTextColor: '#f2f8ff',
-        actorLineColor: '#8dc7ff', signalColor: '#f2f8ff', signalTextColor: '#f2f8ff',
-        noteBkgColor: '#1c2638', noteTextColor: '#f2f8ff', noteBorderColor: '#9fd2ff',
+        darkMode: true,
+        background: 'transparent',
+        primaryColor: '#202a40',
+        primaryTextColor: '#f2f8ff',
+        primaryBorderColor: '#9fd2ff',
+        lineColor: '#9fd2ff',
+        secondaryColor: '#26334d',
+        tertiaryColor: '#121827',
+        textColor: '#f2f8ff',
+        mainBkg: '#202a40',
+        secondBkg: '#26334d',
+        nodeBorder: '#9fd2ff',
+        clusterBkg: 'rgba(32,42,64,0.92)',
+        clusterBorder: '#8dc7ff',
+        edgeLabelBackground: '#151d2c',
+        titleColor: '#f2f8ff',
+        labelTextColor: '#f2f8ff',
+        actorBkg: '#202a40',
+        actorBorder: '#9fd2ff',
+        actorTextColor: '#f2f8ff',
+        actorLineColor: '#8dc7ff',
+        signalColor: '#f2f8ff',
+        signalTextColor: '#f2f8ff',
+        noteBkgColor: '#1c2638',
+        noteTextColor: '#f2f8ff',
+        noteBorderColor: '#9fd2ff',
         fontFamily: 'FiraCode Nerd Font, Fira Code, JetBrains Mono, Noto Sans SC, sans-serif',
         fontSize: '15px'
       }
     });
-    await mermaid.run({ nodes: diagrams, suppressErrors: true });
 
-    diagrams.forEach((el) => {
-      el.dataset.arcaeaRendered = '1';
-      normalizeMermaidSvg(el);
-    });
-    console.log(LOG, 'Mermaid rendered:', diagrams.length);
+    try {
+      await mermaid.run({ nodes: diagrams, suppressErrors: true });
+      diagrams.forEach((el) => {
+        el.dataset.arcaeaRendered = '1';
+        delete el.dataset.bacMermaidRendering;
+        normalizeMermaidSvg(el);
+      });
+      console.log(LOG, 'Mermaid rendered:', diagrams.length);
+    } catch (e) {
+      diagrams.forEach((el) => {
+        delete el.dataset.bacMermaidRendering;
+      });
+      throw e;
+    }
   }
 
   /* ── Image zoom ── */
   function initZoom(root) {
     if (!window.mediumZoom) return;
+
     try {
-      mediumZoom(root.querySelectorAll('.entry-content img, .post-content img, .arcaea-mermaid-box img'), {
-        margin: 24,
-        background: 'rgba(10, 12, 18, 0.86)',
-        scrollOffset: 40
-      });
+      root.querySelectorAll('.entry-content img, .post-content img, .arcaea-mermaid-box img')
+        .forEach((img) => {
+          if (img.dataset.bacZoomReady === '1') return;
+          mediumZoom(img, {
+            margin: 24,
+            background: 'rgba(10, 12, 18, 0.86)',
+            scrollOffset: 40
+          });
+          img.dataset.bacZoomReady = '1';
+        });
     } catch (e) { /* skip */ }
   }
 
