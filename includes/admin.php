@@ -19,13 +19,13 @@ add_action('admin_enqueue_scripts', function ($hook) {
 });
 
 add_action('admin_menu', function () {
-    // Primary standalone entry. This avoids hosts/WAFs that block
-    // options-general.php?page=babel-arcaea-code with a 403 response.
+    // Primary standalone entry using a short slug (bac) to avoid WAF/host
+    // rules that 403 on long slugs like babel-arcaea-code.
     add_menu_page(
         'Babel Arcaea Code',
         'Arcaea Code',
         'manage_options',
-        'babel-arcaea-code',
+        'bac',
         'bac_admin_page_render',
         'dashicons-editor-code',
         81
@@ -37,7 +37,7 @@ add_action('admin_menu', function () {
         'Babel Arcaea Code',
         'Arcaea Code',
         'manage_options',
-        'babel-arcaea-code-settings',
+        'bac-settings',
         'bac_admin_page_render'
     );
 });
