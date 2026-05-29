@@ -23,8 +23,8 @@
 
   /* 玻璃拟态 */
   background: rgba(20, 25, 35, 0.35);
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 
   /* 发光边框 */
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -44,6 +44,7 @@
   overflow-y: hidden;
 
   /* 悬停动效准备 */
+  -webkit-transition: -webkit-transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 
   overscroll-behavior: contain;
@@ -208,17 +209,19 @@
   width: 32px;
   height: 32px;
 
+  /* 全屏按钮 backdrop */
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   background: rgba(20, 25, 35, 0.6);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 
   color: rgba(238, 244, 255, 0.7);
   font-size: 16px;
   cursor: pointer;
 
   opacity: 0;
+  -webkit-transition: opacity 0.2s ease, background 0.2s ease;
   transition: opacity 0.2s ease, background 0.2s ease;
 }
 
@@ -242,11 +245,12 @@
   justify-content: center;
 
   background: rgba(10, 12, 18, 0.92);
-  backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
 
   opacity: 0;
   pointer-events: none;
+  -webkit-transition: opacity 0.3s ease;
   transition: opacity 0.3s ease;
 }
 
@@ -287,12 +291,14 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   background: rgba(20, 25, 35, 0.7);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 
   color: rgba(238, 244, 255, 0.85);
   font-size: 22px;
   cursor: pointer;
 
+  -webkit-transition: background 0.2s, color 0.2s;
   transition: background 0.2s, color 0.2s;
   z-index: 10;
 }

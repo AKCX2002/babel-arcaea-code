@@ -38,7 +38,7 @@ pre[class*="language-"] code,
   white-space: pre;
 }
 
-:not(pre) > code[class*="language-"] {
+:not(pre)>code[class*="language-"] {
   border-radius: 4px;
   padding: 0.2em 0.4em;
   font-family: var(--bac-code-font) !important;
@@ -62,26 +62,26 @@ div.code-toolbar {
   position: relative;
 }
 
-div.code-toolbar > .toolbar {
+div.code-toolbar>.toolbar {
   top: 0.55rem;
   right: 0.65rem;
   opacity: 1;
 }
 
-div.code-toolbar > .toolbar > .toolbar-item {
+div.code-toolbar>.toolbar>.toolbar-item {
   margin-left: 0.35rem;
 }
 
-div.code-toolbar > .toolbar button,
-div.code-toolbar > .toolbar a,
-div.code-toolbar > .toolbar span {
+div.code-toolbar>.toolbar button,
+div.code-toolbar>.toolbar a,
+div.code-toolbar>.toolbar span {
   border-radius: 999px !important;
   padding: 0.28rem 0.62rem !important;
   font-family: var(--bac-code-font) !important;
   font-size: 12px !important;
   line-height: 1.2 !important;
   box-shadow: none !important;
-  transition: opacity 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  -webkit-transition: opacity 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 pre[class*="language-"] mark,
@@ -114,10 +114,11 @@ pre[class*="language-"]::-webkit-scrollbar-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   pre[class*="language-"],
-  div.code-toolbar > .toolbar button,
-  div.code-toolbar > .toolbar a,
-  div.code-toolbar > .toolbar span {
+  div.code-toolbar>.toolbar button,
+  div.code-toolbar>.toolbar a,
+  div.code-toolbar>.toolbar span {
     transition: none !important;
     animation: none !important;
   }

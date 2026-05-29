@@ -78,8 +78,8 @@ function bac_health_check() {
 function bac_health_check_table() {
     $health = bac_health_check();
     ?>
-    <div style="background:rgba(15,24,42,0.12);padding:16px 20px;margin:16px 0;border-radius:8px;border:1px solid rgba(230,238,255,0.15);">
-        <h3 style="margin-top:0">系统健康检查</h3>
+    <div class="bac-health-check-panel">
+        <h3>系统健康检查</h3>
         <table class="widefat striped" style="width:auto;min-width:400px">
             <thead><tr><th>项目</th><th>状态</th></tr></thead>
             <tbody>

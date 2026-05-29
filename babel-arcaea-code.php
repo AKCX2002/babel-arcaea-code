@@ -54,6 +54,7 @@ add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links)
 $bac_includes = [
     'includes/options.php',
     'includes/assets.php',
+    'includes/headers.php',
     'includes/renderer-mermaid.php',
     'includes/renderer-markmap.php',
     'includes/compat-sakurairo.php',
