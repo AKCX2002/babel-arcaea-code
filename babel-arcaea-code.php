@@ -241,6 +241,7 @@ if(_A)window.APlayer=_A;})();
 });
 
 /* ── Mermaid PHP filter: convert code blocks in the_content ── */
+// Run at priority 11 (after wpautop) to strip <br /> inserted by wpautop
 add_filter('the_content', function ($content) {
     $o = bac_options();
     if (!$o['enabled'] || !$o['mermaid_enabled']) return $content;
@@ -248,10 +249,14 @@ add_filter('the_content', function ($content) {
     return preg_replace_callback($pattern, function ($m) {
         $code = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         if (!$code) return $m[0];
+        // Strip <br /> that wpautop inserted inside the code block
+        $code = preg_replace('/<br\s*\/?>/i', "
+", $code);
+        $code = strip_tags($code);
         return '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
             . $code . '</div></div>';
     }, $content);
-}, 1);
+}, 11);
 
 /* ── Shortcode ── */
 add_shortcode('mermaid', function ($atts, $content = null) {
