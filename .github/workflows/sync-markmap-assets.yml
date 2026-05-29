@@ -26,21 +26,56 @@ jobs:
           npm init -y
           npm install --save-exact d3@7 markmap-lib markmap-view
 
-      - name: Copy browser runtime assets
+      - name: Resolve and copy browser runtime assets
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p assets/markmap/vendor
 
           cp node_modules/d3/dist/d3.min.js assets/markmap/vendor/d3.min.js
-          cp node_modules/markmap-view/dist/browser/index.js assets/markmap/vendor/markmap-view.min.js
-          cp node_modules/markmap-lib/dist/browser/index.js assets/markmap/vendor/markmap-lib.min.js
 
-          cat > assets/markmap/vendor/versions.json <<EOF
-          {
-            "d3": "$(node -p "require('./node_modules/d3/package.json').version")",
-            "markmap-lib": "$(node -p "require('./node_modules/markmap-lib/package.json').version")",
-            "markmap-view": "$(node -p "require('./node_modules/markmap-view/package.json').version")"
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          function pkgRoot(pkg) {
+            return path.dirname(require.resolve(`${pkg}/package.json`));
           }
-          EOF
+
+          function firstExisting(candidates) {
+            for (const file of candidates) {
+              if (fs.existsSync(file) && fs.statSync(file).isFile()) return file;
+            }
+            throw new Error(`None of these files exist:\n${candidates.join('\n')}`);
+          }
+
+          function copyRuntime(pkg, outName, candidates) {
+            const root = pkgRoot(pkg);
+            const file = firstExisting(candidates.map((item) => path.join(root, item)));
+            const out = path.join('assets/markmap/vendor', outName);
+            fs.copyFileSync(file, out);
+            console.log(`${pkg}: ${file} -> ${out}`);
+          }
+
+          copyRuntime('markmap-view', 'markmap-view.min.js', [
+            'dist/browser/index.js',
+            'dist/index.js',
+            'lib/index.js',
+          ]);
+
+          copyRuntime('markmap-lib', 'markmap-lib.min.js', [
+            'dist/browser/index.js',
+            'dist/index.js',
+            'lib/index.js',
+          ]);
+
+          const versions = {
+            d3: require('./node_modules/d3/package.json').version,
+            'markmap-lib': require('./node_modules/markmap-lib/package.json').version,
+            'markmap-view': require('./node_modules/markmap-view/package.json').version,
+          };
+          fs.writeFileSync('assets/markmap/vendor/versions.json', JSON.stringify(versions, null, 2) + '\n');
+          NODE
 
       - name: Verify vendor files
         run: |
