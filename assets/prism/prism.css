@@ -1,1 +1,157 @@
-code[class*=language-],pre[class*=language-]{color:#f8f8f2;background:0 0;text-shadow:0 1px rgba(0,0,0,.3);font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;font-size:1em;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto;border-radius:.3em}:not(pre)>code[class*=language-],pre[class*=language-]{background:#272822}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#8292a2}.token.punctuation{color:#f8f8f2}.token.namespace{opacity:.7}.token.constant,.token.deleted,.token.property,.token.symbol,.token.tag{color:#f92672}.token.boolean,.token.number{color:#ae81ff}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#a6e22e}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url,.token.variable{color:#f8f8f2}.token.atrule,.token.attr-value,.token.class-name,.token.function{color:#e6db74}.token.keyword{color:#66d9ef}.token.important,.token.regex{color:#fd971f}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}
+/* ============================================================
+ * Babel Arcaea Code — Arcaea Dark Prism Theme
+ * Glassmorphism code blocks matching sakurairo-arcaea-blog-skill
+ * ============================================================ */
+
+/* ── Base code block ── */
+code[class*="language-"],
+pre[class*="language-"] {
+    font-family: "FiraCode Nerd Font", "Fira Code", Consolas, monospace !important;
+    text-shadow: none !important;
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(238, 244, 255, 0.94);
+    direction: ltr;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    tab-size: 4;
+    hyphens: none;
+}
+
+/* ── Card with glass effect ── */
+pre[class*="language-"] {
+    background: rgba(8, 21, 42, 0.42) !important;
+    border: 1px solid rgba(230, 238, 255, 0.78);
+    border-radius: 10px;
+    padding: 1.35rem 1.5rem;
+    margin: 2rem 0;
+    overflow: auto;
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    box-shadow:
+        0 12px 36px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* ── Inline code ── */
+:not(pre) > code[class*="language-"],
+code:not([class*="language-"]) {
+    background: rgba(230, 238, 255, 0.10);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    color: rgba(238, 244, 255, 0.94) !important;
+    font-size: 0.9em;
+}
+
+/* ── Line numbers ── */
+.line-numbers .line-numbers-rows {
+    border-right: 1px solid rgba(230, 238, 255, 0.30) !important;
+    padding: 1.35rem 0;
+}
+
+.line-numbers-rows > span:before {
+    color: rgba(210, 230, 255, 0.55) !important;
+}
+
+/* ── Toolbar ── */
+div.code-toolbar > .toolbar {
+    top: 8px;
+    right: 12px;
+}
+
+div.code-toolbar > .toolbar button {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(230, 238, 255, 0.30) !important;
+    color: rgba(210, 233, 255, 0.90) !important;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 13px;
+    backdrop-filter: blur(8px);
+    box-shadow: none;
+}
+
+div.code-toolbar > .toolbar button:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(230, 238, 255, 0.55) !important;
+}
+
+/* ── Token colors (Arcaea palette) ── */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+    color: rgba(155, 175, 210, 0.55);
+    font-style: italic;
+}
+
+.token.punctuation { color: rgba(200, 220, 245, 0.70); }
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted { color: #ffa0b0; }
+
+.token.boolean,
+.token.number { color: #b8d0ff; }
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted { color: #a8e0c0; }
+
+.token.operator,
+.token.entity,
+.token.url,
+.token.variable {
+    color: rgba(200, 220, 245, 0.80);
+    background: transparent !important;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword { color: #c0b0ff; }
+
+.token.function,
+.token.class-name { color: #8ad8ff; }
+
+.token.regex,
+.token.important { color: #ffc080; }
+
+.token.important,
+.token.bold { font-weight: 700; }
+.token.italic { font-style: italic; }
+
+.token.entity { cursor: help; }
+
+/* ── namespace / preprocessor ── */
+.token.namespace { opacity: 0.7; }
+
+/* ── Markdown ── */
+.token.language-markdown .token.title,
+.token.language-markdown .token.blockquote,
+.token.language-markdown .token.list { color: rgba(238, 244, 255, 0.85); }
+
+/* ── JSON ── */
+.language-json .token.property { color: #c0d0f0; }
+.language-json .token.string { color: #a8e0c0; }
+
+/* ── Diff ── */
+.token.deleted { background: rgba(255, 100, 120, 0.12); }
+.token.inserted { background: rgba(120, 220, 160, 0.12); }
+
+/* ── Line highlight ── */
+.line-highlight {
+    background: rgba(160, 220, 255, 0.06);
+    border-left: 3px solid rgba(160, 220, 255, 0.40);
+}
+
+/* ── Match braces ── */
+.token.punctuation.brace-hover,
+.token.punctuation.brace-selected {
+    outline: solid 1px rgba(160, 220, 255, 0.40);
+}

@@ -39,6 +39,7 @@ function bac_defaults() {
         'prism_enabled'     => 1,
         'mermaid_enabled'   => 1,
         'mermaid_version'   => '11.15.0',
+        'prism_version'     => '1.30.0',
         'prism_line_numbers' => 1,
         'prism_copy'        => 1,
         'prism_theme'       => 'arcaea_dark',
