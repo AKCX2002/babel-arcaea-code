@@ -49,34 +49,19 @@
     return window.mermaid;
   }
 
-  function getResponsiveMermaidWidth(rawWidth) {
-    if (!Number.isFinite(rawWidth) || rawWidth <= 0) return 960;
-
-    if (rawWidth <= 720) {
-      return Math.min(Math.round(rawWidth * 1.25), 720);
-    }
-
-    return Math.max(960, Math.min(Math.round(rawWidth), 1600));
-  }
-
-  function applyMermaidSvgWidth(svg, rawWidth) {
-    const readableWidth = getResponsiveMermaidWidth(rawWidth);
-    svg.style.setProperty('--bac-mermaid-width', readableWidth + 'px');
-    svg.style.width = 'var(--bac-mermaid-width)';
-  }
-
+  /* ── 规范化 SVG：移除固定宽高，设 viewBox 确保 CSS 响应式生效 ── */
   function normalizeMermaidSvg(el) {
     const svg = el.querySelector('svg');
     if (!svg) return;
 
     svg.removeAttribute('width');
     svg.removeAttribute('height');
+    svg.style.removeProperty('width');
+    svg.style.removeProperty('height');
+    svg.style.removeProperty('max-width');
+    svg.style.removeProperty('max-height');
 
-    svg.style.width = 'auto';
-    svg.style.height = 'auto';
-    svg.style.maxWidth = 'none';
-    svg.style.maxHeight = 'none';
-
+    /* 用 viewBox 精确裁剪，去掉 Mermaid 自带的额外留白 */
     try {
       const root = svg.querySelector('g.root') || svg.querySelector('g') || svg;
       const box = root.getBBox();
@@ -90,25 +75,94 @@
         box.height > 0
       ) {
         const pad = 32;
-        const x = box.x - pad;
-        const y = box.y - pad;
-        const width = box.width + pad * 2;
-        const height = box.height + pad * 2;
-
-        svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
-        applyMermaidSvgWidth(svg, width);
+        svg.setAttribute('viewBox',
+          `${box.x - pad} ${box.y - pad} ${box.width + pad * 2} ${box.height + pad * 2}`
+        );
         return;
       }
     } catch (e) {
       console.warn(LOG, 'Mermaid SVG bbox crop skipped:', e);
     }
 
+    /* fallback: 保留已有 viewBox */
     const viewBox = svg.getAttribute('viewBox');
-    if (!viewBox) return;
+    if (!viewBox) {
+      /* 极端 fallback：给一个默认 viewBox */
+      svg.setAttribute('viewBox', '0 0 960 600');
+    }
+  }
 
-    const parts = viewBox.trim().split(/\s+/).map(Number);
-    const viewBoxWidth = parts[2];
-    applyMermaidSvgWidth(svg, viewBoxWidth);
+  /* ── 全屏预览 ── */
+  function createOverlay() {
+    /* 复用已创建的 overlay */
+    let overlay = document.getElementById('arcaea-mermaid-overlay');
+    if (overlay) return overlay;
+
+    overlay = document.createElement('div');
+    overlay.id = 'arcaea-mermaid-overlay';
+    overlay.className = 'arcaea-mermaid-overlay';
+
+    const content = document.createElement('div');
+    content.className = 'arcaea-mermaid-overlay-content';
+    overlay.appendChild(content);
+
+    const close = document.createElement('button');
+    close.className = 'arcaea-mermaid-overlay-close';
+    close.innerHTML = '✕';
+    close.setAttribute('aria-label', '关闭全屏');
+    close.addEventListener('click', function () {
+      overlay.classList.remove('active');
+      content.innerHTML = '';
+    });
+    overlay.appendChild(close);
+
+    /* 点击背景关闭 */
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) {
+        overlay.classList.remove('active');
+        content.innerHTML = '';
+      }
+    });
+
+    /* ESC 关闭 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+        overlay.classList.remove('active');
+        content.innerHTML = '';
+      }
+    });
+
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function openFullscreen(svg) {
+    const overlay = createOverlay();
+    const content = overlay.querySelector('.arcaea-mermaid-overlay-content');
+
+    /* 克隆 SVG，保留所有样式 */
+    const clone = svg.cloneNode(true);
+    content.innerHTML = '';
+    content.appendChild(clone);
+
+    overlay.classList.add('active');
+  }
+
+  function addFullscreenButton(box, svg) {
+    /* 已有按钮则不重复添加 */
+    if (box.querySelector('.arcaea-mermaid-fullscreen-btn')) return;
+
+    const btn = document.createElement('button');
+    btn.className = 'arcaea-mermaid-fullscreen-btn';
+    btn.innerHTML = '⛶';
+    btn.setAttribute('aria-label', '查看大图');
+    btn.setAttribute('title', '查看大图');
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openFullscreen(svg);
+    });
+
+    box.appendChild(btn);
   }
 
   function markMermaidError(el, error) {
@@ -150,6 +204,7 @@
       return;
     }
 
+    /* ── Mermaid 初始化：Arcaea 暗色主题 ── */
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
@@ -207,6 +262,13 @@
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
         normalizeMermaidSvg(el);
+
+        /* ── 为每个渲染成功的图表添加全屏按钮 ── */
+        const box = el.closest('.arcaea-mermaid-box');
+        const svg = el.querySelector('svg');
+        if (box && svg) {
+          addFullscreenButton(box, svg);
+        }
       });
       console.log(LOG, 'Mermaid rendered:', diagrams.length);
     } catch (e) {
