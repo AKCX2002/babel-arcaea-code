@@ -2,15 +2,15 @@
 /**
  * Plugin Name: Babel Arcaea Code
  * Plugin URI: https://github.com/AKCX2002/babel-arcaea-code
- * Description: Unified Prism.js + Mermaid + MathJax renderer. Local assets, no CDN. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
- * Version: 1.0.22
+ * Description: Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.
+ * Version: 1.0.23
  * Author: Babel36acl
  * License: GPL-2.0-or-later
  */
 
 if (!defined('ABSPATH')) exit;
 
-define('BAC_VERSION', '1.0.22');
+define('BAC_VERSION', '1.0.23');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
@@ -54,6 +54,8 @@ function bac_defaults() {
         'prism_enabled'            => 1,
         'mermaid_enabled'          => 1,
         'mathjax_enabled'          => 0,
+        'markmap_enabled'          => 0,
+        'markmap_runtime'          => 'cdn',
         'mermaid_version'          => '11.15.0',
         'prism_version'            => '1.30.0',
         'mathjax_version'          => '3.2.2',
@@ -80,6 +82,10 @@ add_action('admin_init', function () {
         $out['prism_enabled'] = !empty($in['prism_enabled']) ? 1 : 0;
         $out['mermaid_enabled'] = !empty($in['mermaid_enabled']) ? 1 : 0;
         $out['mathjax_enabled'] = !empty($in['mathjax_enabled']) ? 1 : 0;
+        $out['markmap_enabled'] = !empty($in['markmap_enabled']) ? 1 : 0;
+        $out['markmap_runtime'] = in_array($in['markmap_runtime'] ?? '', ['cdn','local'], true)
+            ? sanitize_key($in['markmap_runtime'])
+            : $d['markmap_runtime'];
 
         $out['mermaid_version'] = in_array($in['mermaid_version'] ?? '', ['11.15.0'], true)
             ? sanitize_text_field($in['mermaid_version'])
@@ -105,7 +111,7 @@ add_action('admin_menu', function () {
         if (!current_user_can('manage_options')) return;
         $o = bac_options(); ?>
         <div class="wrap"><h1>Babel Arcaea Code</h1>
-        <p>统一 Prism.js + Mermaid + MathJax 渲染引擎。本地化资源，无 CDN 依赖。</p>
+        <p>统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，CDN 仅用于 Markmap 调试模式。</p>
         <form method="post" action="options.php">
         <?php settings_fields('bac_settings_group'); ?>
         <table class="form-table">
@@ -113,6 +119,11 @@ add_action('admin_menu', function () {
             <tr><th>Prism.js</th><td><label><input type="checkbox" name="bac_options[prism_enabled]" value="1" <?php checked($o['prism_enabled'],1); ?>> 启用 Prism 代码高亮</label></td></tr>
             <tr><th>Mermaid</th><td><label><input type="checkbox" name="bac_options[mermaid_enabled]" value="1" <?php checked($o['mermaid_enabled'],1); ?>> 启用 Mermaid 图表</label><p class="description">当前本地锁定 Mermaid <?php echo esc_html($o['mermaid_version']); ?>。</p></td></tr>
             <tr><th>MathJax</th><td><label><input type="checkbox" name="bac_options[mathjax_enabled]" value="1" <?php checked($o['mathjax_enabled'],1); ?>> 启用 MathJax 数学公式</label><p class="description">需先在 Githuber MD 设置中开启 MathJax，插件负责本地化加载。</p></td></tr>
+            <tr><th>Markmap</th><td><label><input type="checkbox" name="bac_options[markmap_enabled]" value="1" <?php checked($o['markmap_enabled'],1); ?>> 启用 Markmap 思维导图</label><p class="description">支持 language-markmap 代码块和 [markmap]...[/markmap]。大型图建议后续使用 iframe/预渲染模式。</p></td></tr>
+            <tr><th>Markmap Runtime</th><td><select name="bac_options[markmap_runtime]">
+                <option value="cdn" <?php selected($o['markmap_runtime'],'cdn'); ?>>CDN 调试模式</option>
+                <option value="local" <?php selected($o['markmap_runtime'],'local'); ?>>本地资源模式</option>
+            </select><p class="description">正式站点推荐本地资源；当前 local 需要自行放置 assets/markmap/vendor 运行时文件。</p></td></tr>
             <tr><th>Sakurairo Prism</th><td><label><input type="checkbox" name="bac_options[disable_sakurairo_prism]" value="1" <?php checked($o['disable_sakurairo_prism'],1); ?>> 禁用主题自带 Prism</label></td></tr>
             <tr><th>Prism 主题</th><td><select name="bac_options[prism_theme]">
                 <option value="arcaea_dark" <?php selected($o['prism_theme'],'arcaea_dark'); ?>>Arcaea Dark</option>
@@ -127,7 +138,7 @@ add_action('admin_menu', function () {
         <h3 style="color:rgba(238,244,255,0.85);font-weight:400">已安装插件</h3>
         <p style="color:rgba(238,244,255,0.55);font-size:13px">
         Toolbar · Show Language · Copy · Line Numbers · Line Highlight · Match Braces ·<br>
-        Normalize Whitespace · Command Line · Treeview · Previewers · Autoloader
+        Normalize Whitespace · Command Line · Treeview · Previewers · Autoloader · Markmap Adapter
         </p>
         <p style="color:rgba(238,244,255,0.40);font-size:12px">
         Prism 语言组件: <?php
@@ -242,6 +253,22 @@ add_action('wp_enqueue_scripts', function () {
         ]);
     }
 
+    if (!empty($o['markmap_enabled'])) {
+        wp_enqueue_style('bac-markmap', $base . 'markmap/markmap.css', [], BAC_VERSION);
+
+        if (($o['markmap_runtime'] ?? 'cdn') === 'cdn') {
+            wp_enqueue_script('bac-markmap-d3', 'https://cdn.jsdelivr.net/npm/d3@7', [], '7', true);
+            wp_enqueue_script('bac-markmap-view', 'https://cdn.jsdelivr.net/npm/markmap-view', ['bac-markmap-d3'], BAC_VERSION, true);
+            wp_enqueue_script('bac-markmap-lib', 'https://cdn.jsdelivr.net/npm/markmap-lib', ['bac-markmap-view'], BAC_VERSION, true);
+            wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
+        } else {
+            wp_enqueue_script('bac-markmap-d3', $base . 'markmap/vendor/d3.min.js', [], BAC_VERSION, true);
+            wp_enqueue_script('bac-markmap-view', $base . 'markmap/vendor/markmap-view.min.js', ['bac-markmap-d3'], BAC_VERSION, true);
+            wp_enqueue_script('bac-markmap-lib', $base . 'markmap/vendor/markmap-lib.min.js', ['bac-markmap-view'], BAC_VERSION, true);
+            wp_enqueue_script('bac-markmap-init', $base . 'markmap/markmap-init.js', ['bac-markmap-lib'], BAC_VERSION, true);
+        }
+    }
+
     // Medium-zoom: image zoom, replaces LightGallery functionality.
     wp_enqueue_script('bac-medium-zoom', $base . 'js/medium-zoom.min.js', [], '1.1.0', true);
     $deps = wp_scripts()->query('bac-mermaid-init');
@@ -303,6 +330,27 @@ add_filter('the_content', function ($content) {
     }, $content);
 }, 11);
 
+/* ── Markmap PHP filter: convert code blocks in the_content ── */
+add_filter('the_content', function ($content) {
+    $o = bac_options();
+    if (!$o['enabled'] || empty($o['markmap_enabled'])) return $content;
+
+    $pattern = '/<pre[^>]*>\s*<code[^>]*class="[^"]*language-markmap[^"]*"[^>]*>(.*?)<\/code>\s*<\/pre>/si';
+
+    return preg_replace_callback($pattern, function ($m) {
+        $code = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        if (!$code) return $m[0];
+
+        $code = preg_replace('/<br\s*\/?>/i', "\n", $code);
+        $code = strip_tags($code);
+
+        return '<div class="arcaea-markmap-box">'
+            . '<pre class="arcaea-markmap-source">' . esc_html($code) . '</pre>'
+            . '<svg class="arcaea-markmap-diagram"></svg>'
+            . '</div>';
+    }, $content);
+}, 11);
+
 /* ── Shortcode ── */
 add_shortcode('mermaid', function ($atts, $content = null) {
     $content = html_entity_decode(trim((string)$content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -312,6 +360,20 @@ add_shortcode('mermaid', function ($atts, $content = null) {
     return '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
         . esc_html($content)
         . '</div></div>';
+});
+
+add_shortcode('markmap', function ($atts, $content = null) {
+    $o = bac_options();
+    if (!$o['enabled'] || empty($o['markmap_enabled'])) return '';
+
+    $content = html_entity_decode(trim((string)$content), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $content = strip_tags($content);
+    if (!$content) return '';
+
+    return '<div class="arcaea-markmap-box">'
+        . '<pre class="arcaea-markmap-source">' . esc_html($content) . '</pre>'
+        . '<svg class="arcaea-markmap-diagram"></svg>'
+        . '</div>';
 });
 
 /* ── Autoloader path filter for Prism ── */
