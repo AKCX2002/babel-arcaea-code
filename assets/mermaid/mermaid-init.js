@@ -3,6 +3,7 @@
 
   const LOG = '[Babel Arcaea Code]';
   const config = window.BAC_Config || {};
+  let bootTimer = null;
 
   function asBool(value, fallback) {
     if (typeof value === 'boolean') return value;
@@ -13,9 +14,10 @@
 
   /* ── Prism: PJAX-safe highlighting ── */
   function preparePrism(root) {
+    const scope = root && root.querySelectorAll ? root : document;
     const lineNumbersEnabled = asBool(config.lineNumbers, true);
 
-    root.querySelectorAll('pre code:not([data-bac-prism-ready="1"])').forEach((code) => {
+    scope.querySelectorAll('pre code:not([data-bac-prism-ready="1"])').forEach((code) => {
       const pre = code.closest('pre');
       if (!pre || pre.closest('.arcaea-mermaid-box')) return;
 
@@ -109,9 +111,29 @@
     applyMermaidSvgWidth(svg, viewBoxWidth);
   }
 
+  function markMermaidError(el, error) {
+    delete el.dataset.bacMermaidRendering;
+    el.dataset.bacMermaidError = '1';
+
+    const box = el.closest('.arcaea-mermaid-box') || el;
+    box.classList.add('arcaea-mermaid-error');
+
+    if (!box.querySelector('.arcaea-mermaid-error-message')) {
+      const msg = document.createElement('div');
+      msg.className = 'arcaea-mermaid-error-message';
+      msg.textContent = 'Mermaid 渲染失败，请检查图表语法。';
+      box.appendChild(msg);
+    }
+
+    if (error) {
+      box.dataset.bacMermaidErrorMessage = String(error && error.message ? error.message : error).slice(0, 300);
+    }
+  }
+
   async function renderMermaid(root) {
-    const diagrams = root.querySelectorAll(
-      '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"])'
+    const scope = root && root.querySelectorAll ? root : document;
+    const diagrams = scope.querySelectorAll(
+      '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"]):not([data-bac-mermaid-error="1"])'
     );
     if (!diagrams.length) return;
 
@@ -119,7 +141,15 @@
       el.dataset.bacMermaidRendering = '1';
     });
 
-    const mermaid = await loadMermaid();
+    let mermaid;
+    try {
+      mermaid = await loadMermaid();
+    } catch (e) {
+      diagrams.forEach((el) => markMermaidError(el, e));
+      console.warn(LOG, 'Mermaid runtime load failed:', e);
+      return;
+    }
+
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
@@ -180,10 +210,8 @@
       });
       console.log(LOG, 'Mermaid rendered:', diagrams.length);
     } catch (e) {
-      diagrams.forEach((el) => {
-        delete el.dataset.bacMermaidRendering;
-      });
-      throw e;
+      diagrams.forEach((el) => markMermaidError(el, e));
+      console.warn(LOG, 'Mermaid render skipped:', e);
     }
   }
 
@@ -191,8 +219,10 @@
   function initZoom(root) {
     if (!window.mediumZoom) return;
 
+    const scope = root && root.querySelectorAll ? root : document;
+
     try {
-      root.querySelectorAll('.entry-content img, .post-content img, .arcaea-mermaid-box img')
+      scope.querySelectorAll('.entry-content img, .post-content img, .arcaea-mermaid-box img')
         .forEach((img) => {
           if (img.dataset.bacZoomReady === '1') return;
           mediumZoom(img, {
@@ -207,13 +237,21 @@
 
   /* ── Full init ── */
   async function boot(root) {
-    preparePrism(root);
-    await renderMermaid(root);
-    initZoom(root);
+    const scope = root && root.querySelectorAll ? root : document;
+    preparePrism(scope);
+    await renderMermaid(scope);
+    initZoom(scope);
   }
 
-  document.addEventListener('DOMContentLoaded', () => boot(document).catch(e => console.error(LOG, e)));
-  window.addEventListener('load', () => boot(document).catch(e => console.error(LOG, e)));
-  document.addEventListener('pjax:complete', () => boot(document).catch(e => console.error(LOG, e)));
-  document.addEventListener('pjax:end', () => boot(document).catch(e => console.error(LOG, e)));
+  function scheduleBoot(root) {
+    window.clearTimeout(bootTimer);
+    bootTimer = window.setTimeout(() => {
+      boot(root || document).catch((e) => console.warn(LOG, e));
+    }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => scheduleBoot(document));
+  window.addEventListener('load', () => scheduleBoot(document));
+  document.addEventListener('pjax:complete', () => scheduleBoot(document));
+  document.addEventListener('pjax:end', () => scheduleBoot(document));
 })();
