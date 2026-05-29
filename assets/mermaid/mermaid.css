@@ -1,62 +1,82 @@
 /* ============================================================
- * Babel Arcaea Code — Mermaid container styles
- * Refactor:
- * - Remove oversized blue gradient wrapper
- * - Prevent SVG from being scaled into a tiny diagram
- * - Keep Mermaid readable on desktop and mobile
- * - Let outer wrapper scroll instead of shrinking SVG
+ * Babel Arcaea Code — Mermaid 响应式渲染
+ *
+ * 架构：
+ *   Markdown → Mermaid 代码块 → Mermaid.js → SVG
+ *   → 玻璃拟态容器 → 自动缩放 → 超宽滚动 → 全屏预览
+ *
+ * 设计理念：
+ *   - 小图自动居中，保持自然尺寸
+ *   - 大图容器滚动，不挤压 SVG
+ *   - 玻璃拟态（Glassmorphism）适配 Arcaea 暗色风格
+ *   - 发光边框 + 悬停微动效
+ *   - 深色主题联动
  * ============================================================ */
 
-/* Mermaid outer wrapper */
+/* ── Mermaid 外层包裹容器 ──
+ * 职责：玻璃拟态背景、横向滚动、悬停动效
+ * 小图 → 无滚动，SVG 居中
+ * 大图 → 横向滚动条出现，不挤压 SVG
+ */
 .arcaea-mermaid-box {
   position: relative;
 
-  margin: 1.8rem 0;
-  padding: 0;
+  /* 玻璃拟态 */
+  background: rgba(20, 25, 35, 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 
-  max-width: 100%;
-  max-height: 82vh;
+  /* 发光边框 */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
 
-  overflow: auto;
+  /* 发光阴影 */
+  box-shadow:
+    0 0 20px rgba(120, 220, 255, 0.08),
+    0 0 40px rgba(120, 220, 255, 0.03),
+    0 10px 30px rgba(0, 0, 0, 0.18);
 
-  border-radius: 14px;
+  margin: 2rem 0;
+  padding: 1rem;
 
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
+  /* 超宽图横向滚动 */
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  /* 悬停动效准备 */
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 
   overscroll-behavior: contain;
 }
 
-/* Disable old ambient glow overlay */
+/* Hover 微放大 + 增强光晕 */
+.arcaea-mermaid-box:hover {
+  transform: scale(1.01);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 0 25px rgba(120, 220, 255, 0.12),
+    0 0 50px rgba(120, 220, 255, 0.05),
+    0 12px 36px rgba(0, 0, 0, 0.22);
+}
+
+/* 禁用旧的发光伪元素 */
 .arcaea-mermaid-box::before {
   display: none !important;
   content: none !important;
 }
 
-/* Mermaid diagram container */
+/* ── Mermaid 图表内部容器 ──
+ * fit-content → 小图自然居中，大图保持真实宽度触发 wrapper 滚动
+ */
 .arcaea-mermaid-diagram,
 .mermaid.arcaea-mermaid-diagram {
-  position: relative;
-  z-index: 1;
+  min-width: fit-content;
+  min-width: -moz-fit-content;
 
-  display: block !important;
+  display: flex;
+  justify-content: center;
 
-  min-height: 0 !important;
-  height: auto !important;
-  max-height: none !important;
-
-  margin: 1.4rem 0 !important;
-  padding: 0 !important;
-
-  overflow: visible !important;
-
-  border: 0 !important;
-  border-radius: 0 !important;
-
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
+  margin: 0.5rem 0;
 
   color: rgba(238, 244, 255, 0.94);
 
@@ -69,67 +89,33 @@
     sans-serif;
 }
 
-/* ============================================================
- * Mermaid error state
- * ============================================================ */
-
-.arcaea-mermaid-box.arcaea-mermaid-error {
-  border: 1px solid rgba(255, 120, 160, 0.38);
-  background:
-    linear-gradient(135deg,
-      rgba(255, 95, 140, 0.10),
-      rgba(120, 180, 255, 0.06));
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.24),
-    0 0 0 1px rgba(255, 255, 255, 0.035) inset;
-}
-
-.arcaea-mermaid-error-message {
-  margin-top: 0.85rem;
-  padding: 0.75rem 0.95rem;
-  border-radius: 12px;
-  color: #ffd9e5;
-  background: rgba(80, 20, 42, 0.55);
-  border: 1px solid rgba(255, 150, 185, 0.25);
-  font-size: 0.92rem;
-  line-height: 1.6;
-}
-
-/*
- * Important:
- * Do NOT use width:100% + max-height on SVG.
- * For very tall Mermaid flowcharts, that forces the whole graph to shrink.
- * The wrapper should scroll; the SVG should keep readable size.
+/* ── SVG 基本样式 ──
+ * 不设 min-width，让 SVG 自然渲染
+ * 小图自动缩小适配容器，大图保持原始宽高
  */
 .arcaea-mermaid-diagram svg {
-  display: block !important;
+  display: block;
 
-  width: auto !important;
-  min-width: 960px !important;
-  max-width: none !important;
-
+  max-width: 100% !important;
   height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
 
-  margin: 0 auto !important;
-  padding: 14px !important;
-  box-sizing: border-box !important;
+  margin: 0 auto;
+  padding: 14px;
+  box-sizing: border-box;
 
   background:
     linear-gradient(180deg,
       rgba(15, 24, 42, 0.32),
-      rgba(8, 16, 32, 0.20)) !important;
+      rgba(8, 16, 32, 0.20));
 
-  border: 1px solid rgba(230, 238, 255, 0.28) !important;
-  border-radius: 14px !important;
+  border: 1px solid rgba(230, 238, 255, 0.28);
+  border-radius: 14px;
 
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* Force text readability */
+/* ── 文字样式 ── */
 .arcaea-mermaid-diagram svg text,
 .arcaea-mermaid-diagram .label,
 .arcaea-mermaid-diagram .nodeLabel,
@@ -152,7 +138,7 @@
     sans-serif !important;
 }
 
-/* Node borders */
+/* ── 节点边框 ── */
 .arcaea-mermaid-diagram .node rect,
 .arcaea-mermaid-diagram .node circle,
 .arcaea-mermaid-diagram .node ellipse,
@@ -162,14 +148,14 @@
   stroke-width: 1.6px !important;
 }
 
-/* Edge lines */
+/* ── 连线 ── */
 .arcaea-mermaid-diagram .edgePath path,
 .arcaea-mermaid-diagram .flowchart-link {
   stroke: rgba(160, 220, 255, 0.55) !important;
   stroke-width: 1.8px !important;
 }
 
-/* Arrow markers */
+/* ── 箭头标记 ── */
 .arcaea-mermaid-diagram marker path,
 .arcaea-mermaid-diagram marker polygon,
 .arcaea-mermaid-diagram marker circle {
@@ -177,61 +163,219 @@
   stroke: rgba(160, 220, 255, 0.55) !important;
 }
 
-/* Edge label background */
+/* ── 边标签背景 ── */
 .arcaea-mermaid-diagram .edgeLabel {
   border-radius: 8px;
 }
 
-/* Keep cluster boxes subtle */
+/* ── 集群盒子 ── */
 .arcaea-mermaid-diagram .cluster rect {
   fill: transparent !important;
   stroke: rgba(141, 199, 255, 0.70) !important;
 }
 
-/* Mobile */
+/* ── 错误状态 ── */
+.arcaea-mermaid-box.arcaea-mermaid-error {
+  border-color: rgba(255, 120, 160, 0.38);
+  background:
+    linear-gradient(135deg,
+      rgba(255, 95, 140, 0.10),
+      rgba(120, 180, 255, 0.06));
+}
+
+.arcaea-mermaid-error-message {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 12px;
+  color: #ffd9e5;
+  background: rgba(80, 20, 42, 0.55);
+  border: 1px solid rgba(255, 150, 185, 0.25);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+/* ── 全屏预览按钮 ── */
+.arcaea-mermaid-fullscreen-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(20, 25, 35, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  color: rgba(238, 244, 255, 0.7);
+  font-size: 16px;
+  cursor: pointer;
+
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.arcaea-mermaid-box:hover .arcaea-mermaid-fullscreen-btn {
+  opacity: 1;
+}
+
+.arcaea-mermaid-fullscreen-btn:hover {
+  background: rgba(40, 50, 70, 0.8);
+  color: rgba(238, 244, 255, 1);
+}
+
+/* ── 全屏覆层 ── */
+.arcaea-mermaid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(10, 12, 18, 0.92);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.arcaea-mermaid-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.arcaea-mermaid-overlay .arcaea-mermaid-overlay-content {
+  max-width: 94vw;
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 18px;
+  background: rgba(20, 25, 35, 0.5);
+  padding: 1rem;
+}
+
+.arcaea-mermaid-overlay .arcaea-mermaid-overlay-content svg {
+  max-width: none !important;
+  width: auto !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
+
+.arcaea-mermaid-overlay-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(20, 25, 35, 0.7);
+  backdrop-filter: blur(8px);
+
+  color: rgba(238, 244, 255, 0.85);
+  font-size: 22px;
+  cursor: pointer;
+
+  transition: background 0.2s, color 0.2s;
+  z-index: 10;
+}
+
+.arcaea-mermaid-overlay-close:hover {
+  background: rgba(60, 30, 40, 0.8);
+  color: #fff;
+}
+
+/* ── 滚动条美化 ── */
+.arcaea-mermaid-box::-webkit-scrollbar,
+.arcaea-mermaid-overlay-content::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.arcaea-mermaid-box::-webkit-scrollbar-track,
+.arcaea-mermaid-overlay-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.arcaea-mermaid-box::-webkit-scrollbar-thumb,
+.arcaea-mermaid-overlay-content::-webkit-scrollbar-thumb {
+  background: rgba(160, 220, 255, 0.25);
+  border-radius: 3px;
+}
+
+.arcaea-mermaid-box::-webkit-scrollbar-thumb:hover,
+.arcaea-mermaid-overlay-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 220, 255, 0.4);
+}
+
+/* ── 响应式：平板 ── */
 @media (max-width: 768px) {
   .arcaea-mermaid-box {
     margin: 1.4rem 0;
-
-    max-height: 70vh !important;
-    overflow: auto !important;
-
-    border-radius: 12px;
-  }
-
-  .arcaea-mermaid-diagram,
-  .mermaid.arcaea-mermaid-diagram {
-    margin: 1.2rem 0 !important;
-    padding: 0 !important;
+    padding: 0.75rem;
+    border-radius: 14px;
   }
 
   .arcaea-mermaid-diagram svg {
-    width: auto !important;
-    min-width: 720px !important;
-    max-width: none !important;
+    padding: 10px;
+  }
 
-    height: auto !important;
-    max-height: none !important;
+  .arcaea-mermaid-fullscreen-btn {
+    opacity: 1;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
 
-    padding: 10px !important;
+  .arcaea-mermaid-overlay .arcaea-mermaid-overlay-content {
+    max-width: 98vw;
+    max-height: 96vh;
+    padding: 0.5rem;
   }
 }
 
-/* Small phones */
+/* ── 响应式：小手机 ── */
 @media (max-width: 420px) {
+  .arcaea-mermaid-box {
+    padding: 0.5rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+  }
+
   .arcaea-mermaid-diagram svg {
-    min-width: 680px !important;
+    padding: 8px;
+    border-radius: 10px;
   }
 }
 
-/* Reduced motion */
+/* ── 减少动效 ── */
 @media (prefers-reduced-motion: reduce) {
 
   .arcaea-mermaid-box,
-  .arcaea-mermaid-box:hover,
-  .arcaea-mermaid-diagram,
-  .arcaea-mermaid-diagram:hover {
+  .arcaea-mermaid-box:hover {
     transition: none !important;
     animation: none !important;
+    transform: none !important;
+  }
+
+  .arcaea-mermaid-overlay {
+    transition: none !important;
   }
 }

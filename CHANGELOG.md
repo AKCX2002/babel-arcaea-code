@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.3.0
+
+### Added
+
+- **Mermaid 响应式渲染架构重写**：Markdown → Mermaid 代码块 → Mermaid.js → SVG → 玻璃拟态容器 → 自动缩放 → 超宽滚动 → 全屏预览。
+- Mermaid 玻璃拟态容器：`backdrop-filter: blur(16px)` + 发光边框 + 发光阴影，适配 Arcaea 暗色风格。
+- Mermaid 悬停微动效：`hover` 时 `scale(1.01)` + 增强光晕。
+- Mermaid 全屏预览功能：悬停显示「查看大图」按钮，点击弹出全屏覆层，支持 ESC / 点击背景 / ✕ 按钮关闭。
+- Mermaid 自定义滚动条美化：半透明蓝光滚动条。
+- 响应式适配：平板（768px）和小手机（420px）断点优化。
+
+### Changed
+
+- **CSS 架构重构**：移除 `min-width: 960px` 强制宽度的旧方案，改用 `min-width: fit-content` + wrapper `overflow-x: auto` 的新方案。小图自动居中，大图自然触发横向滚动。
+- **JS 简化**：移除 `getResponsiveMermaidWidth` / `applyMermaidSvgWidth` 等旧逻辑，`normalizeMermaidSvg` 仅保留 viewBox 裁剪。
+- 版本号从 1.2.0 升至 1.3.0。
+
 ## 1.2.0
 
 ### Added
