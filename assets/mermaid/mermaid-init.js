@@ -39,6 +39,34 @@
     svg.style.maxWidth = 'none';
     svg.style.maxHeight = 'none';
 
+    try {
+      const root = svg.querySelector('g.root') || svg.querySelector('g') || svg;
+      const box = root.getBBox();
+
+      if (
+        Number.isFinite(box.x) &&
+        Number.isFinite(box.y) &&
+        Number.isFinite(box.width) &&
+        Number.isFinite(box.height) &&
+        box.width > 0 &&
+        box.height > 0
+      ) {
+        const pad = 32;
+        const x = box.x - pad;
+        const y = box.y - pad;
+        const width = box.width + pad * 2;
+        const height = box.height + pad * 2;
+
+        svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+
+        const readableWidth = Math.max(960, Math.min(width, 1600));
+        svg.style.width = readableWidth + 'px';
+        return;
+      }
+    } catch (e) {
+      console.warn(LOG, 'Mermaid SVG bbox crop skipped:', e);
+    }
+
     const viewBox = svg.getAttribute('viewBox');
     if (!viewBox) return;
 
