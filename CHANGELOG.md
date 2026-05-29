@@ -1,5 +1,78 @@
 # Changelog
 
+## 1.4.0
+
+### Added
+
+- **Modular directory structure**: Monolithic `babel-arcaea-code.php` split into dedicated modules under `includes/`:
+  - `includes/options.php` — Defaults, option getter, sanitize callback, Settings API registration
+  - `includes/assets.php` — All asset enqueuing (Prism CSS/JS, Mermaid, Markmap, medium-zoom, MathJax)
+  - `includes/renderer-mermaid.php` — Mermaid `the_content` filter and `[mermaid]` shortcode
+  - `includes/renderer-markmap.php` — Markmap `the_content` filter, `[markmap]` shortcode, CLI render engine, `save_post` pre-render hook, utility functions (`bac_find_node()`, `bac_sanitize_svg()`)
+  - `includes/compat-sakurairo.php` — Sakurairo Prism disable, APlayer safe patch, LightGallery warning suppression
+  - `includes/health.php` — `bac_health_check()` and `bac_health_check_table()` for admin dashboard
+  - `includes/admin.php` — Admin settings page with health check integration
+- **`assets/css/bac-prism-wrap.css`**: Dedicated CSS file for Prism code block soft-wrapping (`white-space: pre-wrap`, `word-break: break-word`, `overflow-wrap: anywhere`), compatible with Line Numbers plugin.
+
+### Changed
+
+- **Entry file (`babel-arcaea-code.php`) reduced** from ~800 lines to ~80 lines — thin loader that defines constants and loads modules via `require_once`.
+- **Admin page** now uses a named callback `bac_admin_page_render()` instead of anonymous closure, making it testable.
+- **Health check** extracted to `includes/health.php` with `bac_health_check()` (returns array) and `bac_health_check_table()` (renders HTML).
+- **All functions remain available globally** — no namespace change, no breaking API changes.
+- Version bumped from 1.3.1 to 1.4.0.
+
+### Fixed
+
+- **Prism code block overflow**: Added automatic soft-wrapping via `pre-wrap` so long one-line code blocks wrap instead of creating horizontal scrollbars. See `assets/css/bac-prism-wrap.css`.
+
+---
+
+## 1.5.0
+
+### Added
+
+- **v1.5.0: `save_post` pre-render hook** (`bac_markmap_prerender_on_save()`): Shifts Markmap SVG rendering from front-end (`the_content`) to post-save time. Extracts all `language-markmap`/`lang-markmap`/`markmap` code blocks and `[markmap]` shortcodes, deduplicates by content hash, and pre-renders them as cached SVGs during save.
+- **Graceful degradation**: If `save_post` cache is missing (e.g. post was saved before upgrade), `the_content` filter falls back to on-demand pre-render, then to client-side rendering if Node.js is unavailable.
+
+### Changed
+
+- **Markmap pre-render pipeline upgraded**:
+  1. `save_post` → extract blocks → `bac_markmap_render_svg()` → cache
+  2. `the_content` → read cache → served as `<div class="arcaea-markmap-prerendered">`
+  3. Cache miss → immediate render → cache → serve
+  4. Render failure → client-side `<pre>` + `<svg>` fallback
+- **`bac_markmap_render_svg()`**: Now used by both `save_post` and `the_content` paths (previously only `the_content`).
+
+---
+
+## 1.3.1
+
+### Added
+
+- **`bac_find_node()`**: Robust Node.js binary locator probing common paths (`/usr/bin/node`, `/usr/local/bin/node`, `/opt/homebrew/bin/node`, `BAC_NODE_BIN` env).
+- **`bac_sanitize_svg()`**: Lightweight SVG sanitizer that strips `<script>` blocks, `on*` event handlers, and `javascript:` URIs to prevent XSS vectors in pre-rendered markmap SVGs.
+- **`bac_asset_url()`**: Safe asset URL resolver with file existence check — returns `null` if file is missing, enabling graceful degradation.
+- **`bac_disable_handles()`**: Bulk handle dequeue/deregister helper that checks whether handles are actually enqueued/registered before acting.
+- **Health check section in admin page**: Displays status of Prism core, Mermaid ESM, Markmap vendor, Node.js binary, render script, cache directory writability, `proc_open` availability, and Sakurairo theme detection.
+
+### Changed
+
+- **Mermaid code block regex** now also matches `lang-mermaid` and bare `mermaid` class names (previously only `language-mermaid`).
+- **Markmap code block regex** now also matches `lang-markmap` and bare `markmap` class names (previously only `language-markmap`).
+- **`bac_markmap_render_svg()`**:
+  - Now uses `bac_find_node()` instead of inline fallback logic.
+  - Applies `bac_sanitize_svg()` to cached and newly rendered SVGs.
+  - Sets stdout/stderr to non-blocking mode.
+  - Implements polling read with a 15-second safety timeout.
+  - Logs failures to `error_log()` when `WP_DEBUG` is enabled.
+  - Added `bac_markmap_render_cmd` filter for custom command wrapping (e.g. `timeout(15)`).
+- **Sanitize callback extracted**: Moved anonymous `register_setting` callback to named function `bac_sanitize_options()` for better testability and reuse.
+- **Medium-zoom dependency**: Now added to `bac-mermaid-init` deps via `script_loader_tag` filter instead of mutating `$wp_scripts` directly.
+- **Sakurairo Prism disable**: Now uses `bac_disable_handles()` helper with debug logging.
+- **Admin page descriptions**: Improved APlayer safe patch and LightGallery warning suppression descriptions with clearer risk warnings.
+- Version bumped from 1.3.0 to 1.3.1.
+
 ## 1.3.0
 
 ### Added
