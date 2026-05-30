@@ -135,21 +135,38 @@
     /* Clone the SVG, then rewrite all IDs so they don't collide
      * with the original (still in the DOM).  Mermaid SVGs use
      * id="mermaid-NNN" and url(#mermaid-NNN-gradient) references
-     * that break when two copies share the same IDs. */
+     * that break when two copies share the same IDs.
+     *
+     * Instead of innerHTML (which breaks SVG namespace), use DOM
+     * traversal to find url(#...) references in attributes. */
     var clone = svgEl.cloneNode(true);
     var suffix = '-fs-' + Date.now();
 
-    // Rename the root ID
     var oldId = clone.getAttribute('id');
     if (oldId) {
-      clone.setAttribute('id', oldId + suffix);
-      // Rewrite all #oldId references inside <style>
+      var newId = oldId + suffix;
+      clone.setAttribute('id', newId);
+
+      // Rewrite #oldId in <style> text content
       var style = clone.querySelector('style');
       if (style && style.textContent) {
-        style.textContent = style.textContent.split('#' + oldId).join('#' + oldId + suffix);
+        style.textContent = style.textContent.split('#' + oldId).join('#' + newId);
       }
-      // Rewrite url(#oldId-...) references in the markup
-      clone.innerHTML = clone.innerHTML.split('(#' + oldId).join('(#' + oldId + suffix);
+
+      // Rewrite url(#oldId-...) in element attributes (fill, stroke, marker-end, filter, etc.)
+      var attrs = ['fill', 'stroke', 'marker-end', 'marker-start', 'filter', 'clip-path', 'mask'];
+      clone.querySelectorAll('*').forEach(function (el) {
+        attrs.forEach(function (attr) {
+          var val = el.getAttribute(attr);
+          if (val && val.indexOf('url(#' + oldId) >= 0) {
+            el.setAttribute(attr, val.split('url(#' + oldId).join('url(#' + newId));
+          }
+        });
+        // Also fix id attributes on child elements
+        if (el.id && el.id.indexOf(oldId) === 0) {
+          el.id = el.id.replace(oldId, newId);
+        }
+      });
     }
 
     clone.removeAttribute('width');

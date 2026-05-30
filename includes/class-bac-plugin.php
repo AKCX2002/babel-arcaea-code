@@ -63,17 +63,22 @@ class Plugin {
         $lib = __DIR__ . '/../lib/plugin-update-checker.php';
         if (!\file_exists($lib)) return;
         require_once $lib;
-        $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
-            'https://github.com/AKCX2002/babel-arcaea-code/',
-            __DIR__ . '/../babel-arcaea-code.php',
-            'babel-arcaea-code'
-        );
-        $uc->getVcsApi()->enableReleaseAssets();
-        if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
-            $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
-            if ($token) {
-                try { $uc->getVcsApi()->setAuthentication($token); }
-                catch (\Exception $e) {}
+        try {
+            $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
+                'https://github.com/AKCX2002/babel-arcaea-code/',
+                __DIR__ . '/../babel-arcaea-code.php',
+                'babel-arcaea-code'
+            );
+            $uc->getVcsApi()->enableReleaseAssets();
+            if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
+                $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
+                if ($token) {
+                    $uc->getVcsApi()->setAuthentication($token);
+                }
+            }
+        } catch (\Throwable $e) {
+            if (\defined('WP_DEBUG') && WP_DEBUG) {
+                \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
             }
         }
     }
