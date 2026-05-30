@@ -236,11 +236,11 @@
       securityLevel: 'strict',
       theme: 'base',
       flowchart: {
-        htmlLabels: false, useMaxWidth: false, curve: 'basis',
+        htmlLabels: false, useMaxWidth: true, curve: 'basis',
         padding: 6, nodeSpacing: 10, rankSpacing: 16, subGraphMargin: 10
       },
       sequence: {
-        useMaxWidth: false, mirrorActors: false, rightAngles: false,
+        useMaxWidth: true, mirrorActors: false, rightAngles: false,
         diagramMarginX: 16, diagramMarginY: 16
       },
       themeVariables: {
