@@ -53,25 +53,50 @@ class Renderer {
      * <pre><code class="language-xxx"> form so Prism.js can highlight them.
      */
     public function normalizeCodeBlocks(string $content): string {
+        // Pass 1: wrap bare <pre> (no <code> inside, stripped by Sakurairo)
         $pattern = '/<pre(\s[^>]*)?>\s*(?!\s*<)(.*?)\s*<\/pre>/si';
 
-        return \preg_replace_callback($pattern, function ($m) {
+        $content = \preg_replace_callback($pattern, function ($m) {
             $attrs = $m[1] ?? '';
             $inner = $m[2] ?? '';
 
-            $langClass = 'language-text';
-            if (\preg_match('/class=[\"\']([^\"\']*)[\"\']/i', $attrs, $cm)) {
-                $classes = $cm[1];
-                if (\preg_match('/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i', $classes, $lm)) {
-                    $langClass = 'language-' . \strtolower($lm[1]);
-                } elseif (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap)(?:\s|$)/i', $classes, $lm)) {
-                    $langClass = 'language-' . \strtolower($lm[1]);
-                }
-            }
-
+            $langClass = $this->extractLang($attrs);
             $inner = \html_entity_decode($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             return '<pre' . $attrs . '><code class="' . \esc_attr($langClass) . '">' . $inner . '</code></pre>';
         }, $content);
+
+        // Pass 2: handle <pre><code> that lacks language-* class
+        $content = \preg_replace_callback(
+            '/<pre(\s[^>]*)?>\s*<code(?![^>]*\blanguage-)(\s[^>]*)>(.*?)<\/code>\s*<\/pre>/si',
+            function ($m) {
+                $preAttrs = $m[1] ?? '';
+                $codeAttrs = $m[2] ?? '';
+                $inner = $m[3] ?? '';
+
+                $langClass = $this->extractLang($preAttrs);
+                $inner = \html_entity_decode($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                return '<pre' . $preAttrs . '><code class="' . \esc_attr($langClass) . '"' . $codeAttrs . '>' . $inner . '</code></pre>';
+            },
+            $content
+        );
+
+        return $content;
+    }
+
+    /**
+     * Extract language class from tag attributes.
+     */
+    private function extractLang(string $attrs): string {
+        if (\preg_match('/class=["\']([^"\']*)["\']/i', $attrs, $cm)) {
+            $classes = $cm[1];
+            if (\preg_match('/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i', $classes, $lm)) {
+                return 'language-' . \strtolower($lm[1]);
+            }
+            if (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap)(?:\s|$)/i', $classes, $lm)) {
+                return 'language-' . \strtolower($lm[1]);
+            }
+        }
+        return 'language-text';
     }
 
     /* ════════════════════════════════════════════
