@@ -7,10 +7,38 @@ class Assets {
 
     public function __construct() { $this->opts = Plugin::init()->options()->get(); \add_action('wp_enqueue_scripts', [$this,'enqueueAll']); }
 
+    /**
+     * Conditional enqueue: only load modules detected as needed for current post.
+     * Pattern: githuber-md's Githuber::init() + ModuleAbstract::is_module_should_be_loaded().
+     *
+     * On non-singular pages (home, archive) needsModule() returns true → load all.
+     * On singular posts, only loads modules whose post meta flag is '1'.
+     */
     public function enqueueAll(): void {
         if (\is_admin() || empty($this->opts['enabled'])) return;
-        if ($this->opts['prism_enabled']) { $this->enqueuePrismCss(); $this->enqueuePrismJs(); }
-        $this->enqueueMediumZoom(); $this->enqueueFrontendInit(); $this->enqueueMarkmap(); $this->enqueueMathJax();
+
+        if ($this->opts['prism_enabled'] && Detector::needsModule(Detector::META_PRISM)) {
+            $this->enqueuePrismCss(); $this->enqueuePrismJs();
+        }
+        // mediumZoom always loads (lightweight, no post-meta gate)
+        $this->enqueueMediumZoom();
+
+        // mermaid-init is the unified frontend boot script; load if any
+        // visual module (prism, mermaid, katex) is needed.
+        $needsBoot = Detector::needsModule(Detector::META_PRISM)
+                  || Detector::needsModule(Detector::META_MERMAID)
+                  || Detector::needsModule(Detector::META_KATEX);
+        if ($needsBoot) $this->enqueueFrontendInit();
+
+        if ($this->opts['markmap_enabled'] && Detector::needsModule(Detector::META_MARKMAP)) {
+            $this->enqueueMarkmap();
+        }
+        if ($this->opts['mathjax_enabled'] && Detector::needsModule(Detector::META_MATHJAX)) {
+            $this->enqueueMathJax();
+        }
+        if ($this->opts['katex_enabled'] && Detector::needsModule(Detector::META_KATEX)) {
+            $this->enqueueKatex();
+        }
     }
 
     private function enqueuePrismCss(): void {
@@ -49,7 +77,12 @@ class Assets {
         if ($this->opts['prism_enabled'] && \wp_script_is(self::PRISM_CORE,'registered')) $deps[] = self::PRISM_CORE;
         if (\wp_script_is('bac-medium-zoom','registered')) $deps[] = 'bac-medium-zoom';
         if (!$this->script('assets/mermaid/mermaid-init.js','bac-mermaid-init',$deps)) return;
-        \wp_localize_script('bac-mermaid-init','BAC_Config',['lineNumbers'=>!empty($this->opts['prism_line_numbers']),'prismEnabled'=>!empty($this->opts['prism_enabled']),'mermaidEnabled'=>!empty($this->opts['mermaid_enabled'])]);
+        \wp_localize_script('bac-mermaid-init','BAC_Config',[
+            'lineNumbers'=>!empty($this->opts['prism_line_numbers']),
+            'prismEnabled'=>!empty($this->opts['prism_enabled']),
+            'mermaidEnabled'=>!empty($this->opts['mermaid_enabled']),
+            'katexEnabled'=>!empty($this->opts['katex_enabled']),
+        ]);
         if ($this->opts['mermaid_enabled']) { $this->style('assets/mermaid/mermaid.css','bac-mermaid'); \wp_localize_script('bac-mermaid-init','BAC_Mermaid',['mermaidUrl'=>\esc_url(BAC_PLUGIN_URL.'assets/mermaid/mermaid.esm.min.mjs')]); }
     }
 
@@ -63,6 +96,25 @@ class Assets {
     }
 
     private function enqueueMathJax(): void { if (!$this->opts['mathjax_enabled']) return; \add_action('wp_head',fn()=>print('<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]]},svg:{fontCache:"global"},options:{ignoreHtmlClass:"no-mathjax"}}</script>'),0); $this->script('assets/mathjax/es5/tex-chtml.js','bac-mathjax'); }
+
+    /**
+     * Enqueue KaTeX assets (CSS + JS + auto-render + init).
+     * KaTeX is a fast math rendering library — alternative to MathJax.
+     * Reference: githuber-md/src/Modules/KaTeX.php
+     */
+    private function enqueueKatex(): void {
+        if (empty($this->opts['katex_enabled'])) return;
+        $v = $this->opts['katex_version'] ?? '0.16.25';
+        $d = 'assets/katex/';
+
+        // CSS
+        $this->style($d . 'katex.min.css', 'bac-katex', [], $v);
+
+        // JS: core + auto-render + init
+        if (!$this->script($d . 'katex.min.js', 'bac-katex-js', [], $v)) return;
+        $this->script($d . 'auto-render.min.js', 'bac-katex-autorender', ['bac-katex-js'], $v);
+        $this->script($d . 'katex-init.js', 'bac-katex-init', ['bac-katex-autorender']);
+    }
 
     private function script(string $rel, string $h, array $d=[], string $v=BAC_VERSION): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_script($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v,true); return true; }
     private function style(string $rel, string $h, array $d=[], string $v=BAC_VERSION): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_style($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v); return true; }

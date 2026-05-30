@@ -28,7 +28,7 @@ require_once __DIR__ . '/includes/class-bac-health.php';
 /* ── Legacy procedural includes (backward compatibility) ──
  * Always load first — the class-based Assets/Renderer/Compat
  * will skip registration if legacy hooks are already in place. */
-$bac_includes = ['includes/options.php','includes/assets.php','includes/headers.php','includes/renderer-mermaid.php','includes/renderer-markmap.php','includes/compat-sakurairo.php','includes/health.php'];
+$bac_includes = ['includes/options.php','includes/assets.php','includes/headers.php','includes/renderer-mermaid.php','includes/renderer-markmap.php','includes/renderer-katex.php','includes/compat-sakurairo.php','includes/health.php'];
 foreach ($bac_includes as $inc) {
     $path = BAC_PLUGIN_DIR . $inc;
     if (file_exists($path)) require_once $path;

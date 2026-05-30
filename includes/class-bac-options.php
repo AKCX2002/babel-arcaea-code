@@ -4,8 +4,9 @@ namespace BabelArcaeaCode; defined('ABSPATH') || exit;
 class Options {
     public const DEFAULTS = [
         'enabled'=>1,'prism_enabled'=>1,'mermaid_enabled'=>1,'mathjax_enabled'=>0,'markmap_enabled'=>0,
+        'katex_enabled'=>0,
         'markmap_runtime'=>'local','markmap_prerender'=>0,'mermaid_version'=>'11.15.0',
-        'prism_version'=>'1.30.0','mathjax_version'=>'3.2.2','prism_line_numbers'=>1,
+        'prism_version'=>'1.30.0','mathjax_version'=>'3.2.2','katex_version'=>'0.16.25','prism_line_numbers'=>1,
         'prism_copy'=>1,'prism_braces'=>1,'prism_previewers'=>1,'prism_theme'=>'arcaea_dark',
         'disable_sakurairo_prism'=>1,'aplayer_safe_patch'=>0,'suppress_lightgallery_warn'=>0,
     ];
@@ -25,7 +26,7 @@ class Options {
 
     public static function sanitize($in): array {
         $in = \is_array($in) ? $in : []; $out = [];
-        foreach (['enabled','prism_enabled','mermaid_enabled','mathjax_enabled','markmap_enabled','markmap_prerender','prism_line_numbers','prism_copy','prism_braces','prism_previewers','disable_sakurairo_prism','aplayer_safe_patch','suppress_lightgallery_warn'] as $f) { $out[$f] = empty($in[$f]) ? 0 : 1; }
+        foreach (['enabled','prism_enabled','mermaid_enabled','mathjax_enabled','markmap_enabled','katex_enabled','markmap_prerender','prism_line_numbers','prism_copy','prism_braces','prism_previewers','disable_sakurairo_prism','aplayer_safe_patch','suppress_lightgallery_warn'] as $f) { $out[$f] = empty($in[$f]) ? 0 : 1; }
         foreach (self::ALLOWED as $f => $vals) { $v = $in[$f] ?? ''; $out[$f] = \in_array($v, $vals, true) ? \sanitize_key($v) : self::DEFAULTS[$f]; }
         $out['prism_version'] = self::DEFAULTS['prism_version'];
         $out['mathjax_version'] = self::DEFAULTS['mathjax_version'];

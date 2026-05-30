@@ -19,11 +19,13 @@ function bac_defaults() {
         'mermaid_enabled'             => 1,
         'mathjax_enabled'             => 0,
         'markmap_enabled'             => 0,
+        'katex_enabled'               => 0,
         'markmap_runtime'             => 'local',
         'markmap_prerender'           => 0,
         'mermaid_version'             => '11.15.0',
         'prism_version'               => '1.30.0',
         'mathjax_version'             => '3.2.2',
+        'katex_version'               => '0.16.25',
         'prism_line_numbers'          => 1,
         'prism_copy'                  => 1,
         'prism_braces'                => 1,
@@ -64,12 +66,14 @@ function bac_sanitize_options($in) {
         ? sanitize_key($in['markmap_runtime'])
         : $d['markmap_runtime'];
     $out['markmap_prerender']       = !empty($in['markmap_prerender']) ? 1 : 0;
+    $out['katex_enabled']           = !empty($in['katex_enabled']) ? 1 : 0;
 
     $out['mermaid_version'] = in_array($in['mermaid_version'] ?? '', ['11.15.0'], true)
         ? sanitize_text_field($in['mermaid_version'])
         : $d['mermaid_version'];
     $out['prism_version']   = $d['prism_version'];
     $out['mathjax_version'] = $d['mathjax_version'];
+    $out['katex_version']   = $d['katex_version'];
 
     $out['prism_line_numbers']      = !empty($in['prism_line_numbers']) ? 1 : 0;
     $out['prism_copy']              = !empty($in['prism_copy']) ? 1 : 0;

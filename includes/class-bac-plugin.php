@@ -59,7 +59,7 @@ class Plugin {
     }
 
     private function loadModules(): void {
-        $modules = ['includes/class-bac-options.php','includes/class-bac-assets.php','includes/class-bac-renderer.php','includes/class-bac-compat.php','includes/class-bac-headers.php','includes/class-bac-health.php'];
+        $modules = ['includes/class-bac-options.php','includes/class-bac-detector.php','includes/class-bac-assets.php','includes/class-bac-renderer.php','includes/class-bac-compat.php','includes/class-bac-headers.php','includes/class-bac-health.php'];
         foreach ($modules as $m) {
             $p = \dirname(__DIR__) . '/' . $m;
             if (\file_exists($p)) require_once $p;

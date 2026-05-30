@@ -46,6 +46,16 @@ jobs:
           test -f assets/mathjax/es5/tex-chtml.js
           echo "  ✓ mathjax"
 
+          echo "=== KaTeX ==="
+          test -f assets/katex/katex.min.js
+          echo "  ✓ katex.min.js"
+          test -f assets/katex/katex.min.css
+          echo "  ✓ katex.min.css"
+          test -f assets/katex/auto-render.min.js
+          echo "  ✓ auto-render.min.js"
+          test -f assets/katex/katex-init.js
+          echo "  ✓ katex-init.js"
+
           echo "=== Medium Zoom ==="
           test -f assets/js/medium-zoom.min.js
           echo "  ✓ medium-zoom.min.js"

@@ -7,10 +7,53 @@ class Renderer {
     public function __construct() {
         $this->opts = Plugin::init()->options()->get();
         if (!$this->opts['enabled']) return;
+
+        // Priority 0: normalize bare <pre> tags BEFORE wpautop(10).
+        // Sakurairo theme strips <code> from <pre>, so we add it back.
+        // Must run before Mermaid filter(11) and wpautop(10).
+        \add_filter('the_content', [$this, 'normalizeCodeBlocks'], 0);
+
         // Priority 11: AFTER wpautop(10). Strip <br/> injected by wpautop.
         // Per sakurairo-arcaea-blog-skill/references/prism-mermaid-conflict.md
         if ($this->opts['mermaid_enabled']) { \add_filter('the_content',[$this,'filterMermaid'],11); \add_shortcode('mermaid',[$this,'shortcodeMermaid']); }
         if ($this->opts['markmap_enabled']) { \add_filter('the_content',[$this,'filterMarkmap'],11); \add_shortcode('markmap',[$this,'shortcodeMarkmap']); }
+    }
+
+    /**
+     * Normalize bare <pre> tags into <pre><code class="language-xxx"> format.
+     * 
+     * Sakurairo theme strips <code> elements from <pre>, leaving bare <pre>text</pre>
+     * that Prism.js cannot highlight. This filter wraps the inner text in <code>
+     * and preserves any language class from the <pre> tag.
+     *
+     * @param string $content Post content.
+     * @return string Normalized content.
+     */
+    public function normalizeCodeBlocks(string $content): string {
+        // Match <pre> whose direct content does NOT start with an HTML tag
+        // (i.e., bare <pre>text</pre> without <code> or any other child element).
+        $pattern = '/<pre(\s[^>]*)?>\s*(?!\s*<)(.*?)\s*<\/pre>/si';
+
+        return \preg_replace_callback($pattern, function ($m) {
+            $attrs = $m[1] ?? '';
+            $inner = $m[2] ?? '';
+
+            // Extract language from <pre> class if present.
+            $langClass = 'language-text';
+            if (\preg_match('/class=["\']([^"\']*)["\']/i', $attrs, $cm)) {
+                $classes = $cm[1];
+                if (\preg_match('/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i', $classes, $lm)) {
+                    $langClass = 'language-' . \strtolower($lm[1]);
+                } elseif (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap)(?:\s|$)/i', $classes, $lm)) {
+                    $langClass = 'language-' . \strtolower($lm[1]);
+                }
+            }
+
+            // Decode HTML entities, then re-escape for safe output inside <code>.
+            $inner = \html_entity_decode($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            return '<pre' . $attrs . '><code class="' . \esc_attr($langClass) . '">' . $inner . '</code></pre>';
+        }, $content);
     }
 
     private static function pattern(array $classes): string {

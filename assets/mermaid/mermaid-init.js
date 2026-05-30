@@ -19,6 +19,48 @@
     const scope = root && root.querySelectorAll ? root : document;
     const lineNumbersEnabled = asBool(config.lineNumbers, true);
 
+    /**
+     * Normalize a bare <pre> element that has no <code> child.
+     * The Sakurairo theme strips <code> from <pre>, so we add it back.
+     */
+    function normalizeBarePre(pre) {
+      if (
+        pre.querySelector('code') ||
+        pre.closest('.arcaea-mermaid-box') ||
+        pre.closest('.arcaea-markmap-box') ||
+        pre.classList.contains('arcaea-markmap-source')
+      ) {
+        return null;
+      }
+
+      // Extract language from <pre> class or data attributes.
+      let langClass = 'language-text';
+      const cls = pre.className || '';
+      const langMatch = cls.match(/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i);
+      if (langMatch) {
+        langClass = 'language-' + langMatch[1].toLowerCase();
+      }
+
+      // Create <code> wrapper and move text content into it.
+      const code = document.createElement('code');
+      code.className = langClass;
+      while (pre.firstChild) {
+        code.appendChild(pre.firstChild);
+      }
+      pre.appendChild(code);
+      return code;
+    }
+
+    /**
+     * Normalize bare <pre> tags (without <code> child) by wrapping content in <code>.
+     * Must happen before Prism.highlightElement() is called.
+     */
+    scope.querySelectorAll('pre:not([data-bac-prism-normalized="1"])').forEach((pre) => {
+      pre.dataset.bacPrismNormalized = '1';
+      normalizeBarePre(pre);
+    });
+
+    /* Now highlight all code elements that haven't been highlighted yet. */
     scope.querySelectorAll('pre code:not([data-bac-prism-ready="1"])').forEach((code) => {
       const pre = code.closest('pre');
       if (
@@ -314,19 +356,19 @@
      * 避免重复的 DOM 查询和 Mermaid 初始化。
      */
     /* 立即或等待 DOM就绪 — footer-enqueued 脚本可能晚于 DOMContentLoaded */
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    scheduleBoot(document);
-  } else {
-    document.addEventListener('DOMContentLoaded', () => scheduleBoot(document));
-  }
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      scheduleBoot(document);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => scheduleBoot(document));
+    }
 
-  /* PJAX 导航后：仅重扫 Prism 和 zoom */
-  document.addEventListener('pjax:complete', () => {
-    preparePrism(document);
-    initZoom(document);
-  });
-  document.addEventListener('pjax:end', () => {
-    preparePrism(document);
-    initZoom(document);
-  });
-}) ();
+    /* PJAX 导航后：仅重扫 Prism 和 zoom */
+    document.addEventListener('pjax:complete', () => {
+      preparePrism(document);
+      initZoom(document);
+    });
+    document.addEventListener('pjax:end', () => {
+      preparePrism(document);
+      initZoom(document);
+    });
+  }) ();

@@ -27,6 +27,7 @@ HITS=0
 scan_pattern() {
     local pattern="$1"
     local label="$2"
+    local extra_exclude="${3:-}"
 
     # Use grep to find matches, excluding .git directory
     results=$(grep -RInE "$pattern" . \
@@ -35,13 +36,17 @@ scan_pattern() {
         --exclude-dir=vendor \
         --exclude-dir=lib \
         --exclude-dir=.github \
-        --exclude-dir=assets/prism/components \
+        --exclude-dir=components \
+        --exclude-dir=fonts \
+        --exclude-dir=chunks \
         --exclude="privacy-audit.sh" \
         --exclude="CHANGELOG.md" \
         --exclude="*.svg" \
         --exclude="*.min.js" \
         --exclude="*.min.mjs" \
-        --exclude="*.css" \
+        --exclude="*.min.css" \
+        --exclude="*.woff2" \
+        $extra_exclude \
         2>/dev/null || true)
 
     if [ -n "$results" ]; then
@@ -58,9 +63,12 @@ echo " Scanning for secrets and PII..."
 echo "============================================"
 echo ""
 
-scan_pattern "(GH_TOKEN|GITHUB_TOKEN)" "GitHub Token (plaintext)"
-# CHANGELOG.md and code references to token env vars are documentation, not secrets.
-scan_pattern "(password|passwd|secret)" "Password / Secret literal"
+# GH_TOKEN/GITHUB_TOKEN references in plugin code are env-var reads, not secrets.
+# Exclude the updater file that reads these from environment.
+scan_pattern "(GH_TOKEN|GITHUB_TOKEN)" "GitHub Token (plaintext)" "--exclude=class-bac-plugin.php"
+# Prism.js language definitions contain "password"/"passwd" as function/keyword names.
+# Exclude all component files and minified assets (already covered by --exclude-dir=components).
+scan_pattern '\b(password|passwd|secret)\b' "Password / Secret literal"
 scan_pattern "(api[_-]?key|api_key|apikey)" "API Key literal"
 scan_pattern "(bearer|authorization)" "Authorization / Bearer token"
 scan_pattern "(BEGIN (RSA|OPENSSH|PRIVATE) KEY)" "Private SSH/RSA key"
