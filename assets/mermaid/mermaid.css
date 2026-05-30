@@ -45,7 +45,7 @@
    */
   overflow-x: auto;
   overflow-y: auto;
-  max-height: min(85vh, 640px);
+  max-height: min(90vh, 960px);
 
   /* 悬停动效准备 — 仅 border-color, box-shadow 过渡 */
   transition: border-color 0.25s ease, box-shadow 0.25s ease;

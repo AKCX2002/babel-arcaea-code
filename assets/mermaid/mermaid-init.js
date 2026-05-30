@@ -130,12 +130,11 @@ function openFullscreen(svg) {
 
   /* 克隆 SVG，保留所有样式 */
   const clone = svg.cloneNode(true);
-  content.innerHTML = '';
-  content.appendChild(clone);
-
-  overlay.classList.add('active');
-}
-
+    /* normalizeMermaidSvg 样式也应用到克隆体 */
+    clone.removeAttribute('width');
+    clone.removeAttribute('height');
+    clone.style.maxWidth = '100%';
+    clone.style.height = 'auto';
 function addFullscreenButton(box, svg) {
   /* 已有按钮则不重复添加 */
   if (box.querySelector('.arcaea-mermaid-fullscreen-btn')) return;
