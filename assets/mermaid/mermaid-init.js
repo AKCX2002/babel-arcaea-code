@@ -98,18 +98,34 @@
     svg.style.height = 'auto';
 
     /* ── Crop viewBox to tight content bounds ──
-     * Mermaid sometimes outputs SVGs with excessive whitespace in the viewBox,
-     * making diagrams look sparse or too small.  Compute the actual bounding box
-     * of all visible elements and set viewBox accordingly. */
+     * svg.getBBox() includes invisible edgePaths → huge whitespace.
+     * Instead, compute the union bounding box of all visible .node and
+     * .cluster rect elements (the actual diagram content). */
     try {
-      var bbox = svg.getBBox();
-      if (bbox && bbox.width > 0 && bbox.height > 0) {
-        var pad = 12; /* small padding so nodes don't touch edges */
+      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      var elems = svg.querySelectorAll('.node, .cluster');
+      var found = false;
+
+      elems.forEach(function (el) {
+        try {
+          var b = el.getBBox();
+          if (b && b.width > 0 && b.height > 0) {
+            found = true;
+            if (b.x < minX) minX = b.x;
+            if (b.y < minY) minY = b.y;
+            if (b.x + b.width  > maxX) maxX = b.x + b.width;
+            if (b.y + b.height > maxY) maxY = b.y + b.height;
+          }
+        } catch (_) {}
+      });
+
+      if (found) {
+        var pad = 16;
         svg.setAttribute('viewBox',
-          (bbox.x - pad) + ' ' + (bbox.y - pad) + ' ' +
-          (bbox.width + 2 * pad) + ' ' + (bbox.height + 2 * pad));
+          (minX - pad) + ' ' + (minY - pad) + ' ' +
+          (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
       }
-    } catch (_) { /* getBBox may fail on detached/hidden SVGs; skip */ }
+    } catch (_) { /* skip */ }
   }
 
   /* ── Fullscreen overlay ── */
