@@ -13,7 +13,7 @@
 
 defined('ABSPATH') || exit;
 
-define('BAC_VERSION', '1.6.10');
+define('BAC_VERSION', '1.6.11');
 define('BAC_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('BAC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 

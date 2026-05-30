@@ -77,7 +77,6 @@ pre.line-numbers {
 .line-numbers .line-numbers-rows > span::before {
     color: inherit !important;
     content: counter(linenumber) !important;
-    counter-increment: linenumber !important;
     display: block;
     text-align: right;
     padding-right: 0.8em;
