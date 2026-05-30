@@ -271,11 +271,41 @@
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
-        // MerPress doesn't manipulate SVG attributes — let CSS handle sizing
         svg.removeAttribute('width');
         svg.removeAttribute('height');
         svg.style.maxWidth = '100%';
         svg.style.height = 'auto';
+
+        /* ── Crop viewBox to visible content ──
+         * Mermaid stateDiagram/flowchart can produce huge viewBox values
+         * (2000+px) because invisible edgePaths extend the bounding box.
+         * Compute tight viewBox from visible .node, .cluster, .statediagram-*
+         * and .note elements — the actual diagram content. */
+        try {
+          var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          var found = false;
+          svg.querySelectorAll(
+            '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
+          ).forEach(function (n) {
+            try {
+              var b = n.getBBox();
+              if (b && b.width > 0 && b.height > 0) {
+                found = true;
+                if (b.x < minX) minX = b.x;
+                if (b.y < minY) minY = b.y;
+                if (b.x + b.width > maxX) maxX = b.x + b.width;
+                if (b.y + b.height > maxY) maxY = b.y + b.height;
+              }
+            } catch (_) {}
+          });
+          if (found) {
+            var pad = 12;
+            svg.setAttribute('viewBox',
+              (minX - pad) + ' ' + (minY - pad) + ' ' +
+              (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
+          }
+        } catch (_) {}
+
         var box = el.closest('.arcaea-mermaid-box');
         if (box) addFullscreenButton(box, svg);
       });
