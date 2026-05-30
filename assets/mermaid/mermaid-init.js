@@ -104,22 +104,19 @@
     close.innerHTML = '\u2715';
     close.setAttribute('aria-label', '关闭全屏');
     close.addEventListener('click', function () {
-      overlay.classList.remove('active');
-      content.innerHTML = '';
+      moveBack(overlay);
     });
     overlay.appendChild(close);
 
     overlay.addEventListener('click', function (e) {
       if (e.target === overlay) {
-        overlay.classList.remove('active');
-        content.innerHTML = '';
+        moveBack(overlay);
       }
     });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('active')) {
-        overlay.classList.remove('active');
-        content.innerHTML = '';
+        moveBack(overlay);
       }
     });
 
@@ -127,55 +124,49 @@
     return overlay;
   }
 
+  /* ── Move SVG back from overlay to original position ── */
+
+  function moveBack(overlay) {
+    if (!overlay._bacSvgEl) return;
+    overlay.classList.remove('active');
+    // Move SVG back to its original parent
+    if (overlay._bacParent && overlay._bacPlaceholder) {
+      overlay._bacParent.insertBefore(overlay._bacSvgEl, overlay._bacPlaceholder);
+      overlay._bacPlaceholder.remove();
+    }
+    delete overlay._bacSvgEl;
+    delete overlay._bacPlaceholder;
+    delete overlay._bacParent;
+  }
+
   function openFullscreen(svgEl) {
     var overlay = createOverlay();
     var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
     content.innerHTML = '';
 
-    /* Clone the SVG, then rewrite all IDs so they don't collide
-     * with the original (still in the DOM).  Mermaid SVGs use
-     * id="mermaid-NNN" and url(#mermaid-NNN-gradient) references
-     * that break when two copies share the same IDs.
-     *
-     * Instead of innerHTML (which breaks SVG namespace), use DOM
-     * traversal to find url(#...) references in attributes. */
-    var clone = svgEl.cloneNode(true);
-    var suffix = '-fs-' + Date.now();
+    /* Move the original SVG into the overlay (no clone, no ID rewriting).
+     * The original spot gets a placeholder so we can move it back. */
+    var placeholder = document.createElement('span');
+    placeholder.style.display = 'none';
+    placeholder.dataset.arcaeaFullscreenPlaceholder = '1';
 
-    var oldId = clone.getAttribute('id');
-    if (oldId) {
-      var newId = oldId + suffix;
-      clone.setAttribute('id', newId);
-
-      // Rewrite #oldId in <style> text content
-      var style = clone.querySelector('style');
-      if (style && style.textContent) {
-        style.textContent = style.textContent.split('#' + oldId).join('#' + newId);
-      }
-
-      // Rewrite url(#oldId-...) in element attributes (fill, stroke, marker-end, filter, etc.)
-      var attrs = ['fill', 'stroke', 'marker-end', 'marker-start', 'filter', 'clip-path', 'mask'];
-      clone.querySelectorAll('*').forEach(function (el) {
-        attrs.forEach(function (attr) {
-          var val = el.getAttribute(attr);
-          if (val && val.indexOf('url(#' + oldId) >= 0) {
-            el.setAttribute(attr, val.split('url(#' + oldId).join('url(#' + newId));
-          }
-        });
-        // Also fix id attributes on child elements
-        if (el.id && el.id.indexOf(oldId) === 0) {
-          el.id = el.id.replace(oldId, newId);
-        }
-      });
+    var parent = svgEl.parentNode;
+    if (parent) {
+      parent.insertBefore(placeholder, svgEl);
     }
 
-    clone.removeAttribute('width');
-    clone.removeAttribute('height');
-    clone.style.maxWidth = '100%';
-    clone.style.height = 'auto';
+    svgEl.removeAttribute('width');
+    svgEl.removeAttribute('height');
+    svgEl.style.maxWidth = '100%';
+    svgEl.style.height = 'auto';
 
-    content.appendChild(clone);
+    content.appendChild(svgEl);
     overlay.classList.add('active');
+
+    // Store a reference so we can move it back on close
+    overlay._bacSvgEl = svgEl;
+    overlay._bacPlaceholder = placeholder;
+    overlay._bacParent = parent;
   }
 
   function addFullscreenButton(box, svg) {
