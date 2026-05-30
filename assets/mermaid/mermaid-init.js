@@ -183,11 +183,17 @@
     if (!box.querySelector('.arcaea-mermaid-error-message')) {
       var msg = document.createElement('div');
       msg.className = 'arcaea-mermaid-error-message';
-      msg.textContent = 'Mermaid 渲染失败，请检查图表语法。';
+      var errText = 'Mermaid 语法错误';
+      if (error && error.message) {
+        errText += ': ' + String(error.message).slice(0, 200);
+      } else if (error && error.str) {
+        errText += ': ' + String(error.str).slice(0, 200);
+      }
+      msg.textContent = errText;
       box.appendChild(msg);
     }
-    if (error) {
-      box.dataset.bacMermaidErrorMessage = String(error && error.message ? error.message : error).slice(0, 300);
+    if (error && error.message) {
+      box.dataset.bacMermaidErrorMessage = String(error.message).slice(0, 300);
     }
   }
 
@@ -265,8 +271,22 @@
     });
 
     try {
-      await mermaid.run({ nodes: diagrams, suppressErrors: true });
-      diagrams.forEach(function (el) {
+      // MerPress-style: pre-validate with mermaid.parse() so errors
+      // are caught before rendering.  This gives the user a clear
+      // "syntax error" message instead of silent failure.
+      var validDiagrams = [];
+      for (var i = 0; i < diagrams.length; i++) {
+        try {
+          await mermaid.parse(diagrams[i].textContent);
+          validDiagrams.push(diagrams[i]);
+        } catch (parseErr) {
+          markMermaidError(diagrams[i], parseErr);
+        }
+      }
+      if (!validDiagrams.length) return;
+
+      await mermaid.run({ nodes: validDiagrams, suppressErrors: true });
+      validDiagrams.forEach(function (el) {
         var svg = el.querySelector('svg');
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';

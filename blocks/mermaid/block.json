@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "bac/mermaid",
+    "title": "Mermaid 图表",
+    "category": "widgets",
+    "icon": "editor-code",
+    "description": "使用 Mermaid 语法创建流程图、时序图、状态图等。保存后在页面渲染为 SVG。",
+    "keywords": ["mermaid", "图表", "流程图", "状态机"],
+    "textdomain": "babel-arcaea-code",
+    "attributes": {
+        "content": {
+            "type": "string",
+            "source": "text",
+            "selector": "pre"
+        }
+    },
+    "editorScript": "file:./index.js",
+    "style": "file:../../assets/mermaid/mermaid.css"
+}

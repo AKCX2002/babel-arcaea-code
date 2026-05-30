@@ -113,7 +113,11 @@ class Plugin {
         // 7. Health    — system check (available in admin)
         require_once $base . '/class-bac-health.php';
 
-        // 8. Admin     — settings page (admin only)
+        // 8. Blocks    — Gutenberg blocks (Mermaid, Markmap, etc.)
+        require_once $base . '/class-bac-blocks.php';
+        new Blocks();
+
+        // 9. Admin     — settings page (admin only)
         if (\is_admin()) {
             require_once $base . '/class-bac-admin.php';
             new Admin();
