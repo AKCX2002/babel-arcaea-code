@@ -24,19 +24,19 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Refresh Mermaid assets
-        run: bash download-mermaid.sh $(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+        run: bash download-mermaid.sh $(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
 
       - name: Refresh Prism assets
-        run: bash download-prism.sh $(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+        run: bash download-prism.sh $(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
 
       - name: Refresh MathJax
         run: |
-          VER=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+          VER=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
           curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${VER}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
           echo "MathJax $VER: $(du -sh assets/mathjax/es5/tex-chtml.js)"
 
       - name: Refresh KaTeX
-        run: bash download-katex.sh $(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+        run: bash download-katex.sh $(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
 
       - name: Auto-bump
         id: bump
@@ -86,50 +86,50 @@ jobs:
       - name: Download Mermaid
         id: mermaid
         run: |
-          CUR=$(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+          CUR=$(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
           LAT=$(curl -sL "https://api.github.com/repos/mermaid-js/mermaid/releases/latest" | grep '"tag_name"' | head -1 | grep -oP '[0-9.]+')
           echo "current=$CUR" >> "$GITHUB_OUTPUT"
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-mermaid.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('mermaid_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/options.php && sed -i "s/\('mermaid_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          [ "$CUR" != "$LAT" ] && sed -i "s/\('mermaid_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('mermaid_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
 
       # ── 2. Prism.js ──
       - name: Download Prism
         id: prism
         run: |
-          CUR=$(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+          CUR=$(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
           LAT=$(curl -sL "https://registry.npmjs.org/prismjs/latest" | grep -oP '"version":"\K[0-9.]+')
           echo "current=$CUR" >> "$GITHUB_OUTPUT"
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-prism.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('prism_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/options.php && sed -i "s/\('prism_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          [ "$CUR" != "$LAT" ] && sed -i "s/\('prism_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('prism_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
 
       # ── 3. MathJax ──
       - name: Download MathJax
         id: mathjax
         run: |
-          CUR=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+          CUR=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
           LAT=$(curl -sL "https://registry.npmjs.org/mathjax/latest" | grep -oP '"version":"\K[0-9.]+')
           echo "current=$CUR" >> "$GITHUB_OUTPUT"
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${LAT}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
           echo "MathJax $LAT: $(du -sh assets/mathjax/es5/tex-chtml.js)"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('mathjax_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/options.php && sed -i "s/\('mathjax_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          [ "$CUR" != "$LAT" ] && sed -i "s/\('mathjax_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('mathjax_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
 
       # ── 4. KaTeX ──
       - name: Download KaTeX
         id: katex
         run: |
-          CUR=$(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/options.php)
+          CUR=$(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
           LAT=$(curl -sL "https://registry.npmjs.org/katex/latest" | grep -oP '"version":"\K[0-9.]+')
           echo "current=$CUR" >> "$GITHUB_OUTPUT"
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-katex.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('katex_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/options.php && sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          [ "$CUR" != "$LAT" ] && sed -i "s/\('katex_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
 
       # ── PR if any dep changed ──
       - name: Create PR
