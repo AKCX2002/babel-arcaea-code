@@ -96,6 +96,20 @@
     svg.style.removeProperty('height');
     svg.style.maxWidth = '100%';
     svg.style.height = 'auto';
+
+    /* ── Crop viewBox to tight content bounds ──
+     * Mermaid sometimes outputs SVGs with excessive whitespace in the viewBox,
+     * making diagrams look sparse or too small.  Compute the actual bounding box
+     * of all visible elements and set viewBox accordingly. */
+    try {
+      var bbox = svg.getBBox();
+      if (bbox && bbox.width > 0 && bbox.height > 0) {
+        var pad = 12; /* small padding so nodes don't touch edges */
+        svg.setAttribute('viewBox',
+          (bbox.x - pad) + ' ' + (bbox.y - pad) + ' ' +
+          (bbox.width + 2 * pad) + ' ' + (bbox.height + 2 * pad));
+      }
+    } catch (_) { /* getBBox may fail on detached/hidden SVGs; skip */ }
   }
 
   /* ── Fullscreen overlay ── */

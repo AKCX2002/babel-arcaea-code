@@ -56,8 +56,21 @@ pre.line-numbers,
     left: 0;
     width: 3.2em;
     border-right-width: 1px;
+    border-right-style: solid;
+    border-right-color: rgba(160,220,255,0.24) !important;
     font-family: var(--bac-code-font) !important;
     line-height: 1.7 !important;
+}
+
+.line-numbers .line-numbers-rows > span {
+    color: rgba(200,210,230,0.42) !important;
+    display: block;
+    pointer-events: none;
+}
+
+.line-numbers .line-numbers-rows > span::before {
+    color: inherit !important;
+    content: attr(data-line-number);
 }
 
 div.code-toolbar {

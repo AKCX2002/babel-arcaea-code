@@ -13,6 +13,8 @@ namespace BabelArcaeaCode;
 
 defined('ABSPATH') || exit;
 
+require_once __DIR__ . '/class-bac-options.php';
+
 class Plugin {
 
     private static ?Plugin $instance = null;
