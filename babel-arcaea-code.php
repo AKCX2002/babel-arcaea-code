@@ -24,20 +24,20 @@ require_once __DIR__ . '/includes/class-bac-headers.php';
 require_once __DIR__ . '/includes/class-bac-health.php';
 
 \BabelArcaeaCode\Plugin::init();
-new \BabelArcaeaCode\Assets();
-new \BabelArcaeaCode\Renderer();
-new \BabelArcaeaCode\Compat();
-new \BabelArcaeaCode\Headers();
 
-if (is_admin()) {
-    require_once __DIR__ . '/includes/class-bac-admin.php';
-    new \BabelArcaeaCode\Admin();
-}
-
-/* ── Legacy procedural includes (backward compatibility) ── */
+/* ── Legacy procedural includes (backward compatibility) ──
+ * Always load first — the class-based Assets/Renderer/Compat
+ * will skip registration if legacy hooks are already in place. */
 $bac_includes = ['includes/options.php','includes/assets.php','includes/headers.php','includes/renderer-mermaid.php','includes/renderer-markmap.php','includes/compat-sakurairo.php','includes/health.php'];
 foreach ($bac_includes as $inc) {
     $path = BAC_PLUGIN_DIR . $inc;
     if (file_exists($path)) require_once $path;
 }
 if (is_admin()) { $a = BAC_PLUGIN_DIR . 'includes/admin.php'; if (file_exists($a)) require_once $a; }
+
+/* ── v1.5.0: Class-based core (runs after legacy for safety) ── */
+// Assets and Renderer are skipped if legacy modules already registered hooks.
+// Compat, Headers, and Admin run unconditionally.
+new \BabelArcaeaCode\Compat();
+new \BabelArcaeaCode\Headers();
+if (is_admin()) { new \BabelArcaeaCode\Admin(); }
