@@ -26,7 +26,8 @@
         pre.querySelector('code') ||
         pre.closest('.arcaea-mermaid-box') ||
         pre.closest('.arcaea-markmap-box') ||
-        pre.classList.contains('arcaea-markmap-source')
+        pre.classList.contains('arcaea-markmap-source') ||
+        pre.classList.contains('mermaid')
       ) return null;
 
       var langClass = 'language-text';
@@ -82,50 +83,6 @@
     var mod = await import(url);
     window.mermaid = mod.default;
     return window.mermaid;
-  }
-
-  function normalizeMermaidSvg(el) {
-    var svg = el.querySelector('svg');
-    if (!svg) return;
-    /* Remove fixed px dimensions; let viewBox + CSS control sizing.
-     * max-width:100% + height:auto for responsive behaviour.
-     * .arcaea-mermaid-box handles max-height + overflow for tall diagrams. */
-    svg.removeAttribute('width');
-    svg.removeAttribute('height');
-    svg.style.removeProperty('width');
-    svg.style.removeProperty('height');
-    svg.style.maxWidth = '100%';
-    svg.style.height = 'auto';
-
-    /* ── Crop viewBox to tight content bounds ──
-     * svg.getBBox() includes invisible edgePaths → huge whitespace.
-     * Instead, compute the union bounding box of all visible .node and
-     * .cluster rect elements (the actual diagram content). */
-    try {
-      var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      var elems = svg.querySelectorAll('.node, .cluster');
-      var found = false;
-
-      elems.forEach(function (el) {
-        try {
-          var b = el.getBBox();
-          if (b && b.width > 0 && b.height > 0) {
-            found = true;
-            if (b.x < minX) minX = b.x;
-            if (b.y < minY) minY = b.y;
-            if (b.x + b.width  > maxX) maxX = b.x + b.width;
-            if (b.y + b.height > maxY) maxY = b.y + b.height;
-          }
-        } catch (_) {}
-      });
-
-      if (found) {
-        var pad = 16;
-        svg.setAttribute('viewBox',
-          (minX - pad) + ' ' + (minY - pad) + ' ' +
-          (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
-      }
-    } catch (_) { /* skip */ }
   }
 
   /* ── Fullscreen overlay ── */
@@ -234,11 +191,22 @@
     }
   }
 
+  /* ════════════════════════════════════════════
+   * Mermaid — MerPress-style: bare mermaid.run()
+   *
+   * Strategy: let Mermaid own the SVG lifecycle.  We only:
+   *   1. Provide Arcaea dark theme via mermaid.initialize()
+   *   2. Call mermaid.run({ nodes }) targeting unrendered .mermaid elements
+   *   3. Add a fullscreen button to each rendered diagram
+   * No viewBox cropping, no SVG normalization — MerPress doesn't do it.
+   * ════════════════════════════════════════════ */
+
   async function renderMermaid(root) {
     if (!asBool(config.mermaidEnabled, true)) return;
     var scope = root && root.querySelectorAll ? root : document;
+    // Target bare <pre class="mermaid"> elements (MerPress-style output)
     var diagrams = scope.querySelectorAll(
-      '.mermaid.arcaea-mermaid-diagram:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"]):not([data-bac-mermaid-error="1"])'
+      '.mermaid:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"]):not([data-bac-mermaid-error="1"])'
     );
     if (!diagrams.length) return;
 
@@ -299,12 +267,16 @@
     try {
       await mermaid.run({ nodes: diagrams, suppressErrors: true });
       diagrams.forEach(function (el) {
-        var box = el.closest('.arcaea-mermaid-box');
         var svg = el.querySelector('svg');
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
-        normalizeMermaidSvg(el);
+        // MerPress doesn't manipulate SVG attributes — let CSS handle sizing
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
+        var box = el.closest('.arcaea-mermaid-box');
         if (box) addFullscreenButton(box, svg);
       });
       console.log(LOG, 'Mermaid rendered:', diagrams.length);

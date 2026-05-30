@@ -122,7 +122,12 @@ class Renderer {
     }
 
     /* ════════════════════════════════════════════
-     * Mermaid
+     * Mermaid  — MerPress-style: <pre class="mermaid">
+     *
+     * Outputs a bare <pre class="mermaid"> containing the raw Mermaid
+     * source text.  wpautop won't touch <pre> (block-level exemption).
+     * The Mermaid JS initializes on load via mermaid.run() and replaces
+     * the pre content with an SVG — same pattern MerPress uses.
      * ════════════════════════════════════════════ */
 
     public function filterMermaid(string $c): string {
@@ -130,9 +135,9 @@ class Renderer {
             self::pattern(['mermaid']),
             fn($m) => self::clean($m[2]) === ''
                 ? $m[0]
-                : '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
+                : '<div class="arcaea-mermaid-box"><pre class="mermaid">'
                     . \esc_html(self::clean($m[2]))
-                    . '</div></div>',
+                    . '</pre></div>',
             $c
         );
     }
@@ -141,9 +146,9 @@ class Renderer {
         $c = self::clean((string) $c);
         return $c === ''
             ? ''
-            : '<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'
+            : '<div class="arcaea-mermaid-box"><pre class="mermaid">'
                 . \esc_html($c)
-                . '</div></div>';
+                . '</pre></div>';
     }
 
     /* ════════════════════════════════════════════
