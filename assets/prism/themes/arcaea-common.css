@@ -72,12 +72,12 @@ pre.line-numbers,
    The line-numbers plugin creates <span> elements; line numbers are
    rendered via ::before { content: counter(linenumber) }. */
 pre.line-numbers {
-    counter-reset: linenumber;
+    counter-reset: linenumber 0 !important;
 }
 .line-numbers .line-numbers-rows > span::before {
     color: inherit !important;
-    content: counter(linenumber);
-    counter-increment: linenumber;
+    content: counter(linenumber) !important;
+    counter-increment: linenumber !important;
     display: block;
     text-align: right;
     padding-right: 0.8em;

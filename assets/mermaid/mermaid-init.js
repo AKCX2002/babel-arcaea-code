@@ -170,15 +170,36 @@
     return overlay;
   }
 
-  function openFullscreen(svg) {
+  function openFullscreen(svgEl) {
     var overlay = createOverlay();
     var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
-    var clone = svg.cloneNode(true);
+    content.innerHTML = '';
+
+    /* Clone the SVG, then rewrite all IDs so they don't collide
+     * with the original (still in the DOM).  Mermaid SVGs use
+     * id="mermaid-NNN" and url(#mermaid-NNN-gradient) references
+     * that break when two copies share the same IDs. */
+    var clone = svgEl.cloneNode(true);
+    var suffix = '-fs-' + Date.now();
+
+    // Rename the root ID
+    var oldId = clone.getAttribute('id');
+    if (oldId) {
+      clone.setAttribute('id', oldId + suffix);
+      // Rewrite all #oldId references inside <style>
+      var style = clone.querySelector('style');
+      if (style && style.textContent) {
+        style.textContent = style.textContent.split('#' + oldId).join('#' + oldId + suffix);
+      }
+      // Rewrite url(#oldId-...) references in the markup
+      clone.innerHTML = clone.innerHTML.split('(#' + oldId).join('(#' + oldId + suffix);
+    }
+
     clone.removeAttribute('width');
     clone.removeAttribute('height');
     clone.style.maxWidth = '100%';
     clone.style.height = 'auto';
-    content.innerHTML = '';
+
     content.appendChild(clone);
     overlay.classList.add('active');
   }
