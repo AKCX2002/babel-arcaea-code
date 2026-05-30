@@ -74,54 +74,33 @@
     svg.style.removeProperty('height');
 
     /* 精确裁剪 viewBox：
-     * 遍历所有叶子图形元素（rect/path/text/foreignObject），
-     * 跳过 <g> 等容器组（它们的 getBBox 可能包含空 edgePaths 的虚高）。
-     * 只累加有实际宽高（>2px）的叶子元素的 bbox 范围。
-     */
+     * 分别取 g.clusters / g.nodes / g.edgeLabels 的 bbox 合并，
+     * 显式跳过 g.edgePaths（其 bbox 含空 path 虚高，width≈0 但 height 极大）。
+     * 只计入有实际内容的组（width > 2 && height > 2）。 */
     try {
+      const contentGroups = [
+        svg.querySelector('g.clusters'),
+        svg.querySelector('g.nodes'),
+        svg.querySelector('g.edgeLabels'),
+      ].filter(Boolean);
+
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       let found = false;
 
-      const collectLeafBBox = (parent) => {
-        for (const child of parent.children) {
-          if (child.tagName === 'defs' || child.tagName === 'style') continue;
-
-          if (child.tagName === 'g') {
-            // 容器组：不查自身 bbox（可能含虚高），只递归进子元素
-            collectLeafBBox(child);
-          } else {
-            // 叶子图形元素：检查实际 bbox
-            try {
-              const bbox = child.getBBox();
-              if (bbox.width > 2 && bbox.height > 2) {
-                if (bbox.x < minX) minX = bbox.x;
-                if (bbox.y < minY) minY = bbox.y;
-                const r = bbox.x + bbox.width;
-                const b = bbox.y + bbox.height;
-                if (r > maxX) maxX = r;
-                if (b > maxY) maxY = b;
-                found = true;
-              }
-            } catch (e) { /* skip */ }
-            // 某些叶子元素也有子元素（如 foreignObject > div）
-            if (child.children.length > 0) {
-              collectLeafBBox(child);
-            }
+      for (const g of contentGroups) {
+        try {
+          const bbox = g.getBBox();
+          if (bbox.width > 2 && bbox.height > 2) {
+            if (bbox.x < minX) minX = bbox.x;
+            if (bbox.y < minY) minY = bbox.y;
+            const r = bbox.x + bbox.width;
+            const b = bbox.y + bbox.height;
+            if (r > maxX) maxX = r;
+            if (b > maxY) maxY = b;
+            found = true;
           }
-        }
-      };
-
-      collectLeafBBox(svg);
-
-      if (found && Number.isFinite(minX) && Number.isFinite(minY) &&
-          Number.isFinite(maxX) && Number.isFinite(maxY) &&
-          maxX > minX && maxY > minY) {
-        const pad = 12;
-        const vw = maxX - minX + pad * 2;
-        const vh = maxY - minY + pad * 2;
-        svg.setAttribute('viewBox',
-          `${minX - pad} ${minY - pad} ${vw} ${vh}`
-        );
+        } catch (e) { /* skip */ }
+      }
         svg.style.maxWidth = '100%';
         svg.style.height = 'auto';
         return;
@@ -258,12 +237,12 @@
       theme: 'base',
       flowchart: {
         htmlLabels: false,
-        useMaxWidth: true,
+        useMaxWidth: false,
         curve: 'basis',
-        padding: 2,
-        nodeSpacing: 4,
-        rankSpacing: 8,
-        subGraphMargin: 6
+        padding: 6,
+        nodeSpacing: 10,
+        rankSpacing: 16,
+        subGraphMargin: 10
       },
       sequence: {
         useMaxWidth: false,
@@ -275,30 +254,31 @@
       themeVariables: {
         darkMode: true,
         background: 'transparent',
-        primaryColor: '#202a40',
-        primaryTextColor: '#f2f8ff',
-        primaryBorderColor: '#9fd2ff',
-        lineColor: '#9fd2ff',
-        secondaryColor: '#26334d',
-        tertiaryColor: '#121827',
-        textColor: '#f2f8ff',
-        mainBkg: '#202a40',
-        secondBkg: '#26334d',
-        nodeBorder: '#9fd2ff',
-        clusterBkg: 'rgba(32,42,64,0.92)',
-        clusterBorder: '#8dc7ff',
-        edgeLabelBackground: '#151d2c',
-        titleColor: '#f2f8ff',
-        labelTextColor: '#f2f8ff',
-        actorBkg: '#202a40',
-        actorBorder: '#9fd2ff',
-        actorTextColor: '#f2f8ff',
-        actorLineColor: '#8dc7ff',
-        signalColor: '#f2f8ff',
-        signalTextColor: '#f2f8ff',
-        noteBkgColor: '#1c2638',
-        noteTextColor: '#f2f8ff',
-        noteBorderColor: '#9fd2ff',
+        /* 对齐 Arcaea 设计 Token 色彩体系 */
+        primaryColor: '#0f182a',
+        primaryTextColor: '#eef4ff',
+        primaryBorderColor: '#a0dcff',
+        lineColor: '#a0dcff',
+        secondaryColor: '#1a2540',
+        tertiaryColor: '#0b1426',
+        textColor: '#eef4ff',
+        mainBkg: '#0f182a',
+        secondBkg: '#1a2540',
+        nodeBorder: '#a0dcff',
+        clusterBkg: 'rgba(15,24,42,0.55)',
+        clusterBorder: '#8ab0ff',
+        edgeLabelBackground: '#0f182a',
+        titleColor: '#eef4ff',
+        labelTextColor: '#eef4ff',
+        actorBkg: '#0f182a',
+        actorBorder: '#a0dcff',
+        actorTextColor: '#eef4ff',
+        actorLineColor: '#a0dcff',
+        signalColor: '#eef4ff',
+        signalTextColor: '#eef4ff',
+        noteBkgColor: '#111d33',
+        noteTextColor: '#eef4ff',
+        noteBorderColor: '#a0dcff',
         fontFamily: 'FiraCode Nerd Font, Fira Code, JetBrains Mono, Noto Sans SC, sans-serif',
         fontSize: '15px'
       }
