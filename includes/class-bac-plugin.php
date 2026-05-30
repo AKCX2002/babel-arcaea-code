@@ -83,7 +83,13 @@ class Plugin {
     private function loadModules(): void {
         $base = __DIR__;
 
-        // 1. Options (already loaded above, but safe to keep)
+        // CRITICAL: Set singleton BEFORE instantiating modules.
+        // Detector/Assets/Renderer/Compat constructors all call
+        // Plugin::init()->options()->get(), which would infinitely
+        // recurse if self::$instance is still null.
+        self::$instance = $this;
+
+        // 1. Options (already required at top of file)
         // 2. Detector  — post-meta scanner (save_post hook)
         require_once $base . '/class-bac-detector.php';
         new Detector();
