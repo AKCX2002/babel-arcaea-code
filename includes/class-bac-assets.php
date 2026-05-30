@@ -66,6 +66,9 @@ class Assets {
         if ($this->opts['prism_copy']) $this->script('assets/prism/prism-copy.js','bac-prism-copy',['bac-prism-toolbar']);
         if ($this->script('assets/prism/prism-autoloader.js','bac-prism-autoloader',[self::PRISM_CORE])) {
             \wp_localize_script('bac-prism-autoloader','BAC_Prism',['langPath'=>\esc_url(BAC_PLUGIN_URL.'assets/prism/components/')]);
+            \wp_add_inline_script('bac-prism-autoloader',
+                'if(window.Prism&&Prism.plugins&&Prism.plugins.autoloader&&window.BAC_Prism){Prism.plugins.autoloader.languages_path=BAC_Prism.langPath;}',
+                'after');
         }
     }
 
