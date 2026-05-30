@@ -7,9 +7,10 @@ class Renderer {
     public function __construct() {
         $this->opts = Plugin::init()->options()->get();
         if (!$this->opts['enabled']) return;
-        // Priority 1 — BEFORE wpautop(10): avoids <br/> injection & Prism/mermaid conflict
-        if ($this->opts['mermaid_enabled']) { \add_filter('the_content',[$this,'filterMermaid'],1); \add_shortcode('mermaid',[$this,'shortcodeMermaid']); }
-        if ($this->opts['markmap_enabled']) { \add_filter('the_content',[$this,'filterMarkmap'],1); \add_shortcode('markmap',[$this,'shortcodeMarkmap']); }
+        // Priority 11: AFTER wpautop(10). Strip <br/> injected by wpautop.
+        // Per sakurairo-arcaea-blog-skill/references/prism-mermaid-conflict.md
+        if ($this->opts['mermaid_enabled']) { \add_filter('the_content',[$this,'filterMermaid'],11); \add_shortcode('mermaid',[$this,'shortcodeMermaid']); }
+        if ($this->opts['markmap_enabled']) { \add_filter('the_content',[$this,'filterMarkmap'],11); \add_shortcode('markmap',[$this,'shortcodeMarkmap']); }
     }
 
     private static function pattern(array $classes): string {
@@ -17,7 +18,13 @@ class Renderer {
         return '/<pre[^>]*>\s*<code[^>]*class=(["\'])(?=[^"\']*\b(?:language-'.$n.'|lang-'.$n.'|'.$n.')\b)[^"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
     }
 
-    private static function clean(string $r): string { return \trim(\strip_tags(\html_entity_decode(\trim($r),ENT_QUOTES|ENT_HTML5,'UTF-8'))); }
+    private static function clean(string $r): string {
+        $code = \html_entity_decode(\trim($r), ENT_QUOTES|ENT_HTML5, 'UTF-8');
+        // Strip <br/> injected by wpautop (priority 10) before our filter (priority 11)
+        $code = \preg_replace('/<br\s*\/?>/i', "\n", $code);
+        $code = \strip_tags($code);
+        return \trim($code);
+    }
 
     public function filterMermaid(string $c): string {
         return \preg_replace_callback(self::pattern(['mermaid']),fn($m)=>self::clean($m[2])===''?$m[0]:'<div class="arcaea-mermaid-box"><div class="mermaid arcaea-mermaid-diagram">'.\esc_html(self::clean($m[2])).'</div></div>',$c);
