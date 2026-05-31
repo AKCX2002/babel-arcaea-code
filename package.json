@@ -23,5 +23,8 @@
   "homepage": "https://github.com/AKCX2002/babel-arcaea-code#readme",
   "dependencies": {
     "markmap-lib": "0.18.12"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }

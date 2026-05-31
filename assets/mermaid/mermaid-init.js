@@ -167,9 +167,42 @@
       overlay._bacParent.insertBefore(overlay._bacSvgEl, overlay._bacPlaceholder);
       overlay._bacPlaceholder.remove();
     }
+    restoreSvgSizing(overlay._bacSvgEl);
     delete overlay._bacSvgEl;
     delete overlay._bacPlaceholder;
     delete overlay._bacParent;
+  }
+
+  function stashSvgSizing(svgEl) {
+    if (!svgEl || svgEl.dataset.bacSvgSizingStashed === '1') return;
+    svgEl.dataset.bacSvgSizingStashed = '1';
+    svgEl.dataset.bacSvgWidthAttr = svgEl.getAttribute('width') || '';
+    svgEl.dataset.bacSvgHeightAttr = svgEl.getAttribute('height') || '';
+    svgEl.dataset.bacSvgStyleWidth = svgEl.style.width || '';
+    svgEl.dataset.bacSvgStyleHeight = svgEl.style.height || '';
+    svgEl.dataset.bacSvgStyleMaxWidth = svgEl.style.maxWidth || '';
+  }
+
+  function restoreSvgSizing(svgEl) {
+    if (!svgEl || svgEl.dataset.bacSvgSizingStashed !== '1') return;
+
+    var widthAttr = svgEl.dataset.bacSvgWidthAttr || '';
+    var heightAttr = svgEl.dataset.bacSvgHeightAttr || '';
+    if (widthAttr) { svgEl.setAttribute('width', widthAttr); }
+    else { svgEl.removeAttribute('width'); }
+    if (heightAttr) { svgEl.setAttribute('height', heightAttr); }
+    else { svgEl.removeAttribute('height'); }
+
+    svgEl.style.width = svgEl.dataset.bacSvgStyleWidth || '';
+    svgEl.style.height = svgEl.dataset.bacSvgStyleHeight || '';
+    svgEl.style.maxWidth = svgEl.dataset.bacSvgStyleMaxWidth || '';
+
+    delete svgEl.dataset.bacSvgWidthAttr;
+    delete svgEl.dataset.bacSvgHeightAttr;
+    delete svgEl.dataset.bacSvgStyleWidth;
+    delete svgEl.dataset.bacSvgStyleHeight;
+    delete svgEl.dataset.bacSvgStyleMaxWidth;
+    delete svgEl.dataset.bacSvgSizingStashed;
   }
 
   function openFullscreen(svgEl) {
@@ -188,8 +221,10 @@
       parent.insertBefore(placeholder, svgEl);
     }
 
+    stashSvgSizing(svgEl);
     svgEl.removeAttribute('width');
     svgEl.removeAttribute('height');
+    svgEl.style.width = '100%';
     svgEl.style.maxWidth = '100%';
     svgEl.style.height = 'auto';
 
@@ -339,10 +374,6 @@
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
-        svg.removeAttribute('width');
-        svg.removeAttribute('height');
-        svg.style.maxWidth = '100%';
-        svg.style.height = 'auto';
 
         /* ── Crop viewBox to visible content ──
          * Mermaid stateDiagram/flowchart can produce huge viewBox values
