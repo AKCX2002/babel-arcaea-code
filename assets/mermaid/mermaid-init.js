@@ -30,6 +30,147 @@
       .trim();
   }
 
+  function extractSubgraphAnchors(lines) {
+    var anchors = {};
+    var stack = [];
+
+    function ensureAnchor(id) {
+      if (!anchors[id]) {
+        anchors[id] = { first: '', last: '' };
+      }
+      return anchors[id];
+    }
+
+    function recordNode(id) {
+      if (!id || !stack.length) return;
+      stack.forEach(function (subgraphId) {
+        var anchor = ensureAnchor(subgraphId);
+        if (!anchor.first) anchor.first = id;
+        anchor.last = id;
+      });
+    }
+
+    lines.forEach(function (line) {
+      var subgraphMatch = line.match(/^\s*subgraph\s+([A-Za-z][\w:./-]*)(?=(?:\s|[\[(\{"']))/);
+      if (subgraphMatch) {
+        stack.push(subgraphMatch[1]);
+        ensureAnchor(subgraphMatch[1]);
+        return;
+      }
+
+      if (/^\s*end\s*$/.test(line)) {
+        if (stack.length) stack.pop();
+        return;
+      }
+
+      if (!stack.length) return;
+      if (/^\s*(?:style|classDef|class|click|linkStyle|accTitle|accDescr|section|direction)\b/.test(line)) {
+        return;
+      }
+
+      var nodePattern = /\b([A-Za-z][\w:./-]*)\s*(?=(?:\[[^\]]*\]|\([^)]+\)|\{[^}]+\}|\"[^\"]+\"|'[^']+'))/g;
+      var match;
+      while ((match = nodePattern.exec(line))) {
+        recordNode(match[1]);
+      }
+    });
+
+    return anchors;
+  }
+
+  function rewriteSubgraphEdgeLine(line, anchors) {
+    var connectorPattern = /(\s*(?:<[-.=]+>|[-.=]+(?:>|x|o))(?:\|[^|\n]*\|)?\s*)/g;
+    var parts = line.split(connectorPattern).filter(function (part) { return part !== ''; });
+    if (parts.length < 3 || parts.length % 2 === 0) return null;
+
+    var indentMatch = parts[0].match(/^\s*/);
+    var indent = indentMatch ? indentMatch[0] : '';
+    var rewritten = [];
+
+    function resolveToken(raw, role) {
+      var trimmed = raw.trim();
+      var anchor = anchors[trimmed];
+      if (!anchor) return trimmed;
+      if (role === 'source') return anchor.last || anchor.first || trimmed;
+      return anchor.first || anchor.last || trimmed;
+    }
+
+    for (var i = 0; i < parts.length - 2; i += 2) {
+      var leftRaw = parts[i];
+      var connector = parts[i + 1].trim();
+      var rightRaw = parts[i + 2];
+      var leftTrimmed = leftRaw.trim();
+      var rightTrimmed = rightRaw.trim();
+      var left = resolveToken(leftRaw, 'source');
+      var right = resolveToken(rightRaw, 'target');
+
+      if (left === leftTrimmed && right === rightTrimmed) continue;
+      rewritten.push(indent + left + ' ' + connector + ' ' + right);
+    }
+
+    return rewritten.length ? rewritten.join('\n') : null;
+  }
+
+  function escapeRegex(text) {
+    return String(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function applyMermaidCompatibilityMode(text, mode) {
+    if (!text) return text;
+    mode = mode === 'off' || mode === 'force' ? mode : 'auto';
+    if (mode === 'off') return text;
+
+    var lines = text.split('\n');
+    var header = lines.find(function (line) { return line.trim(); }) || '';
+    if (!/^\s*(?:flowchart|graph)\b/i.test(header)) return text;
+
+    var anchors = extractSubgraphAnchors(lines);
+    var subgraphIds = Object.keys(anchors).filter(function (id) {
+      return anchors[id] && anchors[id].first && anchors[id].last;
+    });
+    if (!subgraphIds.length) return text;
+
+    if (mode === 'auto') {
+      var shouldCompat = lines.some(function (line) {
+        if (
+          !line ||
+          /^\s*(?:subgraph|end|style|classDef|class|click|linkStyle|accTitle|accDescr|section|direction)\b/.test(line) ||
+          !/(?:<[-.=]+>|[-.=]+(?:>|x|o))/.test(line)
+        ) {
+          return false;
+        }
+        return subgraphIds.some(function (id) {
+          return new RegExp('(^|[^\\w:./-])' + escapeRegex(id) + '([^\\w:./-]|$)').test(line);
+        });
+      });
+      if (!shouldCompat) return text;
+    }
+
+    var changed = false;
+    var rewrittenLines = lines.map(function (line) {
+      if (
+        !line ||
+        /^\s*(?:subgraph|end|style|classDef|class|click|linkStyle|accTitle|accDescr|section|direction)\b/.test(line) ||
+        !/(?:<[-.=]+>|[-.=]+(?:>|x|o))/.test(line)
+      ) {
+        return line;
+      }
+
+      var hasSubgraphRef = subgraphIds.some(function (id) {
+        return new RegExp('(^|[^\\w:./-])' + escapeRegex(id) + '([^\\w:./-]|$)').test(line);
+      });
+      if (!hasSubgraphRef) return line;
+
+      var rewritten = rewriteSubgraphEdgeLine(line, anchors);
+      if (!rewritten) return line;
+      changed = true;
+      return rewritten;
+    });
+
+    if (!changed) return text;
+    return rewrittenLines.join('\n');
+  }
+
   function prepareMermaidContainers(root) {
     var scope = root && root.querySelectorAll ? root : document;
     scope.querySelectorAll('pre.mermaid:not([data-bac-mermaid-shell="1"])').forEach(function (pre) {
@@ -205,6 +346,52 @@
     delete svgEl.dataset.bacSvgSizingStashed;
   }
 
+  function cropSvgToVisibleContent(svgEl) {
+    if (!svgEl || !svgEl.viewBox || !svgEl.viewBox.baseVal) return;
+
+    var vb = svgEl.viewBox.baseVal;
+    if (!(vb && vb.width > 0 && vb.height > 0)) return;
+
+    var svgRect = svgEl.getBoundingClientRect();
+    if (!(svgRect && svgRect.width > 0 && svgRect.height > 0)) return;
+
+    var scaleX = vb.width / svgRect.width;
+    var scaleY = vb.height / svgRect.height;
+    var minX = Infinity;
+    var minY = Infinity;
+    var maxX = -Infinity;
+    var maxY = -Infinity;
+    var found = false;
+
+    svgEl.querySelectorAll(
+      '.cluster, .node, .edgeLabel, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
+    ).forEach(function (node) {
+      var rect = node.getBoundingClientRect();
+      if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
+      found = true;
+      var left = vb.x + (rect.left - svgRect.left) * scaleX;
+      var top = vb.y + (rect.top - svgRect.top) * scaleY;
+      var right = left + rect.width * scaleX;
+      var bottom = top + rect.height * scaleY;
+
+      if (left < minX) minX = left;
+      if (top < minY) minY = top;
+      if (right > maxX) maxX = right;
+      if (bottom > maxY) maxY = bottom;
+    });
+
+    if (!found || !(maxX > minX) || !(maxY > minY)) return;
+
+    var padX = Math.max(12, vb.width * 0.02);
+    var padY = Math.max(12, vb.height * 0.04);
+    svgEl.setAttribute(
+      'viewBox',
+      (minX - padX) + ' ' + (minY - padY) + ' ' +
+      (maxX - minX + padX * 2) + ' ' + (maxY - minY + padY * 2)
+    );
+  }
+
   function openFullscreen(svgEl) {
     var overlay = createOverlay();
     var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
@@ -359,8 +546,14 @@
             delete diagrams[i].dataset.bacMermaidRendering;
             continue;
           }
-          diagrams[i].textContent = normalized;
-          await mermaid.parse(normalized);
+          var compatible = applyMermaidCompatibilityMode(normalized, config.mermaidCompatMode);
+          diagrams[i].textContent = compatible;
+          if (compatible !== normalized) {
+            diagrams[i].dataset.bacMermaidCompat = '1';
+          } else {
+            delete diagrams[i].dataset.bacMermaidCompat;
+          }
+          await mermaid.parse(compatible);
           validDiagrams.push(diagrams[i]);
         } catch (parseErr) {
           markMermaidError(diagrams[i], parseErr);
@@ -374,36 +567,7 @@
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
-
-        /* ── Crop viewBox to visible content ──
-         * Mermaid stateDiagram/flowchart can produce huge viewBox values
-         * (2000+px) because invisible edgePaths extend the bounding box.
-         * Compute tight viewBox from visible .node, .cluster, .statediagram-*
-         * and .note elements — the actual diagram content. */
-        try {
-          var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-          var found = false;
-          svg.querySelectorAll(
-            '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
-          ).forEach(function (n) {
-            try {
-              var b = n.getBBox();
-              if (b && b.width > 0 && b.height > 0) {
-                found = true;
-                if (b.x < minX) minX = b.x;
-                if (b.y < minY) minY = b.y;
-                if (b.x + b.width > maxX) maxX = b.x + b.width;
-                if (b.y + b.height > maxY) maxY = b.y + b.height;
-              }
-            } catch (_) {}
-          });
-          if (found) {
-            var pad = 12;
-            svg.setAttribute('viewBox',
-              (minX - pad) + ' ' + (minY - pad) + ' ' +
-              (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
-          }
-        } catch (_) {}
+        try { cropSvgToVisibleContent(svg); } catch (_) {}
 
         var box = el.closest('.arcaea-mermaid-box');
         if (box) addFullscreenButton(box, svg);

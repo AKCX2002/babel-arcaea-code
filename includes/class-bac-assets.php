@@ -85,6 +85,7 @@ class Assets {
             'prismEnabled'=>!empty($this->opts['prism_enabled']),
             'mermaidEnabled'=>!empty($this->opts['mermaid_enabled']),
             'katexEnabled'=>!empty($this->opts['katex_enabled']),
+            'mermaidCompatMode'=>\in_array(($this->opts['mermaid_compat_mode'] ?? 'auto'), ['off','auto','force'], true) ? $this->opts['mermaid_compat_mode'] : 'auto',
         ]);
         if ($this->opts['mermaid_enabled']) { $this->style('assets/mermaid/mermaid.css','bac-mermaid'); \wp_localize_script('bac-mermaid-init','BAC_Mermaid',['mermaidUrl'=>\esc_url(BAC_PLUGIN_URL.'assets/mermaid/mermaid.esm.min.mjs')]); }
     }

@@ -28,7 +28,7 @@ class Admin {
 <table class="form-table">
 <tr><th>启用</th><td><?php $this->cb('enabled','总开关') ?></td></tr>
 <tr><th>Prism.js</th><td><?php $this->cb('prism_enabled','启用 Prism 代码高亮') ?></td></tr>
-<tr><th>Mermaid</th><td><?php $this->cb('mermaid_enabled','启用 Mermaid 图表') ?><p class="description">版本 <?php echo \esc_html($this->opts['mermaid_version']) ?>。支持 <code>language-mermaid</code>、MerPress 前台输出和 <code>[mermaid]</code> 短代码。</p></td></tr>
+<tr><th>Mermaid</th><td><?php $this->cb('mermaid_enabled','启用 Mermaid 图表') ?> <?php $this->sel('mermaid_compat_mode',['off'=>'关闭','auto'=>'自动（推荐）','force'=>'强制开启']) ?><p class="description">版本 <?php echo \esc_html($this->opts['mermaid_version']) ?>。支持 <code>language-mermaid</code>、MerPress 前台输出和 <code>[mermaid]</code> 短代码。</p><p class="description">兼容模式会在前台渲染前预处理 <code>subgraph -&gt; subgraph</code> 连线，绕开 Sakurairo 正文样式对 Mermaid HTML label 的布局干扰。</p></td></tr>
 <tr><th>LaTeX</th><td><?php $this->cb('latex_enabled','启用数学公式渲染') ?> <?php $this->sel('latex_renderer',['katex'=>'KaTeX（推荐）','mathjax'=>'MathJax']) ?><p class="description">兼容 <code>```katex</code> / <code>```latex</code> / <code>```mathjax</code> 代码块与行内公式。</p></td></tr>
 <tr><th>Markmap</th><td><?php $this->cb('markmap_enabled','启用 Markmap 思维导图') ?><p class="description">兼容 <code>language-markmap</code>、<code>language-mindmap</code>、<code>[markmap]</code> 和 <code>[mindmap]</code>。</p></td></tr>
 <tr><th>Markmap Runtime</th><td><?php $this->sel('markmap_runtime',['local'=>'本地资源模式','cdn'=>'CDN 调试模式']) ?></td></tr>

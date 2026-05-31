@@ -4,13 +4,13 @@ namespace BabelArcaeaCode; defined('ABSPATH') || exit;
 class Options {
     public const DEFAULTS = [
         'enabled'=>1,'prism_enabled'=>1,'mermaid_enabled'=>1,'mathjax_enabled'=>0,'markmap_enabled'=>0,
-        'katex_enabled'=>0,'latex_enabled'=>0,'latex_renderer'=>'katex',
+        'katex_enabled'=>0,'latex_enabled'=>0,'latex_renderer'=>'katex','mermaid_compat_mode'=>'auto',
         'markmap_runtime'=>'local','markmap_prerender'=>0,'mermaid_version'=>'11.15.0',
         'prism_version'=>'1.30.0','mathjax_version'=>'3.2.2','katex_version'=>'0.16.25','prism_line_numbers'=>1,
         'prism_copy'=>1,'prism_braces'=>1,'prism_previewers'=>1,'prism_theme'=>'arcaea_dark',
         'disable_sakurairo_prism'=>1,'disable_legacy_plugin_assets'=>1,'aplayer_safe_patch'=>0,'suppress_lightgallery_warn'=>0,
     ];
-    private const ALLOWED = ['markmap_runtime'=>['cdn','local'],'mermaid_version'=>['11.15.0'],'prism_theme'=>['arcaea_dark','arcaea_light'],'latex_renderer'=>['katex','mathjax']];
+    private const ALLOWED = ['markmap_runtime'=>['cdn','local'],'mermaid_version'=>['11.15.0'],'prism_theme'=>['arcaea_dark','arcaea_light'],'latex_renderer'=>['katex','mathjax'],'mermaid_compat_mode'=>['off','auto','force']];
     private ?array $cache = null;
 
     public function defaults(): array { return self::DEFAULTS; }
