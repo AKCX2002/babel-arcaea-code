@@ -14,6 +14,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: babel-arcaea-code-release
+  cancel-in-progress: false
+
 jobs:
   bump-and-release:
     if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')
@@ -51,7 +55,14 @@ jobs:
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
           sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
           sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
-          git add babel-arcaea-code.php
+          if test -f package.json; then
+            sed -i "s/\"version\": \"$CUR\"/\"version\": \"$NEW\"/" package.json || true
+          fi
+          if test -f package-lock.json; then
+            sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
+            sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
+          fi
+          git add babel-arcaea-code.php package.json package-lock.json includes assets blocks bin scripts
           git commit -m "chore: bump $CUR → $NEW [skip ci]"
           git push
 
@@ -59,21 +70,22 @@ jobs:
         id: build
         run: |
           VER="${{ steps.bump.outputs.new_version }}"
-          ZIPNAME="babel-arcaea-code-$VER.zip"
-          mkdir -p /tmp/plugin
-          cp -r babel-arcaea-code.php includes assets bin lib /tmp/plugin/
-          cd /tmp && mv plugin "babel-arcaea-code"
-          zip -r "$ZIPNAME" "babel-arcaea-code/" -x "*.git*" "*.DS_Store"
+          ZIPPATH="$(bash scripts/build-release.sh "$VER")"
+          ZIPNAME="$(basename "$ZIPPATH")"
           echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
+          echo "zippath=$ZIPPATH" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.bump.outputs.new_version }}
           ZIPNAME: ${{ steps.build.outputs.zipname }}
+          ZIPPATH: ${{ steps.build.outputs.zippath }}
         run: |
-          gh release create "v$VERSION" --title "v$VERSION" \
-            --notes "See [CHANGELOG](https://github.com/${{ github.repository }}/commits/v$VERSION)" "/tmp/$ZIPNAME"
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes \
+            "$ZIPPATH"
 
   # ── Daily sync ALL deps ──
   sync-deps:

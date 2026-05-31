@@ -33,10 +33,10 @@ class Assets {
         if ($this->opts['markmap_enabled'] && Detector::needsModule(Detector::META_MARKMAP)) {
             $this->enqueueMarkmap();
         }
-        if ($this->opts['mathjax_enabled'] && Detector::needsModule(Detector::META_MATHJAX)) {
+        if (!empty($this->opts['mathjax_enabled']) && Detector::needsModule(Detector::META_MATHJAX)) {
             $this->enqueueMathJax();
         }
-        if ($this->opts['katex_enabled'] && Detector::needsModule(Detector::META_KATEX)) {
+        if (!empty($this->opts['katex_enabled']) && Detector::needsModule(Detector::META_KATEX)) {
             $this->enqueueKatex();
         }
     }
@@ -98,7 +98,13 @@ class Assets {
         else { if (!$this->script($v.'d3.min.js','bac-markmap-d3')) return; if (!$this->script($v.'markmap-view.min.js','bac-markmap-view',['bac-markmap-d3'])) return; if (!$this->script($v.'markmap-lib.min.js','bac-markmap-lib',['bac-markmap-view'])) return; $this->script('assets/markmap/markmap-init.js','bac-markmap-init',['bac-markmap-lib']); }
     }
 
-    private function enqueueMathJax(): void { if (!$this->opts['mathjax_enabled']) return; \add_action('wp_head',fn()=>print('<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]]},svg:{fontCache:"global"},options:{ignoreHtmlClass:"no-mathjax"}}</script>'),0); $this->script('assets/mathjax/es5/tex-chtml.js','bac-mathjax'); }
+    private function enqueueMathJax(): void {
+        if (empty($this->opts['mathjax_enabled'])) return;
+        \add_action('wp_head',fn()=>print('<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]],displayMath:[["$$","$$"],["\\\\[","\\\\]"]]},svg:{fontCache:"global"},options:{ignoreHtmlClass:"no-mathjax",renderActions:{addMenu:[]}}}</script>'),0);
+        $this->style('assets/css/bac-latex.css', 'bac-latex');
+        if (!$this->script('assets/mathjax/es5/tex-chtml.js','bac-mathjax')) return;
+        $this->script('assets/mathjax/mathjax-init.js','bac-mathjax-init',['bac-mathjax']);
+    }
 
     /**
      * Enqueue KaTeX assets (CSS + JS + auto-render + init).
@@ -112,6 +118,7 @@ class Assets {
 
         // CSS
         $this->style($d . 'katex.min.css', 'bac-katex', [], $v);
+        $this->style('assets/css/bac-latex.css', 'bac-latex', ['bac-katex']);
 
         // JS: core + auto-render + init
         if (!$this->script($d . 'katex.min.js', 'bac-katex-js', [], $v)) return;

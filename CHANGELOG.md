@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.6.1
+
+### Changed
+
+- 前台 Mermaid 渲染现在会在 PJAX 完成后重新完整扫描，兼容 Sakurairo 异步切页场景。
+- `MerPress` 输出的裸 `pre.mermaid` 块会自动包裹进 BAC 的 Arcaea 玻璃容器，前台样式与全屏行为统一。
+- `Mermaid` / `Markmap` 前台渲染前增加源文本清洗：自动解码 HTML entities、去除零宽字符与 NBSP，并回退常见弯引号。
+
+### Fixed
+
+- 修复 `MerPress` / `WP Githuber MD` / Sakurairo 组合下，前台图表在 PJAX 页面中不重渲染的问题。
+- 改善复制或编辑器转码后 `&lt;`、`&gt;`、`&amp;`、弯引号等特殊字符导致的 Mermaid/Markmap 解析失败。
+
 ## 1.4.4
 
 ### Fixed

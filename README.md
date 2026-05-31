@@ -9,6 +9,8 @@
 - **MathJax** 本地化加载（按后台开关启用）
 - **Markmap Adapter**：Markdown 思维导图渲染层，支持 `language-markmap` 代码块和 `[markmap]` shortcode
 - **PHP filter** 在 `the_content` 中提前替换 mermaid / markmap 代码块，避免 Prism 误高亮图表源码
+- **前台兼容层**：兼容 `WP Githuber MD` 的 `language-mermaid` 代码块与 `MerPress` 的 `pre.mermaid` 区块输出
+- **特殊字符清洗**：前台渲染前自动解码 HTML entities、NBSP、零宽字符和常见弯引号，减少 Mermaid/Markmap 因排版字符导致的解析失败
 - **PJAX 支持**（Sakurairo）
 - **禁用 Sakurairo 自带 Prism**（可配置）
 - **GitHub 自动更新**（PUC library）
@@ -132,6 +134,8 @@ ini, toml, xml (+ autoloader 按需加载其他语言)
 - MathJax 可只保留语法输出，脚本由本插件加载
 ```
 
+前台文章内容仍可继续使用 ` ```mermaid ` / ` ```markmap ` 代码块，Babel Arcaea Code 会负责网页端渲染与 Sakurairo 风格覆盖。
+
 ### Sakurairo
 
 ```
@@ -151,6 +155,14 @@ ini, toml, xml (+ autoloader 按需加载其他语言)
   - SVG 缓存于 wp-content/uploads/bac-markmap-cache/
   - 前端无需加载 d3 / markmap-view / markmap-lib JS
   - 大幅提升 SEO 和 PJAX 稳定性
+```
+
+### MerPress
+
+```
+- 编辑器块可继续使用
+- 前台 Mermaid 盒子样式由本插件统一包裹为 Arcaea / Sakurairo 风格
+- Sakurairo PJAX 场景下由本插件负责再次扫描并重渲染
 ```
 
 ## 发布包检查

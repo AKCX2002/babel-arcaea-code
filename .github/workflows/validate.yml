@@ -45,6 +45,8 @@ jobs:
           echo "=== MathJax ==="
           test -f assets/mathjax/es5/tex-chtml.js
           echo "  ✓ mathjax"
+          test -f assets/mathjax/mathjax-init.js
+          echo "  ✓ mathjax-init.js"
 
           echo "=== KaTeX ==="
           test -f assets/katex/katex.min.js
@@ -55,6 +57,10 @@ jobs:
           echo "  ✓ auto-render.min.js"
           test -f assets/katex/katex-init.js
           echo "  ✓ katex-init.js"
+
+          echo "=== Shared CSS ==="
+          test -f assets/css/bac-latex.css
+          echo "  ✓ bac-latex.css"
 
           echo "=== Medium Zoom ==="
           test -f assets/js/medium-zoom.min.js
@@ -72,6 +78,20 @@ jobs:
 
           echo ""
           echo "✅ All required assets present."
+
+  js-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check frontend JS syntax
+        run: |
+          node --check assets/mermaid/mermaid-init.js
+          node --check assets/markmap/markmap-init.js
+          node --check assets/katex/katex-init.js
+          node --check assets/mathjax/mathjax-init.js
 
   cli-render-check:
     runs-on: ubuntu-latest
@@ -103,3 +123,12 @@ jobs:
           else
             echo "scripts/privacy-audit.sh not found — skipping."
           fi
+
+  package-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release package
+        run: |
+          bash scripts/build-release.sh
+          test -f dist/babel-arcaea-code-*.zip

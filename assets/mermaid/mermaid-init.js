@@ -12,6 +12,39 @@
     return fallback;
   }
 
+  function decodeHtmlEntities(text) {
+    if (!text || text.indexOf('&') === -1) return text || '';
+    var textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+  }
+
+  function normalizeDiagramSource(text) {
+    if (!text) return '';
+    return decodeHtmlEntities(String(text))
+      .replace(/\r\n?/g, '\n')
+      .replace(/[\u200B-\u200D\u2060\uFEFF]/g, '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[\u2018\u2019]/g, '\'')
+      .replace(/[\u201C\u201D]/g, '"')
+      .trim();
+  }
+
+  function prepareMermaidContainers(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('pre.mermaid:not([data-bac-mermaid-shell="1"])').forEach(function (pre) {
+      if (pre.closest('.arcaea-mermaid-box')) {
+        pre.dataset.bacMermaidShell = '1';
+        return;
+      }
+      var box = document.createElement('div');
+      box.className = 'arcaea-mermaid-box';
+      pre.parentNode.insertBefore(box, pre);
+      box.appendChild(pre);
+      pre.dataset.bacMermaidShell = '1';
+    });
+  }
+
   /* ════════════════════════════════════════════
    * Prism: PJAX-safe highlighting + Sakurairo <pre> fix
    * ════════════════════════════════════════════ */
@@ -218,6 +251,7 @@
   async function renderMermaid(root) {
     if (!asBool(config.mermaidEnabled, true)) return;
     var scope = root && root.querySelectorAll ? root : document;
+    prepareMermaidContainers(scope);
     // Target bare <pre class="mermaid"> elements (MerPress-style output)
     var diagrams = scope.querySelectorAll(
       '.mermaid:not([data-arcaea-rendered="1"]):not([data-bac-mermaid-rendering="1"]):not([data-bac-mermaid-error="1"])'
@@ -285,7 +319,13 @@
       var validDiagrams = [];
       for (var i = 0; i < diagrams.length; i++) {
         try {
-          await mermaid.parse(diagrams[i].textContent);
+          var normalized = normalizeDiagramSource(diagrams[i].textContent);
+          if (!normalized) {
+            delete diagrams[i].dataset.bacMermaidRendering;
+            continue;
+          }
+          diagrams[i].textContent = normalized;
+          await mermaid.parse(normalized);
           validDiagrams.push(diagrams[i]);
         } catch (parseErr) {
           markMermaidError(diagrams[i], parseErr);
@@ -392,12 +432,10 @@
 
   /* ── PJAX: only re-scan Prism + zoom (skip Mermaid re-init) ── */
   document.addEventListener('pjax:complete', function () {
-    preparePrism(document);
-    initZoom(document);
+    scheduleBoot(document);
   });
   document.addEventListener('pjax:end', function () {
-    preparePrism(document);
-    initZoom(document);
+    scheduleBoot(document);
   });
 
 })();

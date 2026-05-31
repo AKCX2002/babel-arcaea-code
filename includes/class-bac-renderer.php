@@ -29,18 +29,24 @@ class Renderer {
         /* ── Priority 0: run before wpautop(10) ── */
         \add_filter('the_content', [$this, 'normalizeCodeBlocks'], 0);
         \add_filter('the_content', [$this, 'protectKatex'], 0);
+        \add_filter('the_content', [$this, 'filterLatexBlocks'], 11);
 
         /* ── Priority 11: run after wpautop(10), strip injected <br/> ── */
         if ($this->opts['mermaid_enabled']) {
             \add_filter('the_content', [$this, 'filterMermaid'], 11);
+            \add_filter('the_content', [$this, 'wrapBareMermaidPre'], 12);
             \add_shortcode('mermaid', [$this, 'shortcodeMermaid']);
         }
         if ($this->opts['markmap_enabled']) {
             \add_filter('the_content', [$this, 'filterMarkmap'], 11);
             \add_shortcode('markmap', [$this, 'shortcodeMarkmap']);
+            \add_shortcode('mindmap', [$this, 'shortcodeMarkmap']);
         }
         if ($this->opts['katex_enabled']) {
             \add_shortcode('katex', [$this, 'shortcodeKatex']);
+        }
+        if (!empty($this->opts['latex_enabled'])) {
+            \add_shortcode('latex', [$this, 'shortcodeLatex']);
         }
     }
 
@@ -92,7 +98,7 @@ class Renderer {
             if (\preg_match('/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i', $classes, $lm)) {
                 return 'language-' . \strtolower($lm[1]);
             }
-            if (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap)(?:\s|$)/i', $classes, $lm)) {
+            if (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap|mindmap|latex|katex|mathjax|tex)(?:\s|$)/i', $classes, $lm)) {
                 return 'language-' . \strtolower($lm[1]);
             }
         }
@@ -109,7 +115,7 @@ class Renderer {
      * from inserting <br/> and <p> tags inside math expressions.
      */
     public function protectKatex(string $content): string {
-        if (empty($this->opts['katex_enabled'])) return $content;
+        if (empty($this->opts['latex_enabled'])) return $content;
 
         return \preg_replace_callback(
             '/\$\$([\s\S]*?)\$\$/',
@@ -130,6 +136,13 @@ class Renderer {
         return '<span class="katex-inline">$' . \esc_html($content) . '$</span>';
     }
 
+    public function shortcodeLatex(array $atts, ?string $content = null): string {
+        $content = self::clean((string) $content);
+        if ($content === '') return '';
+        $display = !isset($atts['display']) || !empty($atts['display']);
+        return $this->buildLatexBlock($content, $display);
+    }
+
     /* ════════════════════════════════════════════
      * Shared helpers
      * ════════════════════════════════════════════ */
@@ -144,6 +157,10 @@ class Renderer {
         $code = \preg_replace('/<br\s*\/?>/i', "\n", $code);
         $code = \strip_tags($code);
         return \trim($code);
+    }
+
+    public static function cleanMark(string $r): string {
+        return self::clean($r);
     }
 
     /* ════════════════════════════════════════════
@@ -176,13 +193,58 @@ class Renderer {
                 . '</pre></div>';
     }
 
+    /**
+     * Wrap bare <pre class="mermaid"> blocks so MerPress frontend output
+     * inherits the same Sakurairo/Arcaea shell as BAC-rendered diagrams.
+     */
+    public function wrapBareMermaidPre(string $content): string {
+        return \preg_replace_callback(
+            '/(?<!arcaea-mermaid-box">)\s*(<pre(?=[^>]*\bclass=(["\'])[^"\']*\bmermaid\b[^"\']*\2)[^>]*>[\s\S]*?<\/pre>)/i',
+            static function ($m) {
+                $pre = $m[1] ?? '';
+                if ($pre === '' || \stripos($pre, 'data-bac-mermaid-shell=') !== false) {
+                    return $m[0];
+                }
+                $pre = \preg_replace('/<pre\b/i', '<pre data-bac-mermaid-shell="1"', $pre, 1);
+                return '<div class="arcaea-mermaid-box">' . $pre . '</div>';
+            },
+            $content
+        );
+    }
+
+    public function filterLatexBlocks(string $content): string {
+        if (empty($this->opts['latex_enabled'])) return $content;
+
+        return \preg_replace_callback(
+            self::pattern(['katex', 'latex', 'mathjax', 'tex']),
+            function ($m) {
+                $code = self::clean($m[2]);
+                if ($code === '') return $m[0];
+                return $this->buildLatexBlock($code, true);
+            },
+            $content
+        );
+    }
+
+    private function buildLatexBlock(string $content, bool $display): string {
+        $renderer = !empty($this->opts['mathjax_enabled']) ? 'mathjax' : 'katex';
+        $attrs = ' class="bac-latex-block bac-latex-' . \esc_attr($renderer) . '" data-bac-latex="' . \esc_attr($renderer) . '" data-display="' . ($display ? '1' : '0') . '"';
+
+        if ($renderer === 'mathjax') {
+            $body = $display ? '$$' . \esc_html($content) . '$$' : '\\(' . \esc_html($content) . '\\)';
+            return '<div' . $attrs . '>' . $body . '</div>';
+        }
+
+        return '<div' . $attrs . '><code class="bac-latex-source">' . \esc_html($content) . '</code></div>';
+    }
+
     /* ════════════════════════════════════════════
      * Markmap
      * ════════════════════════════════════════════ */
 
     public function filterMarkmap(string $c): string {
         return \preg_replace_callback(
-            self::pattern(['markmap']),
+            self::pattern(['markmap', 'mindmap']),
             function ($m) {
                 $c = self::clean($m[2]);
                 if ($c === '') return $m[0];

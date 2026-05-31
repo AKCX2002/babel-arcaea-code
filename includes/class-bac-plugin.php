@@ -107,22 +107,26 @@ class Plugin {
         require_once $base . '/class-bac-renderer.php';
         new Renderer();
 
-        // 5. Compat    — Sakurairo theme deconfliction (disable theme Prism, APlayer, LightGallery)
+        // 5. Markmap   — prerender helpers, cache warming, SVG sanitizer
+        require_once $base . '/class-bac-markmap.php';
+        new Markmap();
+
+        // 6. Compat    — Sakurairo theme deconfliction (disable theme Prism, APlayer, LightGallery)
         require_once $base . '/class-bac-compat.php';
         new Compat();
 
-        // 6. Headers   — security headers (X-Content-Type-Options, etc.)
+        // 7. Headers   — security headers (X-Content-Type-Options, etc.)
         require_once $base . '/class-bac-headers.php';
         new Headers();
 
-        // 7. Health    — system check (available in admin)
+        // 8. Health    — system check (available in admin)
         require_once $base . '/class-bac-health.php';
 
-        // 8. Blocks    — Gutenberg blocks (Mermaid, Markmap, etc.)
+        // 9. Blocks    — Gutenberg blocks (Mermaid, Markmap, etc.)
         require_once $base . '/class-bac-blocks.php';
         new Blocks();
 
-        // 9. Admin     — settings page (admin only)
+        // 10. Admin     — settings page (admin only)
         if (\is_admin()) {
             require_once $base . '/class-bac-admin.php';
             new Admin();

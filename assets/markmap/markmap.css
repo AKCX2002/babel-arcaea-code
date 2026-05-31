@@ -4,11 +4,12 @@
  * ============================================================ */
 
 .arcaea-markmap-box {
+  --bac-markmap-height: 520px;
   position: relative;
   margin: 2rem 0;
   padding: 0;
   max-width: 100%;
-  min-height: 180px;
+  min-height: 240px;
   max-height: 82vh;
   overflow: hidden;
   border: 1px solid rgba(230, 238, 255, 0.78);
@@ -52,8 +53,9 @@
 .arcaea-markmap-diagram {
   display: block;
   width: 100%;
-  height: min(72vh, 720px);
-  min-height: 240px;
+  height: min(82vh, var(--bac-markmap-height));
+  min-height: 320px;
+  overflow: hidden;
 }
 
 .arcaea-markmap-source {
@@ -66,6 +68,7 @@
   height: 100%;
   background: transparent;
   font-family: "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", "Noto Sans SC", sans-serif;
+  overflow: visible;
 }
 
 .arcaea-markmap-diagram svg text {
@@ -102,6 +105,15 @@
   color: rgba(255, 178, 178, 0.92);
 }
 
+.arcaea-markmap-error-message {
+  padding: 1.25rem 1.5rem;
+  color: rgba(255, 217, 229, 0.94);
+  background: rgba(80, 20, 42, 0.55);
+  border-top: 1px solid rgba(255, 150, 185, 0.22);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 768px) {
   .arcaea-markmap-box {
     min-height: 380px;
@@ -109,7 +121,7 @@
   }
 
   .arcaea-markmap-diagram {
-    height: 66vh;
+    height: min(70vh, var(--bac-markmap-height));
     min-height: 380px;
   }
 }

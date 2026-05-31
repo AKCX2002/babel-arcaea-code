@@ -35,6 +35,7 @@ class Detector {
     private bool $mermaidEnabled;
     private bool $mathjaxEnabled;
     private bool $katexEnabled;
+    private bool $latexEnabled;
     private bool $markmapEnabled;
 
     public function __construct() {
@@ -43,6 +44,7 @@ class Detector {
         $this->mermaidEnabled = !empty($opts['mermaid_enabled']);
         $this->mathjaxEnabled = !empty($opts['mathjax_enabled']);
         $this->katexEnabled   = !empty($opts['katex_enabled']);
+        $this->latexEnabled   = !empty($opts['latex_enabled']);
         $this->markmapEnabled = !empty($opts['markmap_enabled']);
 
         if ($opts['enabled']) {
@@ -81,21 +83,26 @@ class Detector {
 
         // ── Markmap: class="markmap" or language-markmap ──
         $needsMarkmap = $this->markmapEnabled && (
-            \stripos($content, 'markmap') !== false
+            \stripos($content, 'markmap') !== false ||
+            \stripos($content, 'mindmap') !== false
         );
 
         // ── MathJax: $...$ or $$...$$ delimiters ──
-        $needsMathJax = $this->mathjaxEnabled && (
+        $needsMathJax = $this->mathjaxEnabled && $this->latexEnabled && (
             \preg_match('/\$\$[\s\S]*?\$\$/', $content) ||
             \preg_match('/(?<!\$)\$(?!\$)[^$\n]+\$(?!\$)/', $content) ||
-            \preg_match('/\\\\[\(\[]/', $content)
+            \preg_match('/\\\\[\(\[]/', $content) ||
+            \stripos($content, 'language-mathjax') !== false
         );
 
         // ── KaTeX: same delimiters (but KaTeX is alternative to MathJax) ──
-        $needsKatex = $this->katexEnabled && (
+        $needsKatex = $this->katexEnabled && $this->latexEnabled && (
             \preg_match('/\$\$[\s\S]*?\$\$/', $content) ||
             \preg_match('/(?<!\$)\$(?!\$)[^$\n]+\$(?!\$)/', $content) ||
-            \preg_match('/\\\\[\(\[]/', $content)
+            \preg_match('/\\\\[\(\[]/', $content) ||
+            \stripos($content, 'language-katex') !== false ||
+            \stripos($content, 'language-latex') !== false ||
+            \stripos($content, 'language-tex') !== false
         );
 
         // ── Store meta ──
