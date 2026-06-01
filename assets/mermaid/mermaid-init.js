@@ -300,6 +300,10 @@
     var intrinsicWidth = parseViewBoxWidth(svg);
     var host = box || svg.closest('.arcaea-mermaid-box') || svg.parentElement;
     var hostWidth = host ? Math.max(0, host.clientWidth - 32) : 0;
+    /* Skip re-layout when the container is hidden (Pjax transition etc.).
+       Setting svg.style.width based on a 0-width container permanently
+       shrinks the diagram — it won't recover on its own. */
+    if (hostWidth < 10) return;
     var fitsContainer = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth <= hostWidth * 1.08;
     var readableScrollThreshold = hostWidth > 0 ? hostWidth * 1.9 : 0;
     var shouldPreferScrollableScale = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth > readableScrollThreshold;
