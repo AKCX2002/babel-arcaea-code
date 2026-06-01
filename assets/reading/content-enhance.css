@@ -1,0 +1,63 @@
+.entry-content table,
+.post-content table,
+article table,
+.content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: rgba(228, 236, 248, 0.92);
+  background: rgba(7, 16, 30, 0.18);
+  border: 1px solid rgba(173, 198, 255, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.entry-content thead th,
+.post-content thead th,
+article table thead th,
+.content table thead th {
+  color: #f8fbff;
+  background: rgba(152, 182, 255, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.entry-content tbody td,
+.post-content tbody td,
+article table tbody td,
+.content table tbody td {
+  background: rgba(10, 18, 32, 0.24);
+}
+
+.entry-content tbody tr:nth-child(even) td,
+.post-content tbody tr:nth-child(even) td,
+article table tbody tr:nth-child(even) td,
+.content table tbody tr:nth-child(even) td {
+  background: rgba(18, 29, 48, 0.34);
+}
+
+.entry-content th,
+.entry-content td,
+.post-content th,
+.post-content td,
+article table th,
+article table td,
+.content table th,
+.content table td {
+  padding: 0.7rem 0.85rem;
+  border-right: 1px solid rgba(173, 198, 255, 0.12);
+  border-bottom: 1px solid rgba(173, 198, 255, 0.12);
+}
+
+.entry-content tr > *:last-child,
+.post-content tr > *:last-child,
+article table tr > *:last-child,
+.content table tr > *:last-child {
+  border-right: none;
+}
+
+.entry-content tbody tr:last-child td,
+.post-content tbody tr:last-child td,
+article table tbody tr:last-child td,
+.content table tbody tr:last-child td {
+  border-bottom: none;
+}
