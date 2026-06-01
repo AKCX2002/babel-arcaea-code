@@ -426,6 +426,8 @@
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
         /* ── Crop viewBox to visible content ──
          * Mermaid stateDiagram/flowchart can produce huge viewBox values
          * (2000+px) because invisible edgePaths extend the bounding box.

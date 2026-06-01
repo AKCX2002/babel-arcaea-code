@@ -3,9 +3,9 @@
 }
 
 .arcaea-mermaid-box pre.mermaid svg {
-  width: max-content;
-  min-width: 100%;
-  max-width: none;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .arcaea-mermaid-toolbar {
