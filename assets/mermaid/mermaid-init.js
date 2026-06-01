@@ -281,6 +281,44 @@
     }
   }
 
+  function parseViewBoxWidth(svg) {
+    if (!svg) return 0;
+    var viewBox = svg.getAttribute('viewBox');
+    if (!viewBox) return 0;
+    var parts = viewBox.trim().split(/\s+/);
+    if (parts.length !== 4) return 0;
+    var width = Number(parts[2]);
+    return Number.isFinite(width) && width > 0 ? width : 0;
+  }
+
+  function applyResponsiveSvgSize(svg, box) {
+    if (!svg) return;
+    var intrinsicWidth = parseViewBoxWidth(svg);
+    var host = box || svg.closest('.arcaea-mermaid-box') || svg.parentElement;
+    var hostWidth = host ? Math.max(0, host.clientWidth - 32) : 0;
+    var fitsContainer = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth <= hostWidth * 1.08;
+
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    svg.style.width = fitsContainer ? intrinsicWidth + 'px' : '100%';
+    svg.style.maxWidth = '100%';
+    svg.style.minWidth = '0';
+    svg.style.height = 'auto';
+
+    if (host) {
+      host.dataset.bacMermaidScaleMode = fitsContainer ? 'natural' : 'fit';
+    }
+  }
+
+  function refreshMermaidLayouts(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('.arcaea-mermaid-box').forEach(function (box) {
+      var svg = box.querySelector('pre.mermaid > svg');
+      if (!svg) return;
+      applyResponsiveSvgSize(svg, box);
+    });
+  }
+
   /* ════════════════════════════════════════════
    * Mermaid — MerPress-style: bare mermaid.run()
    *
@@ -390,7 +428,6 @@
         delete el.dataset.bacMermaidRendering;
         svg.removeAttribute('width');
         svg.removeAttribute('height');
-
         /* ── Crop viewBox to visible content ──
          * Mermaid stateDiagram/flowchart can produce huge viewBox values
          * (2000+px) because invisible edgePaths extend the bounding box.
@@ -421,17 +458,8 @@
           }
         } catch (_) { }
 
-        var viewBox = svg.viewBox && svg.viewBox.baseVal;
-        if (viewBox && viewBox.width > 0) {
-          svg.style.width = viewBox.width + 'px';
-        } else {
-          svg.style.width = '100%';
-        }
-        svg.style.minWidth = '0';
-        svg.style.maxWidth = '100%';
-        svg.style.height = 'auto';
-
         var box = el.closest('.arcaea-mermaid-box');
+        applyResponsiveSvgSize(svg, box);
         if (box) {
           box.dispatchEvent(new CustomEvent('bac:mermaid-rendered', {
             bubbles: true,
@@ -484,6 +512,12 @@
       boot(root || document).catch(function (e) { console.warn(LOG, e); });
     }, 80);
   }
+
+  window.addEventListener('resize', function () {
+    window.requestAnimationFrame(function () {
+      refreshMermaidLayouts(document);
+    });
+  });
 
   /* ── Startup: DOMContentLoaded (full boot) ── */
   if (document.readyState === 'complete' || document.readyState === 'interactive') {

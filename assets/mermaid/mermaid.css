@@ -114,7 +114,7 @@ pre.mermaid {
 pre.mermaid svg {
   display: block;
   height: auto;
-  width: auto;
+  width: 100%;
   min-width: 0;
   max-width: 100%;
 
@@ -130,6 +130,10 @@ pre.mermaid svg {
   border: 1px solid rgba(230, 238, 255, 0.78);
   border-radius: 10px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.arcaea-mermaid-box[data-bac-mermaid-scale-mode="natural"] pre.mermaid svg {
+  width: auto;
 }
 
 /* ── 文字样式 ──

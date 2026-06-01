@@ -152,6 +152,7 @@ class Assets {
 
     private function enqueueReadingEnhancements(): void {
         $this->style('assets/reading/reading-progress.css', 'bac-reading-progress');
+        $this->style('assets/reading/content-enhance.css', 'bac-content-enhance');
         $this->script('assets/reading/reading-progress.js', 'bac-reading-progress');
     }
 
