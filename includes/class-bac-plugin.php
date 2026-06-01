@@ -64,21 +64,36 @@ class Plugin {
         if (!\file_exists($lib)) return;
         require_once $lib;
         try {
+            $pluginFile = __DIR__ . '/../babel-arcaea-code.php';
+            $slug = 'babel-arcaea-code';
+            $metadataUrl = 'https://raw.githubusercontent.com/AKCX2002/babel-arcaea-code/main/update-info.json';
+
             $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
-                'https://github.com/AKCX2002/babel-arcaea-code/',
-                __DIR__ . '/../babel-arcaea-code.php',
-                'babel-arcaea-code'
+                $metadataUrl,
+                $pluginFile,
+                $slug
             );
-            $uc->getVcsApi()->enableReleaseAssets();
-            if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
-                $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
-                if ($token) {
-                    $uc->getVcsApi()->setAuthentication($token);
-                }
-            }
         } catch (\Throwable $e) {
-            if (\defined('WP_DEBUG') && WP_DEBUG) {
-                \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
+            try {
+                $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
+                    'https://github.com/AKCX2002/babel-arcaea-code/',
+                    $pluginFile,
+                    $slug
+                );
+                $uc->setBranch('main');
+                $uc->getVcsApi()->enableReleaseAssets('/\.zip($|[?&#])/i');
+
+                if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
+                    $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
+                    if ($token) {
+                        $uc->setAuthentication($token);
+                    }
+                }
+            } catch (\Throwable $fallbackError) {
+                if (\defined('WP_DEBUG') && WP_DEBUG) {
+                    \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
+                    \error_log('[Babel Arcaea Code] GitHub fallback init failed: ' . $fallbackError->getMessage());
+                }
             }
         }
     }

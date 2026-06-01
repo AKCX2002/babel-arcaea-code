@@ -35,6 +35,7 @@ class Options {
         foreach (['enabled','prism_enabled','mermaid_enabled','markmap_enabled','markmap_prerender','prism_line_numbers','prism_copy','prism_braces','prism_previewers','disable_sakurairo_prism','disable_legacy_plugin_assets','aplayer_safe_patch','suppress_lightgallery_warn','latex_enabled'] as $f) { $out[$f] = empty($in[$f]) ? 0 : 1; }
         foreach (self::ALLOWED as $f => $vals) { $v = $in[$f] ?? ''; $out[$f] = \in_array($v, $vals, true) ? \sanitize_key($v) : self::DEFAULTS[$f]; }
         $out['prism_version'] = self::DEFAULTS['prism_version'];
+        $out['katex_version'] = self::DEFAULTS['katex_version'];
         $out['mathjax_version'] = self::DEFAULTS['mathjax_version'];
         $out['katex_version'] = self::DEFAULTS['katex_version'];
         $out['mathjax_enabled'] = (!empty($out['latex_enabled']) && $out['latex_renderer'] === 'mathjax') ? 1 : 0;

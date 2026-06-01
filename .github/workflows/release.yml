@@ -62,7 +62,23 @@ jobs:
             sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
             sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
           fi
-          git add babel-arcaea-code.php package.json package-lock.json includes assets blocks bin scripts
+          cat > update-info.json <<EOF
+          {
+            "name": "Babel Arcaea Code",
+            "slug": "babel-arcaea-code",
+            "version": "$NEW",
+            "homepage": "https://github.com/${{ github.repository }}",
+            "author": "Babel36acl",
+            "author_homepage": "https://github.com/Babel36acl",
+            "download_url": "https://github.com/${{ github.repository }}/releases/download/v$NEW/babel-arcaea-code-$NEW.zip",
+            "requires_php": "7.4",
+            "sections": {
+              "description": "Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.",
+              "changelog": "<p>See the <a href=\"https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/${{ github.repository }}/releases/tag/v$NEW\">v$NEW release page</a> for release notes.</p>"
+            }
+          }
+          EOF
+          git add babel-arcaea-code.php package.json package-lock.json update-info.json includes assets blocks bin scripts
           git commit -m "chore: bump $CUR → $NEW [skip ci]"
           git push
 
@@ -99,7 +115,8 @@ jobs:
         id: mermaid
         run: |
           CUR=$(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          LAT=$(curl -sL "https://api.github.com/repos/mermaid-js/mermaid/releases/latest" | grep '"tag_name"' | head -1 | grep -oP '[0-9.]+')
+          LAT=$(curl -fsSL "https://registry.npmjs.org/mermaid/latest" | grep -oP '"version":"\K[0-9.]+')
+          test -n "$LAT"
           echo "current=$CUR" >> "$GITHUB_OUTPUT"
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
@@ -149,7 +166,7 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ github.token }}
-          commit-message: "chore: update deps [skip ci]"
+          commit-message: "chore: update deps"
           title: "chore: update deps${{ steps.mermaid.outputs.changed == 'true' && format(' Mermaid {0}', steps.mermaid.outputs.latest) || '' }}${{ steps.prism.outputs.changed == 'true' && format(' Prism {0}', steps.prism.outputs.latest) || '' }}${{ steps.mathjax.outputs.changed == 'true' && format(' MathJax {0}', steps.mathjax.outputs.latest) || '' }}${{ steps.katex.outputs.changed == 'true' && format(' KaTeX {0}', steps.katex.outputs.latest) || '' }}"
           body: |
             Automated daily dependency update.

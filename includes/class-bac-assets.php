@@ -114,7 +114,7 @@ class Assets {
      */
     private function enqueueKatex(): void {
         if (empty($this->opts['katex_enabled'])) return;
-        $v = $this->opts['katex_version'] ?? '0.16.25';
+        $v = $this->opts['katex_version'] ?? Options::DEFAULTS['katex_version'];
         $d = 'assets/katex/';
 
         // CSS
