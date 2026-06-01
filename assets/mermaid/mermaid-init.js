@@ -415,7 +415,7 @@
                 if (b.x + b.width > maxX) maxX = b.x + b.width;
                 if (b.y + b.height > maxY) maxY = b.y + b.height;
               }
-            } catch (_) {}
+            } catch (_) { }
           });
           if (found) {
             var pad = 12;
@@ -423,7 +423,7 @@
               (minX - pad) + ' ' + (minY - pad) + ' ' +
               (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
           }
-        } catch (_) {}
+        } catch (_) { }
 
         var box = el.closest('.arcaea-mermaid-box');
         if (box) {
