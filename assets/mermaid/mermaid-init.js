@@ -291,23 +291,129 @@
     return Number.isFinite(width) && width > 0 ? width : 0;
   }
 
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
   function applyResponsiveSvgSize(svg, box) {
     if (!svg) return;
     var intrinsicWidth = parseViewBoxWidth(svg);
     var host = box || svg.closest('.arcaea-mermaid-box') || svg.parentElement;
     var hostWidth = host ? Math.max(0, host.clientWidth - 32) : 0;
     var fitsContainer = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth <= hostWidth * 1.08;
+    var readableScrollThreshold = hostWidth > 0 ? hostWidth * 1.9 : 0;
+    var shouldPreferScrollableScale = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth > readableScrollThreshold;
+    var targetScrollableWidth = hostWidth > 0
+      ? clamp(hostWidth * 1.75, hostWidth + 120, hostWidth * 2.4)
+      : 0;
 
     svg.removeAttribute('width');
     svg.removeAttribute('height');
-    svg.style.width = fitsContainer ? intrinsicWidth + 'px' : '100%';
-    svg.style.maxWidth = '100%';
+    if (fitsContainer) {
+      svg.style.width = intrinsicWidth + 'px';
+      svg.style.maxWidth = '100%';
+      if (host) host.dataset.bacMermaidScaleMode = 'natural';
+    } else if (shouldPreferScrollableScale && targetScrollableWidth > 0) {
+      svg.style.width = targetScrollableWidth + 'px';
+      svg.style.maxWidth = 'none';
+      if (host) host.dataset.bacMermaidScaleMode = 'scroll';
+    } else {
+      svg.style.width = '100%';
+      svg.style.maxWidth = '100%';
+      if (host) host.dataset.bacMermaidScaleMode = 'fit';
+    }
     svg.style.minWidth = '0';
     svg.style.height = 'auto';
+  }
 
-    if (host) {
-      host.dataset.bacMermaidScaleMode = fitsContainer ? 'natural' : 'fit';
-    }
+  function ensureFullscreenOverlay() {
+    var overlay = document.querySelector('.arcaea-mermaid-overlay');
+    if (overlay) return overlay;
+
+    overlay = document.createElement('div');
+    overlay.className = 'arcaea-mermaid-overlay';
+    overlay.innerHTML =
+      '<button type="button" class="arcaea-mermaid-overlay-close" aria-label="关闭全屏预览">×</button>' +
+      '<div class="arcaea-mermaid-overlay-content" role="dialog" aria-modal="true"></div>';
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function (event) {
+      if (
+        event.target === overlay ||
+        event.target.closest('.arcaea-mermaid-overlay-close')
+      ) {
+        closeFullscreenOverlay();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && overlay.classList.contains('active')) {
+        closeFullscreenOverlay();
+      }
+    });
+
+    return overlay;
+  }
+
+  function closeFullscreenOverlay() {
+    var overlay = document.querySelector('.arcaea-mermaid-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
+    if (content) content.innerHTML = '';
+    document.documentElement.classList.remove('bac-mermaid-overlay-open');
+    document.body.classList.remove('bac-mermaid-overlay-open');
+  }
+
+  function openMermaidFullscreen(box) {
+    if (!box) return;
+    var svg = box.querySelector('pre.mermaid > svg');
+    if (!svg) return;
+
+    var overlay = ensureFullscreenOverlay();
+    var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
+    if (!content) return;
+
+    var clone = svg.cloneNode(true);
+    clone.style.width = '';
+    clone.style.maxWidth = 'none';
+    clone.style.minWidth = '0';
+    clone.style.height = 'auto';
+    content.innerHTML = '';
+    content.appendChild(clone);
+
+    overlay.classList.add('active');
+    document.documentElement.classList.add('bac-mermaid-overlay-open');
+    document.body.classList.add('bac-mermaid-overlay-open');
+  }
+
+  function ensureFullscreenTrigger(box) {
+    if (!box || box.dataset.bacMermaidFullscreenReady === '1') return;
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'arcaea-mermaid-fullscreen-btn';
+    button.setAttribute('aria-label', '全屏查看 Mermaid 图表');
+    button.textContent = '⤢';
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      openMermaidFullscreen(box);
+    });
+    box.appendChild(button);
+
+    box.addEventListener('click', function (event) {
+      if (
+        event.target.closest('.arcaea-mermaid-fullscreen-btn') ||
+        event.target.closest('.arcaea-mermaid-error-message')
+      ) {
+        return;
+      }
+      if (event.target.closest('svg') || event.target.closest('pre.mermaid')) {
+        openMermaidFullscreen(box);
+      }
+    });
+
+    box.dataset.bacMermaidFullscreenReady = '1';
   }
 
   function refreshMermaidLayouts(root) {
@@ -316,6 +422,16 @@
       var svg = box.querySelector('pre.mermaid > svg');
       if (!svg) return;
       applyResponsiveSvgSize(svg, box);
+    });
+  }
+
+  function enhanceRenderedMermaidBoxes(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('.arcaea-mermaid-box').forEach(function (box) {
+      var svg = box.querySelector('pre.mermaid > svg');
+      if (!svg) return;
+      applyResponsiveSvgSize(svg, box);
+      ensureFullscreenTrigger(box);
     });
   }
 
@@ -461,6 +577,7 @@
         var box = el.closest('.arcaea-mermaid-box');
         applyResponsiveSvgSize(svg, box);
         if (box) {
+          ensureFullscreenTrigger(box);
           box.dispatchEvent(new CustomEvent('bac:mermaid-rendered', {
             bubbles: true,
             detail: { box: box, svg: svg }
@@ -503,6 +620,7 @@
     var scope = root && root.querySelectorAll ? root : document;
     preparePrism(scope);
     await renderMermaid(scope);
+    enhanceRenderedMermaidBoxes(scope);
     initZoom(scope);
   }
 
@@ -515,7 +633,7 @@
 
   window.addEventListener('resize', function () {
     window.requestAnimationFrame(function () {
-      refreshMermaidLayouts(document);
+      enhanceRenderedMermaidBoxes(document);
     });
   });
 

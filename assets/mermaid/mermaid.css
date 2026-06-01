@@ -136,6 +136,14 @@ pre.mermaid svg {
   width: auto;
 }
 
+.arcaea-mermaid-box[data-bac-mermaid-scale-mode="scroll"] pre.mermaid {
+  justify-content: flex-start;
+}
+
+.arcaea-mermaid-box[data-bac-mermaid-scale-mode="scroll"] pre.mermaid svg {
+  max-width: none;
+}
+
 /* ── 文字样式 ──
  * Mermaid 初始化 JS 的 themeVariables 已注入内联样式作为基准，
  * 此处 CSS 提高优先级（选择器特异性）而非滥用 !important。
@@ -252,6 +260,10 @@ pre.mermaid .cluster rect {
   opacity: 1;
 }
 
+.arcaea-mermaid-box:focus-within .arcaea-mermaid-fullscreen-btn {
+  opacity: 1;
+}
+
 .arcaea-mermaid-fullscreen-btn:hover {
   background: rgba(40, 50, 70, 0.8);
   color: rgba(238, 244, 255, 1);
@@ -292,10 +304,15 @@ pre.mermaid .cluster rect {
 }
 
 .arcaea-mermaid-overlay .arcaea-mermaid-overlay-content svg {
-  max-width: 100%;
+  max-width: none;
   height: auto;
   display: block;
   margin: 0 auto;
+}
+
+html.bac-mermaid-overlay-open,
+body.bac-mermaid-overlay-open {
+  overflow: hidden;
 }
 
 .arcaea-mermaid-overlay-close {
