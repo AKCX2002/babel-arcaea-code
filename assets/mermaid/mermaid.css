@@ -39,6 +39,18 @@
   margin: 2rem 0;
   padding: 1rem;
 
+  /* 阻断 Sakurairo 主题继承链 */
+  font-family:
+    "FiraCode Nerd Font",
+    "Fira Code",
+    "JetBrains Mono",
+    "Noto Sans SC",
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(238, 244, 255, 0.94);
+  text-shadow: none;
+
   /* 响应式滚动策略：
    *   超宽图 → 横向滚动
    *   超高图 → 纵向滚动（max-height 限制 + overflow-y auto）
@@ -51,6 +63,9 @@
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
   overscroll-behavior: contain;
+
+  /* CSS containment — 限制重排范围，减少 Forced reflow */
+  contain: layout paint;
 }
 
 /* Hover — 仅增强边框与阴影，不做 scale（避免 SVG 重新光栅化） */
