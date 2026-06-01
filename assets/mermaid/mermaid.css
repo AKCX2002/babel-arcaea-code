@@ -82,6 +82,13 @@
   content: none !important;
 }
 
+/* ── 阻断 Sakurairo 全局 * 规则泄漏 ──
+ * 主题的 `* { transition: all 0.4s }` 会穿透到 SVG 内部，
+ * 给每个 <rect>/<path>/<text> 加 400ms 过渡并引发 Forced reflow。 */
+.arcaea-mermaid-box * {
+  transition: none !important;
+}
+
 /* ── Mermaid 图表内部容器 ──
  * MerPress-style: <pre class="mermaid"> holds the Mermaid source
  * and Mermaid.run() replaces it with SVG. */
