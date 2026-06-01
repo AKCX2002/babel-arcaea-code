@@ -390,10 +390,6 @@
         delete el.dataset.bacMermaidRendering;
         svg.removeAttribute('width');
         svg.removeAttribute('height');
-        svg.style.width = 'max-content';
-        svg.style.minWidth = '100%';
-        svg.style.maxWidth = 'none';
-        svg.style.height = 'auto';
 
         /* ── Crop viewBox to visible content ──
          * Mermaid stateDiagram/flowchart can produce huge viewBox values
@@ -424,6 +420,16 @@
               (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
           }
         } catch (_) { }
+
+        var viewBox = svg.viewBox && svg.viewBox.baseVal;
+        if (viewBox && viewBox.width > 0) {
+          svg.style.width = viewBox.width + 'px';
+        } else {
+          svg.style.width = '100%';
+        }
+        svg.style.minWidth = '0';
+        svg.style.maxWidth = '100%';
+        svg.style.height = 'auto';
 
         var box = el.closest('.arcaea-mermaid-box');
         if (box) {

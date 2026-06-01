@@ -106,15 +106,17 @@ pre.mermaid {
 }
 
 /* ── SVG 基本样式 ──
- * useMaxWidth:true 已设置 max-width:100% + height:auto 在 SVG 上，
- * 此处只添加装饰样式。超宽图由 .arcaea-mermaid-box overflow-x:auto 滚动。
+ * SVG 最终宽度由 mermaid-init.js 按 viewBox 写入内联样式：
+ *   小图保持自然宽度
+ *   大图最多占满容器宽度
+ * 此处只保留通用装饰与兜底响应式约束。
  */
 pre.mermaid svg {
   display: block;
   height: auto;
-  width: max-content;
-  min-width: 100%;
-  max-width: none;
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
 
   margin: 0 auto;
   padding: 8px;
