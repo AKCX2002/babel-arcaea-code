@@ -259,185 +259,6 @@
     return window.mermaid;
   }
 
-  /* ── Fullscreen overlay ── */
-
-  function createOverlay() {
-    var overlay = document.getElementById('arcaea-mermaid-overlay');
-    if (overlay) return overlay;
-
-    overlay = document.createElement('div');
-    overlay.id = 'arcaea-mermaid-overlay';
-    overlay.className = 'arcaea-mermaid-overlay';
-
-    var content = document.createElement('div');
-    content.className = 'arcaea-mermaid-overlay-content';
-    overlay.appendChild(content);
-
-    var close = document.createElement('button');
-    close.className = 'arcaea-mermaid-overlay-close';
-    close.innerHTML = '\u2715';
-    close.setAttribute('aria-label', '关闭全屏');
-    close.addEventListener('click', function () {
-      moveBack(overlay);
-    });
-    overlay.appendChild(close);
-
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) {
-        moveBack(overlay);
-      }
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && overlay.classList.contains('active')) {
-        moveBack(overlay);
-      }
-    });
-
-    document.body.appendChild(overlay);
-    return overlay;
-  }
-
-  /* ── Move SVG back from overlay to original position ── */
-
-  function moveBack(overlay) {
-    if (!overlay._bacSvgEl) return;
-    overlay.classList.remove('active');
-    // Move SVG back to its original parent
-    if (overlay._bacParent && overlay._bacPlaceholder) {
-      overlay._bacParent.insertBefore(overlay._bacSvgEl, overlay._bacPlaceholder);
-      overlay._bacPlaceholder.remove();
-    }
-    restoreSvgSizing(overlay._bacSvgEl);
-    delete overlay._bacSvgEl;
-    delete overlay._bacPlaceholder;
-    delete overlay._bacParent;
-  }
-
-  function stashSvgSizing(svgEl) {
-    if (!svgEl || svgEl.dataset.bacSvgSizingStashed === '1') return;
-    svgEl.dataset.bacSvgSizingStashed = '1';
-    svgEl.dataset.bacSvgWidthAttr = svgEl.getAttribute('width') || '';
-    svgEl.dataset.bacSvgHeightAttr = svgEl.getAttribute('height') || '';
-    svgEl.dataset.bacSvgStyleWidth = svgEl.style.width || '';
-    svgEl.dataset.bacSvgStyleHeight = svgEl.style.height || '';
-    svgEl.dataset.bacSvgStyleMaxWidth = svgEl.style.maxWidth || '';
-  }
-
-  function restoreSvgSizing(svgEl) {
-    if (!svgEl || svgEl.dataset.bacSvgSizingStashed !== '1') return;
-
-    var widthAttr = svgEl.dataset.bacSvgWidthAttr || '';
-    var heightAttr = svgEl.dataset.bacSvgHeightAttr || '';
-    if (widthAttr) { svgEl.setAttribute('width', widthAttr); }
-    else { svgEl.removeAttribute('width'); }
-    if (heightAttr) { svgEl.setAttribute('height', heightAttr); }
-    else { svgEl.removeAttribute('height'); }
-
-    svgEl.style.width = svgEl.dataset.bacSvgStyleWidth || '';
-    svgEl.style.height = svgEl.dataset.bacSvgStyleHeight || '';
-    svgEl.style.maxWidth = svgEl.dataset.bacSvgStyleMaxWidth || '';
-
-    delete svgEl.dataset.bacSvgWidthAttr;
-    delete svgEl.dataset.bacSvgHeightAttr;
-    delete svgEl.dataset.bacSvgStyleWidth;
-    delete svgEl.dataset.bacSvgStyleHeight;
-    delete svgEl.dataset.bacSvgStyleMaxWidth;
-    delete svgEl.dataset.bacSvgSizingStashed;
-  }
-
-  function cropSvgToVisibleContent(svgEl) {
-    if (!svgEl || !svgEl.viewBox || !svgEl.viewBox.baseVal) return;
-
-    var vb = svgEl.viewBox.baseVal;
-    if (!(vb && vb.width > 0 && vb.height > 0)) return;
-
-    var svgRect = svgEl.getBoundingClientRect();
-    if (!(svgRect && svgRect.width > 0 && svgRect.height > 0)) return;
-
-    var scaleX = vb.width / svgRect.width;
-    var scaleY = vb.height / svgRect.height;
-    var minX = Infinity;
-    var minY = Infinity;
-    var maxX = -Infinity;
-    var maxY = -Infinity;
-    var found = false;
-
-    svgEl.querySelectorAll(
-      '.cluster, .node, .edgeLabel, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
-    ).forEach(function (node) {
-      var rect = node.getBoundingClientRect();
-      if (!rect || rect.width <= 0 || rect.height <= 0) return;
-
-      found = true;
-      var left = vb.x + (rect.left - svgRect.left) * scaleX;
-      var top = vb.y + (rect.top - svgRect.top) * scaleY;
-      var right = left + rect.width * scaleX;
-      var bottom = top + rect.height * scaleY;
-
-      if (left < minX) minX = left;
-      if (top < minY) minY = top;
-      if (right > maxX) maxX = right;
-      if (bottom > maxY) maxY = bottom;
-    });
-
-    if (!found || !(maxX > minX) || !(maxY > minY)) return;
-
-    var padX = Math.max(12, vb.width * 0.02);
-    var padY = Math.max(12, vb.height * 0.04);
-    svgEl.setAttribute(
-      'viewBox',
-      (minX - padX) + ' ' + (minY - padY) + ' ' +
-      (maxX - minX + padX * 2) + ' ' + (maxY - minY + padY * 2)
-    );
-  }
-
-  function openFullscreen(svgEl) {
-    var overlay = createOverlay();
-    var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
-    content.innerHTML = '';
-
-    /* Move the original SVG into the overlay (no clone, no ID rewriting).
-     * The original spot gets a placeholder so we can move it back. */
-    var placeholder = document.createElement('span');
-    placeholder.style.display = 'none';
-    placeholder.dataset.arcaeaFullscreenPlaceholder = '1';
-
-    var parent = svgEl.parentNode;
-    if (parent) {
-      parent.insertBefore(placeholder, svgEl);
-    }
-
-    stashSvgSizing(svgEl);
-    svgEl.removeAttribute('width');
-    svgEl.removeAttribute('height');
-    svgEl.style.width = '100%';
-    svgEl.style.maxWidth = '100%';
-    svgEl.style.height = 'auto';
-
-    content.appendChild(svgEl);
-    overlay.classList.add('active');
-
-    // Store a reference so we can move it back on close
-    overlay._bacSvgEl = svgEl;
-    overlay._bacPlaceholder = placeholder;
-    overlay._bacParent = parent;
-  }
-
-  function addFullscreenButton(box, svg) {
-    if (box.querySelector('.arcaea-mermaid-fullscreen-btn')) return;
-    var btn = document.createElement('button');
-    btn.className = 'arcaea-mermaid-fullscreen-btn';
-    btn.innerHTML = '\u26F6';
-    btn.setAttribute('aria-label', '查看大图');
-    btn.setAttribute('title', '查看大图');
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      openFullscreen(svg);
-    });
-    box.appendChild(btn);
-  }
-
   function markMermaidError(el, error) {
     delete el.dataset.bacMermaidRendering;
     el.dataset.bacMermaidError = '1';
@@ -567,10 +388,50 @@
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
         el.dataset.arcaeaRendered = '1';
         delete el.dataset.bacMermaidRendering;
-        try { cropSvgToVisibleContent(svg); } catch (_) {}
+        svg.removeAttribute('width');
+        svg.removeAttribute('height');
+        svg.style.width = 'max-content';
+        svg.style.minWidth = '100%';
+        svg.style.maxWidth = 'none';
+        svg.style.height = 'auto';
+
+        /* ── Crop viewBox to visible content ──
+         * Mermaid stateDiagram/flowchart can produce huge viewBox values
+         * (2000+px) because invisible edgePaths extend the bounding box.
+         * Compute tight viewBox from visible .node, .cluster, .statediagram-*
+         * and .note elements — the actual diagram content. */
+        try {
+          var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          var found = false;
+          svg.querySelectorAll(
+            '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
+          ).forEach(function (n) {
+            try {
+              var b = n.getBBox();
+              if (b && b.width > 0 && b.height > 0) {
+                found = true;
+                if (b.x < minX) minX = b.x;
+                if (b.y < minY) minY = b.y;
+                if (b.x + b.width > maxX) maxX = b.x + b.width;
+                if (b.y + b.height > maxY) maxY = b.y + b.height;
+              }
+            } catch (_) {}
+          });
+          if (found) {
+            var pad = 12;
+            svg.setAttribute('viewBox',
+              (minX - pad) + ' ' + (minY - pad) + ' ' +
+              (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
+          }
+        } catch (_) {}
 
         var box = el.closest('.arcaea-mermaid-box');
-        if (box) addFullscreenButton(box, svg);
+        if (box) {
+          box.dispatchEvent(new CustomEvent('bac:mermaid-rendered', {
+            bubbles: true,
+            detail: { box: box, svg: svg }
+          }));
+        }
       });
       console.log(LOG, 'Mermaid rendered:', diagrams.length);
     } catch (e) {

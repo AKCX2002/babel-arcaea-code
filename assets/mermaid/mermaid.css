@@ -112,7 +112,9 @@ pre.mermaid {
 pre.mermaid svg {
   display: block;
   height: auto;
-  max-width: 100%;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
 
   margin: 0 auto;
   padding: 8px;

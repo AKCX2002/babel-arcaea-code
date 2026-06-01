@@ -17,8 +17,10 @@ class Assets {
     public function enqueueAll(): void {
         if (\is_admin() || empty($this->opts['enabled'])) return;
 
+        $this->enqueueReadingEnhancements();
+
         if ($this->opts['prism_enabled'] && Detector::needsModule(Detector::META_PRISM)) {
-            $this->enqueuePrismCss(); $this->enqueuePrismJs();
+            $this->enqueuePrismCss(); $this->enqueuePrismJs(); $this->enqueuePrismEnhancements();
         }
         // mediumZoom always loads (lightweight, no post-meta gate)
         $this->enqueueMediumZoom();
@@ -29,6 +31,10 @@ class Assets {
                   || Detector::needsModule(Detector::META_MERMAID)
                   || Detector::needsModule(Detector::META_KATEX);
         if ($needsBoot) $this->enqueueFrontendInit();
+
+        if ($this->opts['mermaid_enabled'] && Detector::needsModule(Detector::META_MERMAID)) {
+            $this->enqueueMermaidEnhancements();
+        }
 
         if ($this->opts['markmap_enabled'] && Detector::needsModule(Detector::META_MARKMAP)) {
             $this->enqueueMarkmap();
@@ -72,6 +78,18 @@ class Assets {
         }
     }
 
+    private function enqueuePrismEnhancements(): void {
+        $this->style('assets/prism/prism-titlebar.css', 'bac-prism-titlebar', ['bac-prism-wrap']);
+        $this->style('assets/prism/prism-fold.css', 'bac-prism-fold', ['bac-prism-titlebar']);
+        $deps = [self::PRISM_CORE];
+        if (\wp_script_is('bac-prism-toolbar', 'registered')) $deps[] = 'bac-prism-toolbar';
+        $this->script('assets/prism/prism-titlebar.js', 'bac-prism-titlebar', $deps);
+        $this->script('assets/prism/prism-fold.js', 'bac-prism-fold', ['bac-prism-titlebar']);
+        if ($this->opts['prism_previewers']) {
+            $this->script('assets/prism/prism-previewers-init.js', 'bac-prism-previewers-init', ['bac-prism-previewers']);
+        }
+    }
+
     private function enqueueMediumZoom(): void { $this->script('assets/js/medium-zoom.min.js','bac-medium-zoom',[],'1.1.0'); }
 
     private function enqueueFrontendInit(): void {
@@ -88,6 +106,11 @@ class Assets {
             'mermaidCompatMode'=>\in_array(($this->opts['mermaid_compat_mode'] ?? 'auto'), ['off','auto','force'], true) ? $this->opts['mermaid_compat_mode'] : 'auto',
         ]);
         if ($this->opts['mermaid_enabled']) { $this->style('assets/mermaid/mermaid.css','bac-mermaid'); \wp_localize_script('bac-mermaid-init','BAC_Mermaid',['mermaidUrl'=>\esc_url(BAC_PLUGIN_URL.'assets/mermaid/mermaid.esm.min.mjs')]); }
+    }
+
+    private function enqueueMermaidEnhancements(): void {
+        $this->style('assets/mermaid/mermaid-enhance.css', 'bac-mermaid-enhance', ['bac-mermaid']);
+        $this->script('assets/mermaid/mermaid-enhance.js', 'bac-mermaid-enhance', ['bac-mermaid-init']);
     }
 
     private function enqueueMarkmap(): void {
@@ -125,6 +148,11 @@ class Assets {
         if (!$this->script($d . 'katex.min.js', 'bac-katex-js', [], $v)) return;
         $this->script($d . 'auto-render.min.js', 'bac-katex-autorender', ['bac-katex-js'], $v);
         $this->script($d . 'katex-init.js', 'bac-katex-init', ['bac-katex-autorender']);
+    }
+
+    private function enqueueReadingEnhancements(): void {
+        $this->style('assets/reading/reading-progress.css', 'bac-reading-progress');
+        $this->script('assets/reading/reading-progress.js', 'bac-reading-progress');
     }
 
     private function script(string $rel, string $h, array $d=[], string $v=BAC_VERSION): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_script($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v,true); return true; }

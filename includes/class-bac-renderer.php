@@ -57,6 +57,10 @@ class Renderer {
     /**
      * Wrap bare <pre> tags (stripped by Sakurairo) back into
      * <pre><code class="language-xxx"> form so Prism.js can highlight them.
+     *
+     * Security:
+     * - Code payload is always re-escaped before output.
+     * - Original tag attributes are filtered instead of being reused verbatim.
      */
     public function normalizeCodeBlocks(string $content): string {
         // Pass 1: wrap bare <pre> (no <code> inside, stripped by Sakurairo)
@@ -66,9 +70,13 @@ class Renderer {
             $attrs = $m[1] ?? '';
             $inner = $m[2] ?? '';
 
-            $langClass = $this->extractLang($attrs);
+            $langClass = $this->extractLangClass($attrs);
             $inner = \html_entity_decode($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            return '<pre' . $attrs . '><code class="' . \esc_attr($langClass) . '">' . $inner . '</code></pre>';
+            $safeAttrs = $this->sanitizeTagAttrs($attrs);
+
+            return '<pre' . $safeAttrs . '><code class="' . \esc_attr($langClass) . '">'
+                . \esc_html($inner)
+                . '</code></pre>';
         }, $content);
 
         // Pass 2: handle <pre><code> that lacks language-* class
@@ -150,6 +158,48 @@ class Renderer {
     private static function pattern(array $classes): string {
         $n = \implode('|', \array_map(fn($c) => \preg_quote($c, '/'), $classes));
         return '/<pre[^>]*>\s*<code[^>]*class=([\"\'])(?=[^\"\']*\b(?:language-' . $n . '|lang-' . $n . '|' . $n . ')\b)[^\"\']*\1[^>]*>(.*?)<\/code>\s*<\/pre>/si';
+    }
+
+    private function extractLangClass(string $attrs): string {
+        $langClass = 'language-text';
+        if (!\preg_match('/class=[\"\']([^\"\']*)[\"\']/i', $attrs, $cm)) return $langClass;
+
+        $classes = $cm[1];
+        if (\preg_match('/(?:^|\s)(?:language-|lang-)([a-z0-9_+#.-]+)/i', $classes, $lm)) {
+            return 'language-' . \strtolower($lm[1]);
+        }
+
+        if (\preg_match('/(?:^|\s)(dart|flutter|bash|sh|python|js|javascript|ts|typescript|html|css|json|yaml|xml|sql|php|ruby|rust|go|java|c|cpp|csharp|swift|kotlin|mermaid|markmap)(?:\s|$)/i', $classes, $lm)) {
+            return 'language-' . \strtolower($lm[1]);
+        }
+
+        return $langClass;
+    }
+
+    private function sanitizeTagAttrs(string $attrs): string {
+        if ($attrs === '') return '';
+
+        $safe = '';
+
+        if (\preg_match('/\bclass=(["\'])(.*?)\1/i', $attrs, $m)) {
+            $classes = \preg_split('/\s+/', $m[2]) ?: [];
+            $classes = \array_values(\array_filter(\array_map('\sanitize_html_class', $classes)));
+            if ($classes !== []) {
+                $safe .= ' class="' . \esc_attr(\implode(' ', $classes)) . '"';
+            }
+        }
+
+        if (\preg_match('/\bid=(["\'])(.*?)\1/i', $attrs, $m)) {
+            $safe .= ' id="' . \esc_attr(\sanitize_html_class($m[2])) . '"';
+        }
+
+        if (\preg_match_all('/\b((?:data|aria)-[a-z0-9_-]+)=(["\'])(.*?)\2/i', $attrs, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $m) {
+                $safe .= ' ' . \esc_attr($m[1]) . '="' . \esc_attr($m[3]) . '"';
+            }
+        }
+
+        return $safe;
     }
 
     private static function clean(string $r): string {
