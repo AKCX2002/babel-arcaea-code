@@ -1,6 +1,6 @@
 {
   "name": "babel-arcaea-code",
-  "version": "1.6.17",
+  "version": "1.6.18",
   "description": "统一 Prism.js + Mermaid + MathJax + Markmap 渲染引擎。本地化资源优先，适配 Sakurairo WordPress 技术博客。",
   "main": "index.js",
   "directories": {
