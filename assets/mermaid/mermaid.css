@@ -105,6 +105,21 @@ pre.mermaid {
   padding: 0.5rem !important;
 }
 
+/* ── foreignObject 隔离（防御性） ──
+ * mermaid-init.js 已设 htmlLabels: false，正常不会产生 foreignObject；
+ * 此处作为纵深防御，消除 Sakurairo 主题 CSS 对 SVG 内部元素的一切污染。 */
+pre.mermaid foreignObject,
+pre.mermaid foreignObject div,
+pre.mermaid foreignObject span,
+pre.mermaid foreignObject p {
+  all: initial;
+  display: block;
+  font-family: inherit;
+  line-height: 1.4;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
 /* ── SVG 基本样式 ──
  * SVG 最终宽度由 mermaid-init.js 按 viewBox 写入内联样式：
  *   小图保持自然宽度

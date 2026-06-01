@@ -442,7 +442,7 @@
    *   1. Provide Arcaea dark theme via mermaid.initialize()
    *   2. Call mermaid.run({ nodes }) targeting unrendered .mermaid elements
    *   3. Add a fullscreen button to each rendered diagram
-   * No viewBox cropping, no SVG normalization — MerPress doesn't do it.
+   *   4. Crop viewBox to visible content (tighten from computed bboxes)
    * ════════════════════════════════════════════ */
 
   async function renderMermaid(root) {
