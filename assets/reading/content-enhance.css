@@ -17,10 +17,10 @@
 .entry-content thead th,
 .post-content thead th,
 .content table thead th {
-  color: rgba(244, 248, 255, 0.96);
-  background: linear-gradient(180deg, rgba(150, 176, 232, 0.34) 0%, rgba(112, 136, 188, 0.24) 100%);
-  border-bottom: 1px solid rgba(206, 221, 255, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: rgba(242, 247, 255, 0.94);
+  background: linear-gradient(180deg, rgba(152, 182, 255, 0.26) 0%, rgba(152, 182, 255, 0.16) 100%);
+  border-bottom: 1px solid rgba(212, 225, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .entry-content tbody td,
