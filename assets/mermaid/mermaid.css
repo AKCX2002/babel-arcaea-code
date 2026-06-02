@@ -51,13 +51,9 @@
   color: rgba(238, 244, 255, 0.94);
   text-shadow: none;
 
-  /* 响应式滚动策略：
-   *   超宽图 → 横向滚动
-   *   超高图 → 纵向滚动（max-height 限制 + overflow-y auto）
-   */
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: min(90vh, 960px);
+  /* 图表由 JS 按容器缩放，容器不再制造嵌套滚动区。 */
+  overflow: hidden;
+  max-height: none;
 
   /* 悬停动效准备 — 仅 border-color, box-shadow 过渡 */
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
@@ -125,6 +121,7 @@ pre.mermaid {
   -webkit-backdrop-filter: none !important;
   margin: 0 !important;
   padding: 0.5rem !important;
+  overflow: visible !important;
 }
 
 /* ── foreignObject 隔离（防御性） ──
@@ -167,14 +164,6 @@ pre.mermaid svg {
 
 .arcaea-mermaid-box[data-bac-mermaid-scale-mode="natural"] pre.mermaid svg {
   width: auto;
-}
-
-.arcaea-mermaid-box[data-bac-mermaid-scale-mode="scroll"] pre.mermaid {
-  justify-content: flex-start;
-}
-
-.arcaea-mermaid-box[data-bac-mermaid-scale-mode="scroll"] pre.mermaid svg {
-  max-width: none;
 }
 
 /* ── 文字样式 ──

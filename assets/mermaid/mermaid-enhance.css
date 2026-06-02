@@ -89,8 +89,9 @@
   max-width: none;
   min-width: 0;
   height: auto;
-  padding: 20px;
-  box-sizing: content-box;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: visible;
   border-radius: 14px;
   background: rgba(8, 21, 42, 0.88);
   border: 1px solid rgba(230, 238, 255, 0.28);

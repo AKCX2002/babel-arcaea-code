@@ -106,8 +106,16 @@
     }
   }
 
-  function resetTransform() {
-    state.scale = 1;
+  function getFitScale(svg) {
+    var size = getViewBoxSize(svg);
+    var maxWidth = Math.max(320, window.innerWidth - 64);
+    var maxHeight = Math.max(240, window.innerHeight - 96);
+    if (!size.width || !size.height) return 1;
+    return Math.min(1, maxWidth / size.width, maxHeight / size.height);
+  }
+
+  function resetTransform(initialScale) {
+    state.scale = initialScale || 1;
     state.offsetX = 0;
     state.offsetY = 0;
     applyTransform();
@@ -147,7 +155,12 @@
     overlay.appendChild(hint);
 
     overlay.addEventListener('click', function (event) {
-      if (event.target === overlay) closeOverlay();
+      if (
+        event.target === overlay ||
+        event.target.classList.contains('arcaea-mermaid-overlay-stage')
+      ) {
+        closeOverlay();
+      }
     });
 
     stage.addEventListener('wheel', function (event) {
@@ -195,16 +208,17 @@
     viewport.innerHTML = '';
 
     var clone = svg.cloneNode(true);
+    var size = getViewBoxSize(svg);
     clone.removeAttribute('width');
     clone.removeAttribute('height');
-    clone.style.width = 'auto';
+    clone.style.width = size.width ? size.width + 'px' : 'auto';
     clone.style.minWidth = '0';
     clone.style.maxWidth = 'none';
     clone.style.height = 'auto';
     viewport.appendChild(clone);
 
     overlay.classList.add('active');
-    resetTransform();
+    resetTransform(getFitScale(svg));
   }
 
   function createButton(label, title, onClick) {

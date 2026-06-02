@@ -282,13 +282,8 @@
   }
 
   function parseViewBoxWidth(svg) {
-    if (!svg) return 0;
-    var viewBox = svg.getAttribute('viewBox');
-    if (!viewBox) return 0;
-    var parts = viewBox.trim().split(/\s+/);
-    if (parts.length !== 4) return 0;
-    var width = Number(parts[2]);
-    return Number.isFinite(width) && width > 0 ? width : 0;
+    var viewBox = parseViewBox(svg);
+    return viewBox && viewBox.width > 0 ? viewBox.width : 0;
   }
 
   function parseViewBox(svg) {
@@ -336,37 +331,25 @@
 
   function applyResponsiveSvgSize(svg, box) {
     if (!svg) return;
-    var intrinsicWidth = parseViewBoxWidth(svg);
+    var viewBox = parseViewBox(svg);
+    var intrinsicWidth = viewBox && viewBox.width > 0 ? viewBox.width : parseViewBoxWidth(svg);
     var host = box || svg.closest('.arcaea-mermaid-box') || svg.parentElement;
     var hostWidth = host ? Math.max(0, host.clientWidth - 32) : 0;
     /* Skip re-layout when the container is hidden (Pjax transition etc.).
        Setting svg.style.width based on a 0-width container permanently
        shrinks the diagram — it won't recover on its own. */
     if (hostWidth < 10) return;
-    var fitsContainer = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth <= hostWidth * 1.08;
-    var readableScrollThreshold = hostWidth > 0 ? hostWidth * 1.9 : 0;
-    var shouldPreferScrollableScale = intrinsicWidth > 0 && hostWidth > 0 && intrinsicWidth > readableScrollThreshold;
-    var targetScrollableWidth = hostWidth > 0
-      ? clamp(hostWidth * 1.75, hostWidth + 120, hostWidth * 2.4)
-      : 0;
+    var targetWidth = intrinsicWidth > 0
+      ? Math.min(intrinsicWidth, hostWidth)
+      : hostWidth;
 
     svg.removeAttribute('width');
     svg.removeAttribute('height');
-    if (fitsContainer) {
-      svg.style.width = intrinsicWidth + 'px';
-      svg.style.maxWidth = '100%';
-      if (host) host.dataset.bacMermaidScaleMode = 'natural';
-    } else if (shouldPreferScrollableScale && targetScrollableWidth > 0) {
-      svg.style.width = targetScrollableWidth + 'px';
-      svg.style.maxWidth = 'none';
-      if (host) host.dataset.bacMermaidScaleMode = 'scroll';
-    } else {
-      svg.style.width = '100%';
-      svg.style.maxWidth = '100%';
-      if (host) host.dataset.bacMermaidScaleMode = 'fit';
-    }
+    svg.style.width = targetWidth + 'px';
+    svg.style.maxWidth = '100%';
     svg.style.minWidth = '0';
     svg.style.height = 'auto';
+    if (host) host.dataset.bacMermaidScaleMode = intrinsicWidth > hostWidth ? 'fit' : 'natural';
   }
 
   function ensureFullscreenOverlay() {
@@ -377,12 +360,16 @@
     overlay.className = 'arcaea-mermaid-overlay';
     overlay.innerHTML =
       '<button type="button" class="arcaea-mermaid-overlay-close" aria-label="关闭全屏预览">×</button>' +
-      '<div class="arcaea-mermaid-overlay-content" role="dialog" aria-modal="true"></div>';
+      '<div class="arcaea-mermaid-overlay-stage">' +
+        '<div class="arcaea-mermaid-overlay-viewport" role="dialog" aria-modal="true"></div>' +
+      '</div>' +
+      '<div class="arcaea-mermaid-overlay-hint">点击背景或 ESC 关闭</div>';
     document.body.appendChild(overlay);
 
     overlay.addEventListener('click', function (event) {
       if (
         event.target === overlay ||
+        event.target.classList.contains('arcaea-mermaid-overlay-stage') ||
         event.target.closest('.arcaea-mermaid-overlay-close')
       ) {
         closeFullscreenOverlay();
@@ -402,7 +389,7 @@
     var overlay = document.querySelector('.arcaea-mermaid-overlay');
     if (!overlay) return;
     overlay.classList.remove('active');
-    var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
+    var content = overlay.querySelector('.arcaea-mermaid-overlay-viewport');
     if (content) content.innerHTML = '';
     document.documentElement.classList.remove('bac-mermaid-overlay-open');
     document.body.classList.remove('bac-mermaid-overlay-open');
@@ -414,16 +401,26 @@
     if (!svg) return;
 
     var overlay = ensureFullscreenOverlay();
-    var content = overlay.querySelector('.arcaea-mermaid-overlay-content');
+    var content = overlay.querySelector('.arcaea-mermaid-overlay-viewport');
     if (!content) return;
 
     var clone = svg.cloneNode(true);
-    clone.style.width = '';
+    var viewBox = parseViewBox(svg);
+    var viewportWidth = Math.max(320, window.innerWidth - 64);
+    var viewportHeight = Math.max(240, window.innerHeight - 96);
+    var scale = viewBox && viewBox.width > 0 && viewBox.height > 0
+      ? Math.min(1, viewportWidth / viewBox.width, viewportHeight / viewBox.height)
+      : 1;
     clone.style.maxWidth = 'none';
     clone.style.minWidth = '0';
+    clone.style.width = viewBox && viewBox.width > 0
+      ? Math.max(1, viewBox.width) + 'px'
+      : 'auto';
     clone.style.height = 'auto';
     content.innerHTML = '';
     content.appendChild(clone);
+    content.style.transform =
+      'translate(-50%, -50%) scale(' + scale + ')';
 
     overlay.classList.add('active');
     document.documentElement.classList.add('bac-mermaid-overlay-open');
@@ -594,42 +591,48 @@
          * and .note elements — the actual diagram content. */
         try {
           var originalViewBox = parseViewBox(svg);
-          var bounds = {
-            minX: Infinity,
-            minY: Infinity,
-            maxX: -Infinity,
-            maxY: -Infinity,
-            found: false
-          };
-          svg.querySelectorAll(
-            '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
-          ).forEach(function (n) {
-            try {
-              expandBoundsWithSvgElement(bounds, n);
-            } catch (_) { }
-          });
-          if (bounds.found) {
-            var pad = 12;
-            var cropped = {
-              x: bounds.minX - pad,
-              y: bounds.minY - pad,
-              width: bounds.maxX - bounds.minX + 2 * pad,
-              height: bounds.maxY - bounds.minY + 2 * pad
+          var shouldCropViewBox = originalViewBox && (
+            originalViewBox.width > 3000 ||
+            originalViewBox.height > 3000
+          );
+          if (shouldCropViewBox) {
+            var bounds = {
+              minX: Infinity,
+              minY: Infinity,
+              maxX: -Infinity,
+              maxY: -Infinity,
+              found: false
             };
-            var cropLooksValid = cropped.width > 24 && cropped.height > 24;
-            if (
-              cropLooksValid &&
-              originalViewBox &&
-              (
-                cropped.width < originalViewBox.width * 0.2 ||
-                cropped.height < originalViewBox.height * 0.2
-              )
-            ) {
-              cropLooksValid = false;
-            }
-            if (cropLooksValid) {
-              svg.setAttribute('viewBox',
-                cropped.x + ' ' + cropped.y + ' ' + cropped.width + ' ' + cropped.height);
+            svg.querySelectorAll(
+              '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
+            ).forEach(function (n) {
+              try {
+                expandBoundsWithSvgElement(bounds, n);
+              } catch (_) { }
+            });
+            if (bounds.found) {
+              var pad = 12;
+              var cropped = {
+                x: bounds.minX - pad,
+                y: bounds.minY - pad,
+                width: bounds.maxX - bounds.minX + 2 * pad,
+                height: bounds.maxY - bounds.minY + 2 * pad
+              };
+              var cropLooksValid = cropped.width > 24 && cropped.height > 24;
+              if (
+                cropLooksValid &&
+                originalViewBox &&
+                (
+                  cropped.width < originalViewBox.width * 0.2 ||
+                  cropped.height < originalViewBox.height * 0.2
+                )
+              ) {
+                cropLooksValid = false;
+              }
+              if (cropLooksValid) {
+                svg.setAttribute('viewBox',
+                  cropped.x + ' ' + cropped.y + ' ' + cropped.width + ' ' + cropped.height);
+              }
             }
           }
         } catch (_) { }
