@@ -247,6 +247,8 @@
   text-align: left;
   vertical-align: top;
   color: var(--arcaea-text);
+  border-right: 1px solid rgba(196, 210, 232, 0.08);
+  border-bottom: 1px solid rgba(196, 210, 232, 0.08);
 }
 
 .arcaea-article-content th {
@@ -269,8 +271,12 @@
     inset 0 -1px 0 rgba(18, 28, 56, 0.14);
 }
 
+.arcaea-article-content tbody td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
 .arcaea-article-content tbody th {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.035);
   color: var(--arcaea-heading);
 }
 
@@ -278,8 +284,17 @@
   transition: background-color 0.18s ease;
 }
 
+.arcaea-article-content tbody tr:first-child td,
+.arcaea-article-content tbody tr:first-child th {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
 .arcaea-article-content tbody tr:last-child td {
   border-bottom: none;
+}
+
+.arcaea-article-content tr > *:last-child {
+  border-right: none;
 }
 
 .arcaea-article-content thead tr:first-child th:first-child {
@@ -291,10 +306,18 @@
 }
 
 .arcaea-article-content tbody tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.arcaea-article-content tbody tr:nth-child(even) th {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .arcaea-article-content tbody tr:hover td {
+  background: rgba(159, 198, 255, 0.045);
+}
+
+.arcaea-article-content tbody tr:hover th {
   background: rgba(159, 198, 255, 0.06);
 }
 

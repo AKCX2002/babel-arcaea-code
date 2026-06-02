@@ -32,13 +32,13 @@
 .entry-content tbody td,
 .post-content tbody td,
 .content table tbody td {
-  background: rgba(10, 18, 32, 0.24);
+  background: rgba(10, 18, 32, 0.22);
 }
 
 .entry-content tbody tr:nth-child(even) td,
 .post-content tbody tr:nth-child(even) td,
 .content table tbody tr:nth-child(even) td {
-  background: rgba(18, 29, 48, 0.34);
+  background: rgba(18, 29, 48, 0.28);
 }
 
 .entry-content th,
@@ -48,8 +48,14 @@
 .content table th,
 .content table td {
   padding: 0.7rem 0.85rem;
-  border-right: 1px solid rgba(173, 198, 255, 0.12);
-  border-bottom: 1px solid rgba(173, 198, 255, 0.12);
+  border-right: 1px solid rgba(173, 198, 255, 0.09);
+  border-bottom: 1px solid rgba(173, 198, 255, 0.09);
+}
+
+.entry-content tbody tr:first-child td,
+.post-content tbody tr:first-child td,
+.content table tbody tr:first-child td {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .entry-content tr > *:last-child,
