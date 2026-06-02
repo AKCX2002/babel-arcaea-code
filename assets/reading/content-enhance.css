@@ -1,71 +1,96 @@
-/* Keep the generic reading enhancement scoped to common content wrappers.
-   Avoid styling every table inside <article>, otherwise wrapper-specific
-   themes such as .arcaea-article-content must fight broad defaults. */
-.entry-content table,
-.post-content table,
-.content table {
+/* content-enhance.css — Low-grid table baseline
+ *
+ * Provides a minimal, non‑conflicting table baseline for generic content areas
+ * (.entry‑content, .post‑content, .content).  Intentionally lightweight:
+ * no backdrop‑filter, no heavy gradients, no glass effects — those belong
+ * in arcaea‑article‑content.css and the arcaea‑feature‑matrix system.
+ *
+ * Layout: only the article wrapper layer colours table backgrounds;
+ * content‑enhance supplies only spacing, thin borders and basic readability.
+ */
+
+/* ── Generic low‑grid baseline ────────────────────────────────── */
+
+.entry-content > table,
+.post-content > table,
+.content > table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   color: rgba(228, 236, 248, 0.92);
-  background: rgba(7, 16, 30, 0.18);
-  border: 1px solid rgba(173, 198, 255, 0.18);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.entry-content thead th,
-.post-content thead th,
-.content table thead th {
-  color: rgba(242, 247, 255, 0.94);
-  background: linear-gradient(
-    180deg,
-    rgba(92, 116, 178, 0.38) 0%,
-    rgba(66, 88, 146, 0.26) 100%
-  );
-  border-bottom: 1px solid rgba(196, 210, 232, 0.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -1px 0 rgba(18, 28, 56, 0.16);
-}
-
-.entry-content tbody td,
-.post-content tbody td,
-.content table tbody td {
-  background: rgba(10, 18, 32, 0.22);
-}
-
-.entry-content tbody tr:nth-child(even) td,
-.post-content tbody tr:nth-child(even) td,
-.content table tbody tr:nth-child(even) td {
-  background: rgba(18, 29, 48, 0.28);
 }
 
 .entry-content th,
 .entry-content td,
 .post-content th,
 .post-content td,
-.content table th,
-.content table td {
-  padding: 0.7rem 0.85rem;
-  border-right: 1px solid rgba(173, 198, 255, 0.09);
-  border-bottom: 1px solid rgba(173, 198, 255, 0.09);
+.content th,
+.content td {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(173, 198, 255, 0.08);
+  vertical-align: top;
 }
 
-.entry-content tbody tr:first-child td,
-.post-content tbody tr:first-child td,
-.content table tbody tr:first-child td {
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+.entry-content thead th,
+.post-content thead th,
+.content thead th {
+  color: rgba(242, 247, 255, 0.94);
+  font-weight: 650;
+  border-bottom-width: 1px;
 }
 
-.entry-content tr > *:last-child,
-.post-content tr > *:last-child,
-.content table tr > *:last-child {
-  border-right: none;
+.entry-content tbody tr:hover,
+.post-content tbody tr:hover,
+.content tbody tr:hover {
+  background: rgba(95, 212, 255, 0.03);
 }
 
-.entry-content tbody tr:last-child td,
-.post-content tbody tr:last-child td,
-.content table tbody tr:last-child td {
+/* ── .arcaea‑low‑grid class — opt‑in minimal table ────────────── */
+
+table.arcaea-low-grid {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px solid rgba(173, 198, 255, 0.10);
+  border-radius: 8px;
+  overflow: hidden;
+  color: rgba(228, 236, 248, 0.92);
+}
+
+table.arcaea-low-grid th,
+table.arcaea-low-grid td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(173, 198, 255, 0.06);
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+table.arcaea-low-grid thead th {
+  background: rgba(95, 212, 255, 0.06);
+  color: rgba(242, 247, 255, 0.94);
+  font-weight: 650;
+  border-bottom: 1px solid rgba(95, 212, 255, 0.14);
+}
+
+table.arcaea-low-grid tbody tr:last-child td {
   border-bottom: none;
+}
+
+table.arcaea-low-grid tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.012);
+}
+
+table.arcaea-low-grid tbody tr:hover td {
+  background: rgba(95, 212, 255, 0.04);
+}
+
+/* On mobile, low‑grid tables get horizontal scroll without
+   losing border‑radius visibility. */
+@media (max-width: 560px) {
+  table.arcaea-low-grid {
+    font-size: 0.9em;
+  }
+  table.arcaea-low-grid th,
+  table.arcaea-low-grid td {
+    padding: 0.42rem 0.55rem;
+  }
 }
