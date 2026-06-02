@@ -22,8 +22,8 @@
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
 }
 
-.bac-code-shell .code-toolbar > pre[class*="language-"],
-.bac-code-shell > pre[class*="language-"] {
+.bac-code-titlebar + .code-toolbar > pre[class*="language-"],
+.bac-code-titlebar + pre[class*="language-"] {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
 }

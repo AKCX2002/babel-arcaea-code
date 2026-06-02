@@ -46,6 +46,7 @@ pre[class*="language-"] code {
 .token.punctuation,
 .token.operator {
     color: rgba(238, 244, 255, 0.76) !important;
+    background: transparent !important;
 }
 
 .token.namespace {

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added shared front-end article wrapper stylesheet `assets/reading/arcaea-article-content.css` for `.arcaea-article-content`, so Arcaea long-form post styling can be injected by the plugin instead of repeated inline per post.
+
 ## 1.6.1
 
 ### Changed

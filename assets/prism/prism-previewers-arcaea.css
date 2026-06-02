@@ -6,6 +6,14 @@
  * Targets: Color · Gradient · Angle · Time · Easing
  * ============================================================ */
 
+.prism-previewer,
+.prism-previewer-easing {
+    --bac-preview-ring: rgba(255, 255, 255, 0.10);
+    --bac-preview-glow: rgba(130, 170, 255, 0.18);
+    --bac-preview-glow-strong: rgba(130, 170, 255, 0.32);
+    --bac-preview-surface: rgba(13, 18, 28, 0.92);
+}
+
 /* ── Unified Previewer Container ── */
 .prism-previewer {
     margin-top: -56px;
@@ -22,7 +30,7 @@
 
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.40),
-        0 0 24px rgba(130, 170, 255, 0.18);
+        0 0 24px var(--bac-preview-glow);
 
     -webkit-transition:
         opacity 0.25s ease,
@@ -48,9 +56,9 @@
     left: -2px;
     bottom: -2px;
     border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--bac-preview-ring);
     box-shadow:
-        inset 0 0 12px rgba(130, 170, 255, 0.06),
+        inset 0 0 12px rgba(130, 170, 255, 0.08),
         0 0 0 rgba(130, 170, 255, 0);
 }
 
@@ -61,8 +69,8 @@
     height: 0;
     margin: 4px 0 0 -8px;
     border: 8px solid transparent;
-    border-top-color: rgba(130, 170, 255, 0.35);
-    filter: drop-shadow(0 0 4px rgba(130, 170, 255, 0.30));
+    border-top-color: rgba(130, 170, 255, 0.42);
+    filter: drop-shadow(0 0 4px var(--bac-preview-glow-strong));
 }
 
 .prism-previewer.flipped:after {
@@ -71,7 +79,7 @@
     margin-top: 0;
     margin-bottom: 4px;
     border-top-color: transparent;
-    border-bottom-color: rgba(130, 170, 255, 0.35);
+    border-bottom-color: rgba(130, 170, 255, 0.42);
 }
 
 /* ── Color Previewer ── */
@@ -93,7 +101,7 @@
     border: 2px solid rgba(255, 255, 255, 0.12);
     box-shadow:
         inset 0 0 20px rgba(130, 170, 255, 0.12),
-        0 0 30px rgba(130, 170, 255, 0.25);
+        0 0 30px rgba(130, 170, 255, 0.28);
 }
 
 /* ── Gradient Previewer ── */
@@ -124,16 +132,18 @@
     border: 2px solid rgba(255, 255, 255, 0.12);
     box-shadow:
         inset 0 0 20px rgba(130, 170, 255, 0.08),
-        0 0 30px rgba(180, 220, 255, 0.12);
+        0 0 30px rgba(180, 220, 255, 0.16);
 }
 
 /* ── Angle Previewer ── */
 .prism-previewer-angle:before {
     border-radius: 50%;
-    background: rgba(15, 18, 22, 0.92);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(126, 164, 255, 0.18), transparent 40%),
+        var(--bac-preview-surface);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--bac-preview-ring);
 }
 
 .prism-previewer-angle:after {
@@ -169,10 +179,12 @@
 /* ── Time Previewer ── */
 .prism-previewer-time:before {
     border-radius: 50%;
-    background: rgba(15, 18, 22, 0.92);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(126, 164, 255, 0.18), transparent 40%),
+        var(--bac-preview-surface);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--bac-preview-ring);
 }
 
 .prism-previewer-time:after {
@@ -201,14 +213,16 @@
     margin-left: -34px;
     width: 68px;
     height: 68px;
-    background: rgba(15, 18, 22, 0.92);
+    background:
+        radial-gradient(circle at 30% 24%, rgba(126, 164, 255, 0.16), transparent 42%),
+        var(--bac-preview-surface);
     -webkit-backdrop-filter: blur(16px) saturate(140%);
     backdrop-filter: blur(16px) saturate(140%);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--bac-preview-ring);
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.40),
-        0 0 24px rgba(130, 170, 255, 0.18);
+        0 0 24px var(--bac-preview-glow);
 }
 
 .prism-previewer-easing.flipped {

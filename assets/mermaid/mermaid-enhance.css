@@ -1,5 +1,8 @@
 .arcaea-mermaid-box {
   --bac-mermaid-toolbar-gap: 0.45rem;
+  --bac-mermaid-accent: rgba(160, 220, 255, 0.78);
+  --bac-mermaid-surface: rgba(11, 19, 36, 0.72);
+  --bac-mermaid-ring: rgba(225, 236, 255, 0.16);
 }
 
 .arcaea-mermaid-box pre.mermaid svg {
@@ -17,12 +20,14 @@
   align-items: center;
   gap: var(--bac-mermaid-toolbar-gap);
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .arcaea-mermaid-box:hover .arcaea-mermaid-toolbar,
 .arcaea-mermaid-box:focus-within .arcaea-mermaid-toolbar {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .arcaea-mermaid-tool {
@@ -32,9 +37,9 @@
   min-width: 34px;
   height: 34px;
   padding: 0 0.72rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--bac-mermaid-ring);
   border-radius: 10px;
-  background: rgba(20, 25, 35, 0.68);
+  background: linear-gradient(180deg, rgba(24, 32, 48, 0.88), rgba(13, 18, 28, 0.74));
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   color: rgba(238, 244, 255, 0.85);
@@ -42,11 +47,28 @@
   font-size: 12px;
   line-height: 1;
   cursor: pointer;
+  box-shadow:
+    0 8px 18px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .arcaea-mermaid-tool:hover {
-  background: rgba(40, 50, 70, 0.82);
-  border-color: rgba(160, 220, 255, 0.28);
+  background: linear-gradient(180deg, rgba(36, 47, 68, 0.92), rgba(18, 28, 43, 0.86));
+  border-color: rgba(160, 220, 255, 0.34);
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(160, 220, 255, 0.08);
+}
+
+.arcaea-mermaid-tool:focus-visible {
+  outline: 2px solid rgba(160, 220, 255, 0.42);
+  outline-offset: 2px;
 }
 
 .arcaea-mermaid-overlay {
@@ -93,9 +115,13 @@
   box-sizing: border-box;
   overflow: visible;
   border-radius: 14px;
-  background: rgba(8, 21, 42, 0.88);
+  background:
+    radial-gradient(circle at top, rgba(96, 150, 255, 0.16), transparent 42%),
+    rgba(8, 21, 42, 0.88);
   border: 1px solid rgba(230, 238, 255, 0.28);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 .arcaea-mermaid-overlay-close,
@@ -115,6 +141,13 @@
   border-radius: 999px;
   background: rgba(13, 17, 23, 0.72);
   cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.arcaea-mermaid-overlay-close:hover {
+  transform: scale(1.04);
+  border-color: rgba(160, 220, 255, 0.34);
+  background: rgba(18, 24, 34, 0.88);
 }
 
 .arcaea-mermaid-overlay-hint {
@@ -146,7 +179,8 @@
   border: 1px solid rgba(160, 220, 255, 0.18);
   border-bottom: none;
   border-radius: 12px 12px 0 0;
-  background: rgba(13, 17, 23, 0.92);
+  background:
+    linear-gradient(180deg, rgba(23, 31, 48, 0.96), rgba(13, 17, 23, 0.94));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
 }
 
@@ -193,7 +227,8 @@
   border: 1px solid rgba(160, 220, 255, 0.18);
   border-top: none;
   border-radius: 0 0 12px 12px;
-  background: rgba(8, 16, 32, 0.56);
+  background:
+    linear-gradient(180deg, rgba(11, 20, 38, 0.74), rgba(8, 16, 32, 0.56));
   color: rgba(226, 236, 250, 0.92);
   font-family: var(--bac-code-font);
   font-size: 13px;
@@ -223,9 +258,14 @@
   font-size: 0.8rem;
   line-height: 1.2;
   cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
 
 .arcaea-mermaid-source-shell .bac-code-fold-toggle:hover {
   border-color: rgba(160, 220, 255, 0.32);
   background: rgba(13, 24, 44, 0.75);
+  transform: translateY(-1px);
 }

@@ -1,0 +1,367 @@
+.arcaea-article-content {
+  --arcaea-bg: rgba(9, 18, 34, 0.44);
+  --arcaea-surface: rgba(15, 26, 46, 0.58);
+  --arcaea-surface-soft: rgba(17, 28, 48, 0.34);
+  --arcaea-border: rgba(214, 226, 245, 0.28);
+  --arcaea-border-strong: rgba(226, 236, 250, 0.46);
+  --arcaea-heading: rgba(243, 247, 255, 0.95);
+  --arcaea-text: rgba(228, 236, 248, 0.92);
+  --arcaea-muted: rgba(194, 206, 224, 0.72);
+  --arcaea-accent: rgba(173, 194, 245, 0.82);
+  --arcaea-accent-strong: rgba(143, 204, 255, 0.96);
+  --arcaea-glow: rgba(130, 180, 255, 0.24);
+  --arcaea-link: #9fc6ff;
+  --arcaea-line: rgba(196, 210, 232, 0.18);
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  color: var(--arcaea-text);
+  text-shadow: 0 1px 0 rgba(6, 10, 18, 0.18);
+}
+
+.arcaea-article-content::selection,
+.arcaea-article-content *::selection {
+  background: rgba(142, 196, 255, 0.24);
+  color: #f8fbff;
+}
+
+.arcaea-article-content h2,
+.arcaea-article-content h3,
+.arcaea-article-content h4,
+.arcaea-article-content h5,
+.arcaea-article-content h6 {
+  color: var(--arcaea-heading);
+  letter-spacing: 0.01em;
+}
+
+.arcaea-article-content h2 {
+  margin: 2.2em 0 0.75em;
+  padding-bottom: 0.45em;
+  font-size: 1.65em;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(214, 226, 245, 0.16);
+  position: relative;
+}
+
+.arcaea-article-content h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: min(7.5rem, 32%);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--arcaea-accent-strong), rgba(159, 198, 255, 0));
+  box-shadow: 0 0 18px var(--arcaea-glow);
+}
+
+.arcaea-article-content h3 {
+  margin: 1.7em 0 0.55em;
+  font-size: 1.32em;
+  font-weight: 650;
+}
+
+.arcaea-article-content h3::before {
+  content: "#";
+  display: inline-block;
+  margin-right: 0.45rem;
+  color: var(--arcaea-accent);
+  font-weight: 600;
+}
+
+.arcaea-article-content h2::after,
+.arcaea-article-content h3::after {
+  display: none !important;
+}
+
+.arcaea-article-content p,
+.arcaea-article-content li {
+  color: var(--arcaea-text);
+  line-height: 1.82;
+}
+
+.arcaea-article-content p {
+  margin: 1em 0;
+}
+
+.arcaea-article-content strong {
+  color: rgba(246, 250, 255, 0.98);
+}
+
+.arcaea-article-content em {
+  color: rgba(214, 228, 250, 0.9);
+}
+
+.arcaea-article-content ul,
+.arcaea-article-content ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.arcaea-article-content li {
+  margin: 0.42em 0;
+}
+
+.arcaea-article-content li::marker {
+  color: var(--arcaea-accent-strong);
+}
+
+.arcaea-article-content ul ul,
+.arcaea-article-content ol ol,
+.arcaea-article-content ul ol,
+.arcaea-article-content ol ul {
+  margin: 0.35em 0 0.2em;
+}
+
+.arcaea-article-content pre,
+.arcaea-article-content pre.wp-block-preformatted,
+.arcaea-article-content pre.arcaea-code,
+.arcaea-article-content pre[class*="language-"] {
+  margin: 1.8rem 0;
+  padding: 1.2rem 1.35rem;
+  overflow: auto;
+  border: 1px solid var(--arcaea-border-strong);
+  border-radius: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 25, 44, 0.66),
+    rgba(10, 18, 34, 0.54)
+  ) !important;
+  color: var(--arcaea-text) !important;
+  font: 15px/1.72 "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", Consolas, monospace !important;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  position: relative;
+}
+
+.arcaea-article-content pre::before,
+.arcaea-article-content pre.wp-block-preformatted::before,
+.arcaea-article-content pre.arcaea-code::before,
+.arcaea-article-content pre[class*="language-"]::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.arcaea-article-content code {
+  padding: 0.08em 0.32em;
+  border: 1px solid rgba(214, 226, 245, 0.10);
+  border-radius: 5px;
+  background: rgba(180, 198, 234, 0.07);
+  color: rgba(225, 235, 250, 0.94) !important;
+  font: 0.92em "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", Consolas, monospace !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.arcaea-article-content pre code {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit !important;
+  font-size: inherit;
+}
+
+.arcaea-article-content blockquote {
+  margin: 1.2rem 0;
+  padding: 0.95rem 1.1rem 1rem 1.2rem;
+  border: 1px solid var(--arcaea-border);
+  border-left: 2px solid rgba(183, 202, 239, 0.58) !important;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(19, 30, 50, 0.62),
+    rgba(12, 22, 39, 0.42)
+  ) !important;
+  color: var(--arcaea-text) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.arcaea-article-content blockquote::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(160, 220, 255, 0.86), rgba(160, 220, 255, 0));
+}
+
+.arcaea-article-content blockquote::before {
+  display: none !important;
+  content: none !important;
+}
+
+.arcaea-article-content .wp-block-table,
+.arcaea-article-content .arcaea-table-wrap {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  border: 1px solid var(--arcaea-border);
+  border-radius: 12px;
+  background: rgba(11, 20, 36, 0.34);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+
+.arcaea-article-content table {
+  width: 100%;
+  margin: 1.5em 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background: var(--arcaea-bg);
+  border: 1px solid var(--arcaea-border);
+  border-radius: 10px;
+  overflow: hidden;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.arcaea-article-content th,
+.arcaea-article-content td {
+  padding: 0.72rem 0.9rem;
+  text-align: left;
+  vertical-align: top;
+  color: var(--arcaea-text);
+}
+
+.arcaea-article-content th {
+  background: rgba(164, 186, 236, 0.10);
+  color: var(--arcaea-heading);
+  font-weight: 650;
+}
+
+.arcaea-article-content tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.arcaea-article-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.arcaea-article-content thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.arcaea-article-content thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+.arcaea-article-content tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.arcaea-article-content tbody tr:hover td {
+  background: rgba(159, 198, 255, 0.06);
+}
+
+.arcaea-article-content a {
+  color: var(--arcaea-link);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(159, 198, 255, 0.26);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.arcaea-article-content a:hover {
+  color: #c9e0ff;
+  border-color: rgba(201, 224, 255, 0.42);
+}
+
+.arcaea-article-content a:focus-visible {
+  outline: 2px solid rgba(159, 198, 255, 0.52);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.arcaea-article-content hr {
+  margin: 2.2rem 0;
+  border: none;
+  border-top: 1px solid var(--arcaea-line);
+}
+
+.arcaea-article-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow:
+    0 12px 32px rgba(5, 10, 20, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.arcaea-article-content figure {
+  margin: 1.8rem 0;
+}
+
+.arcaea-article-content figcaption {
+  margin-top: 0.75rem;
+  color: var(--arcaea-muted);
+  font-size: 0.92em;
+  text-align: center;
+}
+
+.arcaea-article-content .wp-block-heading,
+.arcaea-article-content .wp-block-paragraph {
+  max-width: 100%;
+}
+
+.arcaea-article-content .wp-block-group {
+  margin: 1.6rem 0;
+}
+
+.arcaea-article-content kbd {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9em;
+  padding: 0 0.48em;
+  border: 1px solid rgba(214, 226, 245, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(244, 248, 255, 0.94);
+  font: 0.88em "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", Consolas, monospace;
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.arcaea-article-content details {
+  margin: 1.4rem 0;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--arcaea-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(16, 26, 44, 0.54), rgba(9, 18, 34, 0.38));
+}
+
+.arcaea-article-content summary {
+  cursor: pointer;
+  color: var(--arcaea-heading);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .arcaea-article-content pre,
+  .arcaea-article-content pre.wp-block-preformatted,
+  .arcaea-article-content pre.arcaea-code,
+  .arcaea-article-content pre[class*="language-"] {
+    padding: 1rem 1.05rem;
+    font-size: 14px !important;
+  }
+
+  .arcaea-article-content th,
+  .arcaea-article-content td {
+    padding: 0.64rem 0.72rem;
+  }
+
+  .arcaea-article-content * {
+    word-break: break-word;
+  }
+}
