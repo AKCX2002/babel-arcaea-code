@@ -37,14 +37,150 @@
   color: #f8fbff;
 }
 
-.arcaea-article-content h2,
-.arcaea-article-content h3,
-.arcaea-article-content h4,
+/* ── H2: Sakura highlight (::after) + Arcaea light trail (::before) ── */
+
+.arcaea-article-content h2 {
+  display: inline-block !important;
+  position: relative !important;
+  isolation: isolate;
+  z-index: 1;
+
+  margin: 2.35em 0 1em;
+  padding: 0.08em 0.45em 0.18em 0.35em;
+
+  font-size: 1.65em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--arcaea-heading);
+
+  text-shadow:
+    0 0 10px rgba(95, 212, 255, 0.16),
+    0 1px 0 rgba(0, 0, 0, 0.28);
+}
+
+/* Sakura highlight bar — sits behind text */
+.arcaea-article-content h2::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  bottom: -2px;
+  left: 30%;
+  right: 0;
+  width: 70%;
+  height: 0.7em;
+  border-radius: 30px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(169, 123, 255, 0.36),
+      rgba(95, 212, 255, 0.30)
+    );
+
+  box-shadow:
+    0 0 16px rgba(95, 212, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  opacity: 0.55;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Arcaea light trail — sits on top of highlight */
+.arcaea-article-content h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.42em;
+  width: min(8.5rem, 58%);
+  height: 2px;
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.62),
+      transparent
+    );
+
+  box-shadow: 0 0 14px rgba(95, 212, 255, 0.35);
+  z-index: 1;
+}
+
+/* ── H3: left-side light pillar ── */
+
+.arcaea-article-content h3 {
+  position: relative;
+  margin: 2em 0 0.75em;
+  padding-left: 0.95em;
+  font-size: 1.32em;
+  font-weight: 650;
+  color: var(--arcaea-heading);
+}
+
+.arcaea-article-content h3::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.22em;
+  width: 4px;
+  height: 1.05em;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(139, 227, 255, 0.95),
+    rgba(169, 123, 255, 0.75)
+  );
+  box-shadow: 0 0 12px rgba(95, 212, 255, 0.35);
+}
+
+.arcaea-article-content h3::after {
+  display: none !important;
+}
+
+/* ── H4: diamond marker ── */
+
+.arcaea-article-content h4 {
+  position: relative;
+  margin: 1.45em 0 0.55em;
+  padding-left: 1.1em;
+  font-size: 1.12em;
+  font-weight: 620;
+  color: rgba(242, 246, 252, 0.92);
+}
+
+.arcaea-article-content h4::before {
+  content: "◇";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: rgba(139, 227, 255, 0.88);
+  text-shadow: 0 0 10px rgba(95, 212, 255, 0.35);
+}
+
+/* ── H5 / H6: subdued auxiliary headings ── */
+
 .arcaea-article-content h5,
 .arcaea-article-content h6 {
   color: var(--arcaea-heading);
   letter-spacing: 0.01em;
 }
+
+.arcaea-article-content h5 {
+  margin: 1.2em 0 0.45em;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.arcaea-article-content h6 {
+  margin: 1em 0 0.35em;
+  font-size: 0.92em;
+  font-weight: 550;
+  color: var(--arcaea-muted);
+}
+
+/* ── H1: page-level hero heading (inside article wrapper) ── */
 
 .arcaea-article-content h1 {
   position: relative;
@@ -93,46 +229,6 @@
     rgba(95, 212, 255, 0.07) 45%,
     rgba(169, 123, 255, 0)
   );
-}
-
-.arcaea-article-content h2 {
-  margin: 2.2em 0 0.75em;
-  padding-bottom: 0.45em;
-  font-size: 1.65em;
-  font-weight: 700;
-  border-bottom: 1px solid rgba(214, 226, 245, 0.16);
-  position: relative;
-}
-
-.arcaea-article-content h2::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: min(7.5rem, 32%);
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--arcaea-accent-strong), rgba(159, 198, 255, 0));
-  box-shadow: 0 0 18px var(--arcaea-glow);
-}
-
-.arcaea-article-content h3 {
-  margin: 1.7em 0 0.55em;
-  font-size: 1.32em;
-  font-weight: 650;
-}
-
-.arcaea-article-content h3::before {
-  content: "#";
-  display: inline-block;
-  margin-right: 0.45rem;
-  color: var(--arcaea-accent);
-  font-weight: 600;
-}
-
-.arcaea-article-content h2::after,
-.arcaea-article-content h3::after {
-  display: none !important;
 }
 
 .arcaea-article-content p,
