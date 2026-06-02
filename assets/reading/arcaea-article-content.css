@@ -1,3 +1,10 @@
+/* =========================================================
+ * Sakura + Arcaea Article Content
+ * H1–H6 headings, code, blockquote, table, feature matrix
+ * ======================================================= */
+
+/* ── Wrapper & variables ──────────────────────────────────── */
+
 .arcaea-article-content {
   --arcaea-bg-main: #0a1220;
   --arcaea-bg-panel: #101b2d;
@@ -14,6 +21,9 @@
   --arcaea-bg: rgba(10, 18, 32, 0.88);
   --arcaea-surface: rgba(16, 27, 45, 0.92);
   --arcaea-surface-soft: rgba(22, 36, 59, 0.78);
+  --arcaea-surface-row: rgba(14, 26, 46, 0.82);
+  --arcaea-surface-row-alt: rgba(20, 34, 58, 0.82);
+  --arcaea-surface-hover: rgba(42, 68, 104, 0.72);
   --arcaea-border: rgba(120, 160, 220, 0.18);
   --arcaea-border-strong: rgba(170, 205, 255, 0.34);
   --arcaea-heading: #f2f6fc;
@@ -37,21 +47,25 @@
   color: #f8fbff;
 }
 
-/* ── H2: Sakura highlight (::after) + Arcaea light trail (::before) ── */
+/* =========================================================
+ * H2：Sakura highlight bar + Arcaea light trail
+ * ======================================================= */
 
 .arcaea-article-content h2 {
   display: inline-block !important;
   position: relative !important;
   isolation: isolate;
-  z-index: 1;
 
   margin: 2.35em 0 1em;
   padding: 0.08em 0.45em 0.18em 0.35em;
 
   font-size: 1.65em;
   font-weight: 700;
+  line-height: 1.32;
   letter-spacing: 0.02em;
-  color: var(--arcaea-heading);
+
+  color: var(--arcaea-heading) !important;
+  border-bottom: none !important;
 
   text-shadow:
     0 0 10px rgba(95, 212, 255, 0.16),
@@ -61,39 +75,45 @@
 /* Sakura highlight bar — sits behind text */
 .arcaea-article-content h2::after {
   content: "" !important;
-  display: block !important;
-  position: absolute;
-  bottom: -2px;
+  position: absolute !important;
+
   left: 30%;
   right: 0;
+  bottom: -2px;
+
   width: 70%;
   height: 0.7em;
+
   border-radius: 30px;
 
   background:
     linear-gradient(
       90deg,
-      rgba(169, 123, 255, 0.36),
-      rgba(95, 212, 255, 0.30)
-    );
+      rgba(169, 123, 255, 0.34),
+      rgba(95, 212, 255, 0.26),
+      rgba(95, 212, 255, 0.08)
+    ) !important;
+
+  opacity: 0.58 !important;
+  z-index: -1;
+  pointer-events: none;
 
   box-shadow:
-    0 0 16px rgba(95, 212, 255, 0.18),
+    0 0 16px rgba(95, 212, 255, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
-
-  opacity: 0.55;
-  z-index: 0;
-  pointer-events: none;
 }
 
 /* Arcaea light trail — sits on top of highlight */
 .arcaea-article-content h2::before {
-  content: "";
-  position: absolute;
+  content: "" !important;
+  position: absolute !important;
+
   left: 0;
   bottom: -0.42em;
+
   width: min(8.5rem, 58%);
   height: 2px;
+
   border-radius: 999px;
 
   background:
@@ -101,65 +121,98 @@
       90deg,
       rgba(139, 227, 255, 0.95),
       rgba(169, 123, 255, 0.62),
-      transparent
-    );
+      rgba(159, 198, 255, 0)
+    ) !important;
 
-  box-shadow: 0 0 14px rgba(95, 212, 255, 0.35);
+  box-shadow:
+    0 0 14px rgba(95, 212, 255, 0.35),
+    0 0 28px rgba(169, 123, 255, 0.14);
+
   z-index: 1;
+  pointer-events: none;
 }
 
-/* ── H3: left-side light pillar ── */
+/* =========================================================
+ * H3：left-side Arcaea light pillar
+ * ======================================================= */
 
 .arcaea-article-content h3 {
-  position: relative;
+  position: relative !important;
+
   margin: 2em 0 0.75em;
   padding-left: 0.95em;
+
   font-size: 1.32em;
   font-weight: 650;
-  color: var(--arcaea-heading);
+  line-height: 1.35;
+
+  color: var(--arcaea-heading) !important;
+  border: none !important;
 }
 
 .arcaea-article-content h3::before {
-  content: "";
-  position: absolute;
+  content: "" !important;
+  position: absolute !important;
+
   left: 0;
   top: 0.22em;
+
   width: 4px;
   height: 1.05em;
+
   border-radius: 999px;
-  background: linear-gradient(
-    180deg,
-    rgba(139, 227, 255, 0.95),
-    rgba(169, 123, 255, 0.75)
-  );
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.75)
+    ) !important;
+
   box-shadow: 0 0 12px rgba(95, 212, 255, 0.35);
 }
 
+/* Suppress theme-injected h3::after decorations */
 .arcaea-article-content h3::after {
+  content: none !important;
   display: none !important;
 }
 
-/* ── H4: diamond marker ── */
+/* =========================================================
+ * H4：diamond marker
+ * ======================================================= */
 
 .arcaea-article-content h4 {
-  position: relative;
+  position: relative !important;
+
   margin: 1.45em 0 0.55em;
   padding-left: 1.1em;
+
   font-size: 1.12em;
   font-weight: 620;
-  color: rgba(242, 246, 252, 0.92);
+  line-height: 1.4;
+
+  color: rgba(242, 246, 252, 0.92) !important;
+  border: none !important;
 }
 
 .arcaea-article-content h4::before {
-  content: "◇";
-  position: absolute;
+  content: "◇" !important;
+  position: absolute !important;
+
   left: 0;
   top: 0;
+
   color: rgba(139, 227, 255, 0.88);
   text-shadow: 0 0 10px rgba(95, 212, 255, 0.35);
 }
 
-/* ── H5 / H6: subdued auxiliary headings ── */
+.arcaea-article-content h4::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ── H5 / H6: subdued auxiliary headings ──────────────────── */
 
 .arcaea-article-content h5,
 .arcaea-article-content h6 {
@@ -180,7 +233,7 @@
   color: var(--arcaea-muted);
 }
 
-/* ── H1: page-level hero heading (inside article wrapper) ── */
+/* ── H1: page-level hero heading (inside article wrapper) ──── */
 
 .arcaea-article-content h1 {
   position: relative;
@@ -231,6 +284,8 @@
   );
 }
 
+/* ── Paragraphs, lists, text ──────────────────────────────── */
+
 .arcaea-article-content p,
 .arcaea-article-content li {
   color: var(--arcaea-text);
@@ -269,6 +324,8 @@
 .arcaea-article-content ol ul {
   margin: 0.35em 0 0.2em;
 }
+
+/* ── Code blocks ──────────────────────────────────────────── */
 
 .arcaea-article-content pre,
 .arcaea-article-content pre.wp-block-preformatted,
@@ -326,6 +383,8 @@
   font-size: inherit;
 }
 
+/* ── Blockquote ────────────────────────────────────────────── */
+
 .arcaea-article-content blockquote {
   margin: 1.2rem 0;
   padding: 0.95rem 1.1rem 1rem 1.2rem;
@@ -359,25 +418,18 @@
   content: none !important;
 }
 
-/* Sakurairo's global `* { transition: all ... }` bleeds into article
-   widgets and causes table/header/code hover jitter.  Reading components
-   should stay visually stable unless a local interaction explicitly opts in. */
-.arcaea-article-content table,
-.arcaea-article-content th,
-.arcaea-article-content td,
-.arcaea-article-content blockquote,
-.arcaea-article-content code,
-.arcaea-article-content kbd,
-.arcaea-article-content details,
-.arcaea-article-content summary {
-  transition: none !important;
-  -webkit-transition: none !important;
-}
+/* =========================================================
+ * Table: dark Arcaea style
+ * Forces override of theme/github odd-row white backgrounds
+ * ======================================================= */
 
+/* Outer wrap — allows horizontal scroll */
 .arcaea-article-content .wp-block-table,
 .arcaea-article-content .arcaea-table-wrap {
-  margin: 1.5em 0;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  margin: 1.5em 0;
   border: 1px solid var(--arcaea-border);
   border-radius: 16px;
   background: linear-gradient(
@@ -392,95 +444,133 @@
   -webkit-backdrop-filter: blur(24px);
 }
 
+/* Table core */
 .arcaea-article-content table {
-  width: 100%;
+  display: table !important;
+
+  width: 100% !important;
+  min-width: 520px;
+
   margin: 1.5em 0;
-  border-collapse: collapse;
-  border-spacing: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  overflow: visible;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
-}
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
 
-.arcaea-article-content th,
-.arcaea-article-content td {
-  padding: 0.82rem 0.95rem;
-  text-align: left;
-  vertical-align: top;
-  color: var(--arcaea-text);
-  border: none;
-  background: transparent;
-}
+  background: rgba(10, 18, 32, 0.72) !important;
+  color: var(--arcaea-text) !important;
 
-.arcaea-article-content th {
-  background: linear-gradient(
-    180deg,
-    rgba(95, 212, 255, 0.12),
-    rgba(95, 212, 255, 0.04)
-  );
-  color: #eaf7ff;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
+  border: 1px solid var(--arcaea-border) !important;
+  border-radius: 10px;
+  overflow: hidden;
 
-.arcaea-article-content thead th {
-  border-bottom: 1px solid rgba(95, 212, 255, 0.25);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -1px 0 rgba(18, 28, 56, 0.18);
+    0 12px 32px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
 }
 
-.arcaea-article-content tbody td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+/* Header */
+.arcaea-article-content table thead,
+.arcaea-article-content table thead tr,
+.arcaea-article-content table th {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(28, 44, 72, 0.96),
+      rgba(17, 29, 50, 0.94)
+    ) !important;
+
+  color: rgba(245, 249, 255, 0.96) !important;
 }
 
-.arcaea-article-content tbody th {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--arcaea-heading);
+.arcaea-article-content table th {
+  padding: 0.72em 0.9em !important;
+
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+
+  border: 1px solid rgba(170, 205, 255, 0.18) !important;
+
+  text-shadow:
+    0 0 10px rgba(95, 212, 255, 0.12),
+    0 1px 0 rgba(0, 0, 0, 0.36);
 }
 
-.arcaea-article-content tbody tr {
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+/* All cells base */
+.arcaea-article-content table td {
+  padding: 0.68em 0.9em !important;
+
+  color: rgba(236, 243, 255, 0.90) !important;
+  background: var(--arcaea-surface-row) !important;
+
+  border: 1px solid rgba(145, 180, 235, 0.13) !important;
+
+  line-height: 1.55;
+  vertical-align: middle;
+
+  text-shadow: none !important;
 }
 
-.arcaea-article-content tbody tr:first-child td,
-.arcaea-article-content tbody tr:first-child th {
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+/* ══ KEY FIX: override theme odd/even row white backgrounds ══ */
+
+.arcaea-article-content table tbody tr:nth-child(odd),
+.arcaea-article-content table tbody tr:nth-child(odd) td {
+  background: var(--arcaea-surface-row) !important;
+  color: rgba(236, 243, 255, 0.90) !important;
 }
 
-.arcaea-article-content tbody tr:last-child td {
-  border-bottom: none;
+.arcaea-article-content table tbody tr:nth-child(even),
+.arcaea-article-content table tbody tr:nth-child(even) td {
+  background: var(--arcaea-surface-row-alt) !important;
+  color: rgba(236, 243, 255, 0.90) !important;
 }
 
-.arcaea-article-content thead tr:first-child th:first-child {
-  border-top-left-radius: 16px;
+/* Hover — subtle highlight */
+.arcaea-article-content table tbody tr:hover,
+.arcaea-article-content table tbody tr:hover td {
+  background: var(--arcaea-surface-hover) !important;
+  color: #f6fbff !important;
 }
 
-.arcaea-article-content thead tr:first-child th:last-child {
-  border-top-right-radius: 16px;
+/* Table inner elements */
+.arcaea-article-content table a {
+  color: #9fcfff !important;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(159, 207, 255, 0.35);
 }
 
-.arcaea-article-content tbody tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.015);
+.arcaea-article-content table a:hover {
+  color: #c8edff !important;
+  border-bottom-color: rgba(200, 237, 255, 0.75);
 }
 
-.arcaea-article-content tbody tr:nth-child(even) th {
-  background: rgba(255, 255, 255, 0.015);
+.arcaea-article-content table code {
+  color: #b8f0ff !important;
+  background: rgba(6, 14, 28, 0.56) !important;
+  border: 1px solid rgba(139, 227, 255, 0.16);
+  border-radius: 5px;
+  padding: 0.12em 0.35em;
 }
 
-.arcaea-article-content tbody tr:hover td {
-  background: rgba(95, 212, 255, 0.05);
-  box-shadow: inset 4px 0 0 var(--arcaea-accent-light);
+.arcaea-article-content table strong {
+  color: #f8fbff !important;
+  font-weight: 700;
 }
 
-.arcaea-article-content tbody tr:hover th {
-  background: rgba(95, 212, 255, 0.05);
-  box-shadow: inset 4px 0 0 var(--arcaea-accent-light);
+/* Prevent theme/github from forcing white on table sub-elements */
+.arcaea-article-content table tr,
+.arcaea-article-content table th,
+.arcaea-article-content table td,
+.arcaea-article-content table tbody,
+.arcaea-article-content table thead {
+  border-color: rgba(145, 180, 235, 0.16) !important;
 }
+
+/* =========================================================
+ * Feature matrix (special table layout)
+ * ======================================================= */
 
 .arcaea-article-content table.arcaea-feature-matrix {
   table-layout: fixed;
@@ -491,6 +581,7 @@
   box-shadow: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  min-width: 0;
 }
 
 .arcaea-article-content table.arcaea-feature-matrix thead th {
@@ -605,6 +696,8 @@
     0 14px 30px rgba(0, 0, 0, 0.26);
 }
 
+/* ── Semantic cell classes ─────────────────────────────────── */
+
 .arcaea-article-content .func-name {
   display: inline-flex;
   align-items: center;
@@ -635,17 +728,9 @@
   overflow-wrap: anywhere;
 }
 
-.arcaea-article-content .signature .sig-type {
-  color: #8be3ff;
-}
-
-.arcaea-article-content .signature .sig-name {
-  color: #ffd580;
-}
-
-.arcaea-article-content .signature .sig-func {
-  color: #c9aeff;
-}
+.arcaea-article-content .signature .sig-type { color: #8be3ff; }
+.arcaea-article-content .signature .sig-name { color: #ffd580; }
+.arcaea-article-content .signature .sig-func { color: #c9aeff; }
 
 .arcaea-article-content .line-badge {
   display: inline-flex;
@@ -686,17 +771,11 @@
   font-weight: 600;
 }
 
-.arcaea-article-content .purpose-tag.purple {
-  color: #c9aeff;
-}
+.arcaea-article-content .purpose-tag.purple { color: #c9aeff; }
+.arcaea-article-content .purpose-tag.green  { color: #8fe3a1; }
+.arcaea-article-content .purpose-tag.orange { color: #ffc17a; }
 
-.arcaea-article-content .purpose-tag.green {
-  color: #8fe3a1;
-}
-
-.arcaea-article-content .purpose-tag.orange {
-  color: #ffc17a;
-}
+/* ── Links ─────────────────────────────────────────────────── */
 
 .arcaea-article-content a {
   color: var(--arcaea-link);
@@ -715,6 +794,8 @@
   outline-offset: 3px;
   border-radius: 6px;
 }
+
+/* ── Misc elements ─────────────────────────────────────────── */
 
 .arcaea-article-content hr {
   margin: 2.2rem 0;
@@ -781,11 +862,47 @@
   font-weight: 600;
 }
 
+/* =========================================================
+ * Responsive & transition guard
+ * ======================================================= */
+
+/* Mobile table scroll */
 @media (max-width: 768px) {
+  .arcaea-article-content {
+    overflow-x: hidden;
+  }
+
+  .arcaea-article-content table {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .arcaea-article-content table thead,
+  .arcaea-article-content table tbody,
+  .arcaea-article-content table tr {
+    width: max-content;
+  }
+
+  .arcaea-article-content table th,
+  .arcaea-article-content table td {
+    white-space: nowrap;
+  }
+
   .arcaea-article-content h1 {
     margin-bottom: 1.15rem;
     padding-bottom: 0.85rem;
     line-height: 1.24;
+  }
+
+  .arcaea-article-content h2 {
+    font-size: 1.42em;
+  }
+
+  .arcaea-article-content h3 {
+    font-size: 1.2em;
   }
 
   .arcaea-article-content pre,
@@ -822,4 +939,26 @@
   .arcaea-article-content * {
     word-break: break-word;
   }
+}
+
+/* Restrict global `* { transition: all }` bleeding */
+.arcaea-article-content table,
+.arcaea-article-content th,
+.arcaea-article-content td,
+.arcaea-article-content h2,
+.arcaea-article-content h3,
+.arcaea-article-content h4,
+.arcaea-article-content h2::before,
+.arcaea-article-content h2::after,
+.arcaea-article-content h3::before,
+.arcaea-article-content h4::before {
+  transition-property:
+    background-color,
+    color,
+    border-color,
+    box-shadow,
+    opacity,
+    transform !important;
+  transition-duration: 0.22s !important;
+  transition-timing-function: ease-out !important;
 }
