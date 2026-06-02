@@ -1,6 +1,8 @@
+/* Keep the generic reading enhancement scoped to common content wrappers.
+   Avoid styling every table inside <article>, otherwise wrapper-specific
+   themes such as .arcaea-article-content must fight broad defaults. */
 .entry-content table,
 .post-content table,
-article table,
 .content table {
   width: 100%;
   border-collapse: separate;
@@ -14,23 +16,21 @@ article table,
 
 .entry-content thead th,
 .post-content thead th,
-article table thead th,
 .content table thead th {
-  color: #f8fbff;
-  background: rgba(152, 182, 255, 0.92);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(244, 248, 255, 0.96);
+  background: linear-gradient(180deg, rgba(150, 176, 232, 0.34) 0%, rgba(112, 136, 188, 0.24) 100%);
+  border-bottom: 1px solid rgba(206, 221, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .entry-content tbody td,
 .post-content tbody td,
-article table tbody td,
 .content table tbody td {
   background: rgba(10, 18, 32, 0.24);
 }
 
 .entry-content tbody tr:nth-child(even) td,
 .post-content tbody tr:nth-child(even) td,
-article table tbody tr:nth-child(even) td,
 .content table tbody tr:nth-child(even) td {
   background: rgba(18, 29, 48, 0.34);
 }
@@ -39,8 +39,6 @@ article table tbody tr:nth-child(even) td,
 .entry-content td,
 .post-content th,
 .post-content td,
-article table th,
-article table td,
 .content table th,
 .content table td {
   padding: 0.7rem 0.85rem;
@@ -50,14 +48,12 @@ article table td,
 
 .entry-content tr > *:last-child,
 .post-content tr > *:last-child,
-article table tr > *:last-child,
 .content table tr > *:last-child {
   border-right: none;
 }
 
 .entry-content tbody tr:last-child td,
 .post-content tbody tr:last-child td,
-article table tbody tr:last-child td,
 .content table tbody tr:last-child td {
   border-bottom: none;
 }

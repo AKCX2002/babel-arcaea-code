@@ -202,6 +202,21 @@
   content: none !important;
 }
 
+/* Sakurairo's global `* { transition: all ... }` bleeds into article
+   widgets and causes table/header/code hover jitter.  Reading components
+   should stay visually stable unless a local interaction explicitly opts in. */
+.arcaea-article-content table,
+.arcaea-article-content th,
+.arcaea-article-content td,
+.arcaea-article-content blockquote,
+.arcaea-article-content code,
+.arcaea-article-content kbd,
+.arcaea-article-content details,
+.arcaea-article-content summary {
+  transition: none !important;
+  -webkit-transition: none !important;
+}
+
 .arcaea-article-content .wp-block-table,
 .arcaea-article-content .arcaea-table-wrap {
   margin: 1.5em 0;
@@ -246,6 +261,11 @@
   color: #f4f8ff;
   border-bottom: 1px solid rgba(206, 221, 255, 0.18);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.arcaea-article-content tbody th {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--arcaea-heading);
 }
 
 .arcaea-article-content tbody tr {
