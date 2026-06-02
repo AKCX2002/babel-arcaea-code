@@ -291,6 +291,45 @@
     return Number.isFinite(width) && width > 0 ? width : 0;
   }
 
+  function parseViewBox(svg) {
+    if (!svg) return null;
+    var viewBox = svg.getAttribute('viewBox');
+    if (!viewBox) return null;
+    var parts = viewBox.trim().split(/\s+/).map(Number);
+    if (parts.length !== 4 || parts.some(function (part) { return !Number.isFinite(part); })) {
+      return null;
+    }
+    return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
+  }
+
+  function expandBounds(bounds, x, y) {
+    if (x < bounds.minX) bounds.minX = x;
+    if (y < bounds.minY) bounds.minY = y;
+    if (x > bounds.maxX) bounds.maxX = x;
+    if (y > bounds.maxY) bounds.maxY = y;
+    bounds.found = true;
+  }
+
+  function expandBoundsWithSvgElement(bounds, element) {
+    if (!element || typeof element.getBBox !== 'function' || typeof element.getCTM !== 'function') {
+      return;
+    }
+    var box = element.getBBox();
+    if (!box || box.width <= 0 || box.height <= 0) return;
+    var matrix = element.getCTM();
+    if (!matrix) return;
+
+    [
+      new DOMPoint(box.x, box.y),
+      new DOMPoint(box.x + box.width, box.y),
+      new DOMPoint(box.x, box.y + box.height),
+      new DOMPoint(box.x + box.width, box.y + box.height)
+    ].forEach(function (point) {
+      var transformed = point.matrixTransform(matrix);
+      expandBounds(bounds, transformed.x, transformed.y);
+    });
+  }
+
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
@@ -554,27 +593,44 @@
          * Compute tight viewBox from visible .node, .cluster, .statediagram-*
          * and .note elements — the actual diagram content. */
         try {
-          var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-          var found = false;
+          var originalViewBox = parseViewBox(svg);
+          var bounds = {
+            minX: Infinity,
+            minY: Infinity,
+            maxX: -Infinity,
+            maxY: -Infinity,
+            found: false
+          };
           svg.querySelectorAll(
             '.node, .cluster, .statediagram-state, .statediagram-cluster, .statediagram-note, .note-cluster'
           ).forEach(function (n) {
             try {
-              var b = n.getBBox();
-              if (b && b.width > 0 && b.height > 0) {
-                found = true;
-                if (b.x < minX) minX = b.x;
-                if (b.y < minY) minY = b.y;
-                if (b.x + b.width > maxX) maxX = b.x + b.width;
-                if (b.y + b.height > maxY) maxY = b.y + b.height;
-              }
+              expandBoundsWithSvgElement(bounds, n);
             } catch (_) { }
           });
-          if (found) {
+          if (bounds.found) {
             var pad = 12;
-            svg.setAttribute('viewBox',
-              (minX - pad) + ' ' + (minY - pad) + ' ' +
-              (maxX - minX + 2 * pad) + ' ' + (maxY - minY + 2 * pad));
+            var cropped = {
+              x: bounds.minX - pad,
+              y: bounds.minY - pad,
+              width: bounds.maxX - bounds.minX + 2 * pad,
+              height: bounds.maxY - bounds.minY + 2 * pad
+            };
+            var cropLooksValid = cropped.width > 24 && cropped.height > 24;
+            if (
+              cropLooksValid &&
+              originalViewBox &&
+              (
+                cropped.width < originalViewBox.width * 0.2 ||
+                cropped.height < originalViewBox.height * 0.2
+              )
+            ) {
+              cropLooksValid = false;
+            }
+            if (cropLooksValid) {
+              svg.setAttribute('viewBox',
+                cropped.x + ' ' + cropped.y + ' ' + cropped.width + ' ' + cropped.height);
+            }
           }
         } catch (_) { }
 
