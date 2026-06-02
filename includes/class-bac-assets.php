@@ -157,6 +157,6 @@ class Assets {
         $this->script('assets/reading/reading-progress.js', 'bac-reading-progress');
     }
 
-    private function script(string $rel, string $h, array $d=[], string $v=BAC_VERSION): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_script($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v,true); return true; }
-    private function style(string $rel, string $h, array $d=[], string $v=BAC_VERSION): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_style($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v); return true; }
+    private function script(string $rel, string $h, array $d=[], ?string $v=null): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_script($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v??(string)\filemtime($p),true); return true; }
+    private function style(string $rel, string $h, array $d=[], ?string $v=null): bool { $p=BAC_PLUGIN_DIR.\ltrim($rel,'/'); if(!\file_exists($p))return false; \wp_enqueue_style($h,BAC_PLUGIN_URL.\ltrim($rel,'/'),$d,$v??(string)\filemtime($p)); return true; }
 }

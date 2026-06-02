@@ -57,7 +57,7 @@
   isolation: isolate;
 
   margin: 2.35em 0 1em;
-  padding: 0.08em 0.45em 0.18em 0.35em;
+  padding: 0.08em 0.45em 0.24em 0.35em;
 
   font-size: 1.65em;
   font-weight: 700;
@@ -66,6 +66,14 @@
 
   color: var(--arcaea-heading) !important;
   border-bottom: none !important;
+
+  /* Light trail via background — avoids ::before conflict with
+     Sakurairo's anchor placeholder (visibility:hidden; height:80px) */
+  background:
+    linear-gradient(90deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.62),
+      rgba(159, 198, 255, 0)) left bottom / min(8.5rem, 58%) 2px no-repeat !important;
 
   text-shadow:
     0 0 10px rgba(95, 212, 255, 0.16),
@@ -87,12 +95,10 @@
   border-radius: 30px;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       rgba(169, 123, 255, 0.34),
       rgba(95, 212, 255, 0.26),
-      rgba(95, 212, 255, 0.08)
-    ) !important;
+      rgba(95, 212, 255, 0.08)) !important;
 
   opacity: 0.58 !important;
   z-index: -1;
@@ -103,33 +109,14 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Arcaea light trail — sits on top of highlight */
+/* Restore anchor placeholder for TOC jump targets */
 .arcaea-article-content h2::before {
-  content: "" !important;
-  position: absolute !important;
-
-  left: 0;
-  bottom: -0.42em;
-
-  width: min(8.5rem, 58%);
-  height: 2px;
-
-  border-radius: 999px;
-
-  background:
-    linear-gradient(
-      90deg,
-      rgba(139, 227, 255, 0.95),
-      rgba(169, 123, 255, 0.62),
-      rgba(159, 198, 255, 0)
-    ) !important;
-
-  box-shadow:
-    0 0 14px rgba(95, 212, 255, 0.35),
-    0 0 28px rgba(169, 123, 255, 0.14);
-
-  z-index: 1;
-  pointer-events: none;
+  content: " " !important;
+  display: block !important;
+  height: 80px !important;
+  margin-top: -80px !important;
+  visibility: hidden !important;
+  position: static !important;
 }
 
 /* =========================================================
@@ -138,6 +125,7 @@
 
 .arcaea-article-content h3 {
   position: relative !important;
+  display: block !important;
 
   margin: 2em 0 0.75em;
   padding-left: 0.95em;
@@ -148,28 +136,27 @@
 
   color: var(--arcaea-heading) !important;
   border: none !important;
+
+  /* Light pillar via background — avoids ::before conflict with
+     Sakurairo’s anchor placeholder (visibility:hidden; height:80px) */
+  background:
+    linear-gradient(180deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.75)) left 0.2em top 0.24em / 4px 1.05em no-repeat !important;
+
+  text-shadow:
+    0 0 10px rgba(95, 212, 255, 0.12),
+    0 1px 0 rgba(0, 0, 0, 0.28);
 }
 
+/* Restore anchor placeholder for TOC jump targets */
 .arcaea-article-content h3::before {
-  content: "" !important;
-  position: absolute !important;
-
-  left: 0;
-  top: 0.22em;
-
-  width: 4px;
-  height: 1.05em;
-
-  border-radius: 999px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(139, 227, 255, 0.95),
-      rgba(169, 123, 255, 0.75)
-    ) !important;
-
-  box-shadow: 0 0 12px rgba(95, 212, 255, 0.35);
+  content: " " !important;
+  display: block !important;
+  height: 80px !important;
+  margin-top: -80px !important;
+  visibility: hidden !important;
+  position: static !important;
 }
 
 /* Suppress theme-injected h3::after decorations */
@@ -194,17 +181,23 @@
 
   color: rgba(242, 246, 252, 0.92) !important;
   border: none !important;
+
+  /* Diamond dot via background — avoids ::before conflict with
+     Sakurairo's anchor placeholder */
+  background:
+    radial-gradient(circle,
+      rgba(139, 227, 255, 0.95) 0 35%,
+      transparent 38%) left 0.52em top 0.42em / 0.42em 0.42em no-repeat !important;
 }
 
+/* Restore anchor placeholder for TOC jump targets */
 .arcaea-article-content h4::before {
-  content: "◇" !important;
-  position: absolute !important;
-
-  left: 0;
-  top: 0;
-
-  color: rgba(139, 227, 255, 0.88);
-  text-shadow: 0 0 10px rgba(95, 212, 255, 0.35);
+  content: " " !important;
+  display: block !important;
+  height: 80px !important;
+  margin-top: -80px !important;
+  visibility: hidden !important;
+  position: static !important;
 }
 
 .arcaea-article-content h4::after {
@@ -233,6 +226,24 @@
   color: var(--arcaea-muted);
 }
 
+/* =========================================================
+ * Dark-mode overrides — beat Sakurairo's
+ *   body.dark .entry-content hN { color: var(--dark-text-primary) }
+ * which has specificity (0,0,1,2).
+ * Our combined selector gives (0,0,2,2) + !important safety.
+ * ======================================================= */
+
+body.dark .entry-content .arcaea-article-content h2,
+body.dark .entry-content .arcaea-article-content h3,
+body.dark .entry-content .arcaea-article-content h4 {
+  color: var(--arcaea-heading) !important;
+}
+
+body.dark .entry-content .arcaea-article-content h5,
+body.dark .entry-content .arcaea-article-content h6 {
+  color: var(--arcaea-heading) !important;
+}
+
 /* ── H1: page-level hero heading (inside article wrapper) ──── */
 
 .arcaea-article-content h1 {
@@ -258,12 +269,10 @@
   width: min(10rem, 42%);
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(95, 212, 255, 0.92),
-    rgba(169, 123, 255, 0.58) 58%,
-    rgba(169, 123, 255, 0)
-  );
+  background: linear-gradient(90deg,
+      rgba(95, 212, 255, 0.92),
+      rgba(169, 123, 255, 0.58) 58%,
+      rgba(169, 123, 255, 0));
   box-shadow:
     0 0 20px rgba(95, 212, 255, 0.2),
     0 0 12px rgba(169, 123, 255, 0.12);
@@ -276,12 +285,10 @@
   bottom: -0.45rem;
   width: min(16rem, 68%);
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(95, 212, 255, 0.07) 45%,
-    rgba(169, 123, 255, 0)
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.14),
+      rgba(95, 212, 255, 0.07) 45%,
+      rgba(169, 123, 255, 0));
 }
 
 /* ── Paragraphs, lists, text ──────────────────────────────── */
@@ -336,11 +343,9 @@
   overflow: auto;
   border: 1px solid var(--arcaea-border-strong);
   border-radius: 12px;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 25, 44, 0.66),
-    rgba(10, 18, 34, 0.54)
-  ) !important;
+  background: linear-gradient(180deg,
+      rgba(15, 25, 44, 0.66),
+      rgba(10, 18, 34, 0.54)) !important;
   color: var(--arcaea-text) !important;
   font: 15px/1.72 "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", Consolas, monospace !important;
   box-shadow:
@@ -391,11 +396,9 @@
   border: 1px solid var(--arcaea-border);
   border-left: 2px solid rgba(183, 202, 239, 0.58) !important;
   border-radius: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(19, 30, 50, 0.62),
-    rgba(12, 22, 39, 0.42)
-  ) !important;
+  background: linear-gradient(135deg,
+      rgba(19, 30, 50, 0.62),
+      rgba(12, 22, 39, 0.42)) !important;
   color: var(--arcaea-text) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(8px);
@@ -432,11 +435,9 @@
   margin: 1.5em 0;
   border: 1px solid var(--arcaea-border);
   border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(18, 28, 48, 0.95),
-    rgba(14, 22, 38, 0.92)
-  );
+  background: linear-gradient(180deg,
+      rgba(18, 28, 48, 0.95),
+      rgba(14, 22, 38, 0.92));
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -475,11 +476,9 @@
 .arcaea-article-content table thead tr,
 .arcaea-article-content table th {
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(28, 44, 72, 0.96),
-      rgba(17, 29, 50, 0.94)
-    ) !important;
+      rgba(17, 29, 50, 0.94)) !important;
 
   color: rgba(245, 249, 255, 0.96) !important;
 }
@@ -516,13 +515,17 @@
 /* ══ KEY FIX: override theme odd/even row white backgrounds ══ */
 
 .arcaea-article-content table tbody tr:nth-child(odd),
-.arcaea-article-content table tbody tr:nth-child(odd) td {
+.arcaea-article-content table tbody tr:nth-child(odd) td,
+body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd),
+body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td {
   background: var(--arcaea-surface-row) !important;
   color: rgba(236, 243, 255, 0.90) !important;
 }
 
 .arcaea-article-content table tbody tr:nth-child(even),
-.arcaea-article-content table tbody tr:nth-child(even) td {
+.arcaea-article-content table tbody tr:nth-child(even) td,
+body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even),
+body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) td {
   background: var(--arcaea-surface-row-alt) !important;
   color: rgba(236, 243, 255, 0.90) !important;
 }
@@ -588,11 +591,9 @@
   padding: 0.8rem 1rem;
   border: none;
   border-bottom: 1px solid rgba(95, 212, 255, 0.22);
-  background: linear-gradient(
-    180deg,
-    rgba(95, 212, 255, 0.12),
-    rgba(95, 212, 255, 0.04)
-  );
+  background: linear-gradient(180deg,
+      rgba(95, 212, 255, 0.12),
+      rgba(95, 212, 255, 0.04));
   color: #eaf7ff;
   letter-spacing: 0.05em;
   font-weight: 700;
@@ -614,29 +615,27 @@
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody tr,
-.arcaea-article-content table.arcaea-feature-matrix > tr + tr {
+.arcaea-article-content table.arcaea-feature-matrix>tr+tr {
   transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody tr:hover,
-.arcaea-article-content table.arcaea-feature-matrix > tr:hover {
+.arcaea-article-content table.arcaea-feature-matrix>tr:hover {
   transform: translateY(-1px);
   filter: brightness(1.03);
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody td,
-.arcaea-article-content table.arcaea-feature-matrix > tr td {
+.arcaea-article-content table.arcaea-feature-matrix>tr td {
   position: relative;
   padding: 1rem 1rem 1.05rem;
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(18, 28, 48, 0.95),
-      rgba(14, 22, 38, 0.92)
-    );
+      rgba(14, 22, 38, 0.92));
   box-shadow:
     0 10px 26px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -645,52 +644,40 @@
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody td:first-child,
-.arcaea-article-content table.arcaea-feature-matrix > tr td:first-child {
+.arcaea-article-content table.arcaea-feature-matrix>tr td:first-child {
   border-left: 1px solid transparent;
   border-radius: 14px 0 0 14px;
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(18, 28, 48, 0.95),
-      rgba(14, 22, 38, 0.92)
-    ) padding-box,
-    linear-gradient(
-      180deg,
+      rgba(14, 22, 38, 0.92)) padding-box,
+    linear-gradient(180deg,
       rgba(95, 212, 255, 0.38),
-      rgba(169, 123, 255, 0.18)
-    ) border-box;
+      rgba(169, 123, 255, 0.18)) border-box;
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody td:last-child,
-.arcaea-article-content table.arcaea-feature-matrix > tr td:last-child {
+.arcaea-article-content table.arcaea-feature-matrix>tr td:last-child {
   border-right: 1px solid transparent;
   border-radius: 0 14px 14px 0;
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(18, 28, 48, 0.95),
-      rgba(14, 22, 38, 0.92)
-    ) padding-box,
-    linear-gradient(
-      135deg,
+      rgba(14, 22, 38, 0.92)) padding-box,
+    linear-gradient(135deg,
       rgba(95, 212, 255, 0.4),
-      rgba(169, 123, 255, 0.15)
-    ) border-box;
+      rgba(169, 123, 255, 0.15)) border-box;
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody tr:hover td,
-.arcaea-article-content table.arcaea-feature-matrix > tr:hover td {
+.arcaea-article-content table.arcaea-feature-matrix>tr:hover td {
   background:
-    linear-gradient(
-      180deg,
+    linear-gradient(180deg,
       rgba(20, 32, 54, 0.97),
-      rgba(15, 24, 42, 0.95)
-    ) padding-box,
-    linear-gradient(
-      135deg,
+      rgba(15, 24, 42, 0.95)) padding-box,
+    linear-gradient(135deg,
       rgba(95, 212, 255, 0.44),
-      rgba(169, 123, 255, 0.18)
-    ) border-box;
+      rgba(169, 123, 255, 0.18)) border-box;
   box-shadow:
     inset 4px 0 0 rgba(95, 212, 255, 0.9),
     0 14px 30px rgba(0, 0, 0, 0.26);
@@ -728,9 +715,17 @@
   overflow-wrap: anywhere;
 }
 
-.arcaea-article-content .signature .sig-type { color: #8be3ff; }
-.arcaea-article-content .signature .sig-name { color: #ffd580; }
-.arcaea-article-content .signature .sig-func { color: #c9aeff; }
+.arcaea-article-content .signature .sig-type {
+  color: #8be3ff;
+}
+
+.arcaea-article-content .signature .sig-name {
+  color: #ffd580;
+}
+
+.arcaea-article-content .signature .sig-func {
+  color: #c9aeff;
+}
 
 .arcaea-article-content .line-badge {
   display: inline-flex;
@@ -748,7 +743,7 @@
 }
 
 .arcaea-article-content table.arcaea-feature-matrix tbody tr:hover .line-badge,
-.arcaea-article-content table.arcaea-feature-matrix > tr:hover .line-badge {
+.arcaea-article-content table.arcaea-feature-matrix>tr:hover .line-badge {
   opacity: 1;
 }
 
@@ -771,9 +766,17 @@
   font-weight: 600;
 }
 
-.arcaea-article-content .purpose-tag.purple { color: #c9aeff; }
-.arcaea-article-content .purpose-tag.green  { color: #8fe3a1; }
-.arcaea-article-content .purpose-tag.orange { color: #ffc17a; }
+.arcaea-article-content .purpose-tag.purple {
+  color: #c9aeff;
+}
+
+.arcaea-article-content .purpose-tag.green {
+  color: #8fe3a1;
+}
+
+.arcaea-article-content .purpose-tag.orange {
+  color: #ffc17a;
+}
 
 /* ── Links ─────────────────────────────────────────────────── */
 
@@ -941,6 +944,29 @@
   }
 }
 
+/* =========================================================
+ * Anchor placeholder guard
+ * Sakurairo uses h1–h6::before for TOC jump-target spacing:
+ *   display:block; content:" "; height:80px; margin-top:-80px;
+ *   visibility:hidden
+ * Restore that behaviour here so anchor links still work.
+ * Our visual effects now use background / ::after instead.
+ * ======================================================= */
+
+.arcaea-article-content h5::before,
+.arcaea-article-content h6::before {
+  content: " " !important;
+  display: block !important;
+  height: 80px !important;
+  margin-top: -80px !important;
+  visibility: hidden !important;
+  position: static !important;
+}
+
+/* H1::before/::after — Arcaea rules have higher specificity
+   (0,0,1,1 vs 0,0,0,1) so they naturally override the anchor
+   placeholder.  No reset needed. */
+
 /* Restrict global `* { transition: all }` bleeding */
 .arcaea-article-content table,
 .arcaea-article-content th,
@@ -948,10 +974,9 @@
 .arcaea-article-content h2,
 .arcaea-article-content h3,
 .arcaea-article-content h4,
-.arcaea-article-content h2::before,
 .arcaea-article-content h2::after,
-.arcaea-article-content h3::before,
-.arcaea-article-content h4::before {
+.arcaea-article-content h3::after,
+.arcaea-article-content h4::after {
   transition-property:
     background-color,
     color,
