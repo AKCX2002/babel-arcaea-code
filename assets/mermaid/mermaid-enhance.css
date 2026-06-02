@@ -125,3 +125,107 @@
   background: rgba(13, 17, 23, 0.58);
   font-size: 12px;
 }
+
+.arcaea-mermaid-source-shell {
+  margin-top: 1rem;
+  --bac-code-font: "FiraCode Nerd Font", "Fira Code", "JetBrains Mono", "Noto Sans SC", sans-serif;
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar,
+.arcaea-mermaid-source-shell .bac-code-fold-toggle {
+  font-family: var(--bac-code-font);
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  min-height: 34px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(160, 220, 255, 0.18);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  background: rgba(13, 17, 23, 0.92);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  flex: 0 0 auto;
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-dots span:nth-child(1) {
+  background: #ff5f57;
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-dots span:nth-child(2) {
+  background: #febc2e;
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-dots span:nth-child(3) {
+  background: #28c840;
+}
+
+.arcaea-mermaid-source-shell .bac-code-titlebar-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: rgba(235, 240, 248, 0.88);
+  font-size: 0.82rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arcaea-mermaid-source-shell .arcaea-mermaid-source {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(160, 220, 255, 0.18);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: rgba(8, 16, 32, 0.56);
+  color: rgba(226, 236, 250, 0.92);
+  font-family: var(--bac-code-font);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+}
+
+.arcaea-mermaid-source-shell.bac-code-collapsed .arcaea-mermaid-source {
+  max-height: var(--bac-code-collapse-height, 32rem);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+.arcaea-mermaid-source-shell .bac-code-fold-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(160, 220, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(9, 18, 34, 0.62);
+  color: rgba(235, 240, 248, 0.88);
+  font-size: 0.8rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.arcaea-mermaid-source-shell .bac-code-fold-toggle:hover {
+  border-color: rgba(160, 220, 255, 0.32);
+  background: rgba(13, 24, 44, 0.75);
+}

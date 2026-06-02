@@ -13,6 +13,8 @@
     startX: 0,
     startY: 0
   };
+  var SOURCE_COLLAPSE_AFTER_LINES = 24;
+  var SOURCE_VISIBLE_LINES = 18;
 
   function ensureXmlns(svg) {
     if (!svg.getAttribute('xmlns')) svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -236,6 +238,69 @@
     return button;
   }
 
+  function countLines(text) {
+    if (!text) return 0;
+    return String(text).replace(/\n$/, '').split('\n').length;
+  }
+
+  function computeCollapseHeight(pre) {
+    var styles = window.getComputedStyle(pre);
+    var lineHeight = parseFloat(styles.lineHeight) || 20.8;
+    var paddingTop = parseFloat(styles.paddingTop) || 0;
+    var paddingBottom = parseFloat(styles.paddingBottom) || 0;
+    return Math.round(lineHeight * SOURCE_VISIBLE_LINES + paddingTop + paddingBottom);
+  }
+
+  function ensureSourcePanel(box) {
+    if (!box) return;
+    if (box.querySelector('.bac-code-shell.arcaea-mermaid-source-shell')) return;
+
+    var pre = box.querySelector('pre.mermaid');
+    if (!pre || !pre.dataset.bacMermaidSource) return;
+
+    var source = pre.dataset.bacMermaidSource.trim();
+    if (!source) return;
+
+    var lineCount = countLines(source);
+    if (lineCount <= SOURCE_COLLAPSE_AFTER_LINES) return;
+
+    var shell = document.createElement('div');
+    shell.className = 'bac-code-shell arcaea-mermaid-source-shell bac-code-collapsible bac-code-collapsed';
+    shell.dataset.bacCodeLines = String(lineCount);
+
+    var titlebar = document.createElement('div');
+    titlebar.className = 'bac-code-titlebar';
+    titlebar.innerHTML =
+      '<span class="bac-code-titlebar-dots"><span></span><span></span><span></span></span>' +
+      '<span class="bac-code-titlebar-name">Mermaid Source</span>';
+
+    var sourcePre = document.createElement('pre');
+    sourcePre.className = 'arcaea-mermaid-source language-mermaid';
+    var sourceCode = document.createElement('code');
+    sourceCode.className = 'language-mermaid';
+    sourceCode.textContent = source;
+    sourcePre.appendChild(sourceCode);
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bac-code-fold-toggle';
+    button.textContent = '展开完整代码';
+    button.setAttribute('aria-expanded', 'false');
+    button.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var collapsed = shell.classList.toggle('bac-code-collapsed');
+      button.textContent = collapsed ? '展开完整代码' : '收起代码';
+      button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    });
+
+    shell.appendChild(titlebar);
+    shell.appendChild(sourcePre);
+    shell.appendChild(button);
+    box.appendChild(shell);
+    shell.style.setProperty('--bac-code-collapse-height', String(computeCollapseHeight(sourcePre)) + 'px');
+  }
+
   function ensureToolbar(box, svg) {
     if (box.querySelector('.arcaea-mermaid-toolbar')) return;
 
@@ -260,6 +325,7 @@
       if (!svg || box.dataset.bacMermaidEnhanced === '1') return;
       box.dataset.bacMermaidEnhanced = '1';
       ensureToolbar(box, svg);
+      ensureSourcePanel(box);
     });
   }
 

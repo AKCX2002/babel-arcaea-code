@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var COLLAPSE_AFTER_LINES = 32;
+  var COLLAPSE_AFTER_LINES = 24;
   var VISIBLE_LINES = 18;
 
   function getPre(shell) {

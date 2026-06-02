@@ -186,6 +186,13 @@
     });
   }
 
+  function persistMermaidSource(el, source) {
+    if (!el) return;
+    var normalized = normalizeDiagramSource(source);
+    if (!normalized) return;
+    el.dataset.bacMermaidSource = normalized;
+  }
+
   /* ════════════════════════════════════════════
    * Prism: PJAX-safe highlighting + Sakurairo <pre> fix
    * ════════════════════════════════════════════ */
@@ -561,6 +568,7 @@
             delete diagrams[i].dataset.bacMermaidRendering;
             continue;
           }
+          persistMermaidSource(diagrams[i], normalized);
           var compatible = applyMermaidCompatibilityMode(normalized, config.mermaidCompatMode);
           diagrams[i].textContent = compatible;
           if (compatible !== normalized) {
