@@ -214,6 +214,11 @@
 
   transition: padding-left 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 
+  /* Block Sakurairo theme-injected mouse-tracking transforms */
+  transform: none !important;
+  translate: none !important;
+  filter: none !important;
+
   /* Modern anchor offset */
   scroll-margin-top: 80px;
 }
@@ -622,7 +627,7 @@ body.dark .entry-content .arcaea-article-content table,
     inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
-/* ── 表头：更明显的蓝紫分区 ── */
+/* ── 表头：柔和蓝紫分区 ── */
 body.dark .entry-content .arcaea-article-content table thead th,
 .entry-content .arcaea-article-content table thead th {
   position: relative;
@@ -633,14 +638,14 @@ body.dark .entry-content .arcaea-article-content table thead th,
 
   background:
     linear-gradient(180deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.02)),
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.01)),
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.20),
-      rgba(199, 182, 255, 0.12),
-      rgba(255, 142, 209, 0.08)) !important;
+      rgba(95, 212, 255, 0.12),
+      rgba(199, 182, 255, 0.08),
+      rgba(255, 142, 209, 0.06)) !important;
 
-  border-bottom: 1px solid rgba(170, 205, 255, 0.32) !important;
+  border-bottom: 1px solid rgba(170, 205, 255, 0.22) !important;
 }
 
 /* ── 表头底部 Arcaea 轨道线 ── */
@@ -661,14 +666,14 @@ body.dark .entry-content .arcaea-article-content table thead tr::after,
 
   background: linear-gradient(90deg,
       transparent,
-      rgba(95, 212, 255, 0.95),
-      rgba(255, 142, 209, 0.75),
-      rgba(199, 182, 255, 0.85),
+      rgba(95, 212, 255, 0.55),
+      rgba(255, 142, 209, 0.45),
+      rgba(199, 182, 255, 0.50),
       transparent);
 
   box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.45),
-    0 0 14px rgba(255, 142, 209, 0.22);
+    0 0 6px rgba(95, 212, 255, 0.25),
+    0 0 10px rgba(255, 142, 209, 0.12);
 }
 
 /* ── 单元格基础 ── */
@@ -712,7 +717,7 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child,
 .entry-content .arcaea-article-content table tbody td:first-child {
   position: relative;
   background-image: linear-gradient(90deg,
-      rgba(95, 212, 255, 0.075),
+      rgba(95, 212, 255, 0.05),
       transparent 72%) !important;
   font-weight: 650 !important;
 }
@@ -720,8 +725,8 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child,
 body.dark .entry-content .arcaea-article-content table tbody td:last-child,
 .entry-content .arcaea-article-content table tbody td:last-child {
   background-image: linear-gradient(90deg,
-      rgba(255, 142, 209, 0.055),
-      rgba(199, 182, 255, 0.04)) !important;
+      rgba(255, 142, 209, 0.04),
+      rgba(199, 182, 255, 0.03)) !important;
   font-weight: 700 !important;
   color: rgba(139, 227, 255, 0.98) !important;
 }
@@ -738,27 +743,27 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child::bef
   border-radius: 999px;
 
   background: linear-gradient(180deg,
-      rgba(95, 212, 255, 0.2),
-      rgba(95, 212, 255, 0.95),
-      rgba(255, 142, 209, 0.75));
+      rgba(95, 212, 255, 0.15),
+      rgba(95, 212, 255, 0.55),
+      rgba(255, 142, 209, 0.45));
 
   box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.42),
-    0 0 14px rgba(255, 142, 209, 0.18);
+    0 0 6px rgba(95, 212, 255, 0.22),
+    0 0 10px rgba(255, 142, 209, 0.10);
 }
 
 /* ── Hover：整行提亮 + 左侧光轨增强 ── */
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td,
 .entry-content .arcaea-article-content table tbody tr:hover td {
-  background-color: rgba(95, 212, 255, 0.09) !important;
+  background-color: rgba(95, 212, 255, 0.06) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before,
 .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before {
   width: 4px;
   box-shadow:
-    0 0 10px rgba(95, 212, 255, 0.75),
-    0 0 20px rgba(255, 142, 209, 0.32);
+    0 0 8px rgba(95, 212, 255, 0.45),
+    0 0 14px rgba(255, 142, 209, 0.20);
 }
 
 /* ── 角落修圆 ── */
