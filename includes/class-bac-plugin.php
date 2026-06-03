@@ -63,11 +63,13 @@ class Plugin {
         $lib = __DIR__ . '/../lib/plugin-update-checker.php';
         if (!\file_exists($lib)) return;
         require_once $lib;
-        try {
-            $pluginFile = __DIR__ . '/../babel-arcaea-code.php';
-            $slug = 'babel-arcaea-code';
-            $metadataUrl = 'https://raw.githubusercontent.com/AKCX2002/babel-arcaea-code/main/update-info.json';
 
+        $pluginFile = __DIR__ . '/../babel-arcaea-code.php';
+        $slug = 'babel-arcaea-code';
+        $metadataUrl = 'https://raw.githubusercontent.com/AKCX2002/babel-arcaea-code/main/update-info.json';
+
+        $uc = null;
+        try {
             $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
                 $metadataUrl,
                 $pluginFile,
@@ -90,12 +92,62 @@ class Plugin {
                     }
                 }
             } catch (\Throwable $fallbackError) {
-                if (\defined('WP_DEBUG') && WP_DEBUG) {
-                    \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
-                    \error_log('[Babel Arcaea Code] GitHub fallback init failed: ' . $fallbackError->getMessage());
-                }
+                \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
+                \error_log('[Babel Arcaea Code] GitHub fallback init failed: ' . $fallbackError->getMessage());
+                // Don't return — still register the cron safety net below.
             }
         }
+
+        // ── Crash recovery: detect and fix stale/corrupted Puc state ──
+        // After a WordPress crash or fatal error the Puc WP-Cron job may have
+        // failed to run, leaving "external_updates-{slug}" in a stale state
+        // that reports "no update" even when a newer version exists.
+        //
+        // Strategy: if the stored lastCheck is older than 13 h (Puc default
+        // is 12 h), or the state option is missing entirely, trigger an
+        // immediate on-demand update check so the next page load reflects
+        // the real remote version.
+        if ($uc !== null) {
+            $stateOption = 'external_updates-' . $slug;
+            $savedState  = \get_site_option($stateOption);
+            $lastCheck   = 0;
+            if (is_object($savedState) && isset($savedState->lastCheck)) {
+                $lastCheck = (int) $savedState->lastCheck;
+            }
+            $age = $lastCheck > 0 ? (time() - $lastCheck) : PHP_INT_MAX;
+
+            if ($age > 13 * HOUR_IN_SECONDS) {
+                // Force an immediate check — this writes fresh data into
+                // the Puc state option so WordPress sees the update on the
+                // very next page load instead of waiting for cron.
+                try {
+                    $uc->checkForUpdates();
+                    if (\defined('WP_DEBUG') && WP_DEBUG) {
+                        \error_log(sprintf(
+                            '[Babel Arcaea Code] Crash recovery: forced update check (state age=%ds)',
+                            $age
+                        ));
+                    }
+                } catch (\Throwable $checkErr) {
+                    \error_log('[Babel Arcaea Code] Forced update check failed: ' . $checkErr->getMessage());
+                }
+                // Also clear the core transient so WP re-evaluates immediately.
+                \delete_site_transient('update_plugins');
+            }
+        }
+
+        // ── WP-Cron safety net ──
+        // If WP-Cron is disabled or broken (common after server crashes),
+        // register an hourly hook that clears the update transient so the
+        // next admin page load triggers a fresh Puc check via the
+        // site_transient_update_plugins filter.
+        $cronHook = 'bac_hourly_update_probe';
+        if (!\wp_next_scheduled($cronHook) && !\wp_doing_cron()) {
+            \wp_schedule_event(time(), 'hourly', $cronHook);
+        }
+        \add_action($cronHook, function () {
+            \delete_site_transient('update_plugins');
+        });
     }
 
     /* ── Module loader (one-time, no duplication) ── */
