@@ -35,11 +35,6 @@
   --arcaea-link: #9fc6ff;
   --arcaea-line: rgba(120, 160, 220, 0.18);
 
-  /* Arcaea Glass Table tokens */
-  --arc-glass-text: rgba(242, 246, 252, 0.94);
-  --arc-glass-radius: 12px;
-  --arc-glass-line: rgba(120, 160, 220, 0.18);
-
   position: relative;
   z-index: 1;
   max-width: 100%;
@@ -561,8 +556,8 @@ body.dark .entry-content .arcaea-article-content code {
 }
 
 /* =========================================================
- * Table: Arcaea Glass Table
- * 行有交替色、列有弱分区、表头有轨道光条，首列有 Arcaea 装饰光标
+ * Table: classic Arcaea article table
+ * Source: sakurairo-arcaea-blog-skill references/article-wrapper-css.md
  * ======================================================= */
 
 /* ── Layer 6: Transition defense (same as Mermaid Layer 2) ──
@@ -576,65 +571,31 @@ body.dark .entry-content .arcaea-article-content code {
   transition: none !important;
 }
 
-/* Outer wrap — allows horizontal scroll */
 .arcaea-article-content .wp-block-table,
 .arcaea-article-content .arcaea-table-wrap {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
   margin: 1.5em 0;
+  overflow-x: auto;
+  border: 1px solid var(--arcaea-border);
+  border-radius: 12px;
+  background: rgba(11, 20, 36, 0.34);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
 }
 
-/* ── Table core — Arcaea Glass Table: row/column accents + light cursor ── */
-body.dark .entry-content .arcaea-article-content table,
-.entry-content .arcaea-article-content table {
-  position: relative;
-  display: table !important;
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
   width: 100% !important;
-  min-width: min(680px, 100%);
   margin: 1.5em 0 !important;
-  table-layout: fixed;
-  border-collapse: separate !important;
+  border-collapse: collapse !important;
   border-spacing: 0 !important;
   overflow: hidden;
-
-  color: var(--arc-glass-text) !important;
-  border-radius: 12px !important;
-  border: 1px solid var(--arcaea-border-strong) !important;
-
-  background:
-    linear-gradient(180deg,
-      rgba(8, 18, 36, 0.88),
-      rgba(6, 13, 28, 0.82)) !important;
-
-  backdrop-filter: blur(12px) saturate(135%);
-  -webkit-backdrop-filter: blur(12px) saturate(135%);
-
+  background: var(--arcaea-bg) !important;
+  border: 1px solid var(--arcaea-border) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
   box-shadow:
-    0 16px 34px rgba(0, 0, 0, 0.26),
-    0 0 22px rgba(95, 212, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-/* ── 表头：对齐代码框的轻玻璃层 ── */
-body.dark .entry-content .arcaea-article-content table thead th,
-.entry-content .arcaea-article-content table thead th {
-  position: relative;
-  padding: 14px 18px !important;
-  text-align: left;
-  font-weight: 700 !important;
-  color: rgba(246, 250, 255, 0.98) !important;
-
-  background:
-    linear-gradient(135deg,
-      rgba(95, 212, 255, 0.20),
-      rgba(169, 123, 255, 0.12) 54%,
-      rgba(255, 142, 209, 0.07)) !important;
-
-  border-bottom: 1px solid rgba(139, 227, 255, 0.24) !important;
-  text-shadow:
-    0 0 12px rgba(95, 212, 255, 0.18),
-    0 1px 0 rgba(0, 0, 0, 0.32);
+    0 12px 36px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 /* Markdown tables sometimes emit a blank first header for row labels.
@@ -644,82 +605,47 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
   display: none !important;
 }
 
-body.dark .entry-content .arcaea-article-content table thead,
-body.dark .entry-content .arcaea-article-content table tbody,
-body.dark .entry-content .arcaea-article-content table tr,
-.entry-content .arcaea-article-content table thead,
-.entry-content .arcaea-article-content table tbody,
-.entry-content .arcaea-article-content table tr {
-  background: transparent !important;
-}
-
-/* ── 表头底部 Arcaea 轨道线 ── */
-body.dark .entry-content .arcaea-article-content table thead tr,
-.entry-content .arcaea-article-content table thead tr {
-  position: relative;
-}
-
-body.dark .entry-content .arcaea-article-content table thead tr::after,
-.entry-content .arcaea-article-content table thead tr::after {
-  content: "";
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  bottom: 0;
-  height: 2px;
-  pointer-events: none;
-
-  background: linear-gradient(90deg,
-      transparent,
-      rgba(139, 227, 255, 0.46),
-      rgba(169, 123, 255, 0.34),
-      rgba(255, 142, 209, 0.22),
-      transparent);
-
-  box-shadow: 0 0 12px rgba(95, 212, 255, 0.22);
-}
-
-/* ── 第一行数据行顶部 Arcaea 轨道线 ── */
-body.dark .entry-content .arcaea-article-content table tbody tr:first-child,
-.entry-content .arcaea-article-content table tbody tr:first-child {
-  position: relative;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:first-child::before,
-.entry-content .arcaea-article-content table tbody tr:first-child::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 1px;
-  pointer-events: none;
-
-  background: linear-gradient(90deg,
-      transparent 2%,
-      rgba(214, 226, 245, 0.10) 20%,
-      rgba(214, 226, 245, 0.10) 80%,
-      transparent 98%);
-}
-
-/* ── 单元格基础 ── */
-body.dark .entry-content .arcaea-article-content table th,
-body.dark .entry-content .arcaea-article-content table td,
-.entry-content .arcaea-article-content table th,
-.entry-content .arcaea-article-content table td {
-  padding: 14px 18px !important;
-  color: rgba(232, 241, 255, 0.96) !important;
-  background-clip: padding-box;
-  line-height: 1.58;
-  vertical-align: middle;
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) td,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) td {
+  padding: 0.72rem 0.9rem !important;
+  text-align: left;
+  vertical-align: top;
+  color: var(--arcaea-text) !important;
   overflow-wrap: anywhere;
   word-break: normal;
-
-  border-right: 1px solid rgba(139, 187, 255, 0.12) !important;
-  border-bottom: 1px solid rgba(139, 187, 255, 0.12) !important;
+  border: 1px solid rgba(214, 226, 245, 0.16) !important;
 }
 
-/* Balanced widths for common technical comparison tables. */
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th {
+  background: rgba(164, 186, 236, 0.10) !important;
+  color: var(--arcaea-heading) !important;
+  font-weight: 650 !important;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:last-child td,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:first-child,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:last-child,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Compatibility widths for common four-column technical comparison tables. */
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:nth-last-child(4),
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:nth-last-child(4)~th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:nth-last-child(4),
@@ -765,7 +691,7 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:empty+th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:empty+th {
-  border-top-left-radius: var(--arc-glass-radius);
+  border-top-left-radius: 12px;
   width: 18%;
 }
 
@@ -782,170 +708,6 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:empty+th+th+th+th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th:first-child:empty+th+th+th+th {
   width: 15%;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody th,
-.entry-content .arcaea-article-content table tbody th {
-  position: relative;
-  background:
-    linear-gradient(90deg,
-      rgba(95, 212, 255, 0.14),
-      rgba(169, 123, 255, 0.06) 72%),
-    rgba(8, 22, 42, 0.74) !important;
-  font-weight: 650 !important;
-}
-
-/* 去掉最右和最后一行多余边框 */
-body.dark .entry-content .arcaea-article-content table th:last-child,
-body.dark .entry-content .arcaea-article-content table td:last-child,
-.entry-content .arcaea-article-content table th:last-child,
-.entry-content .arcaea-article-content table td:last-child {
-  border-right: none !important;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:last-child td,
-.entry-content .arcaea-article-content table tbody tr:last-child td {
-  border-bottom: none !important;
-}
-
-/* ── 行区分 ── */
-body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td,
-.entry-content .arcaea-article-content table tbody tr:nth-child(odd) td {
-  --arcaea-table-row-bg: rgba(11, 28, 54, 0.56);
-  background: rgba(11, 28, 54, 0.56) !important;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) td,
-.entry-content .arcaea-article-content table tbody tr:nth-child(even) td {
-  --arcaea-table-row-bg: rgba(16, 34, 64, 0.62);
-  background: rgba(16, 34, 64, 0.62) !important;
-}
-
-/* ── 列区分：第 1 列偏蓝，最后一列状态强调 ── */
-body.dark .entry-content .arcaea-article-content table tbody td:first-child,
-.entry-content .arcaea-article-content table tbody td:first-child {
-  position: relative;
-  background:
-    linear-gradient(90deg,
-      rgba(95, 212, 255, 0.12),
-      transparent 72%),
-    var(--arcaea-table-row-bg, rgba(11, 28, 54, 0.56)) !important;
-  font-weight: 650 !important;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody td:last-child,
-.entry-content .arcaea-article-content table tbody td:last-child {
-  background:
-    linear-gradient(135deg,
-      rgba(95, 212, 255, 0.16),
-      rgba(169, 123, 255, 0.10)),
-    var(--arcaea-table-row-bg, rgba(11, 28, 54, 0.56)) !important;
-  font-weight: 700 !important;
-  color: #c8f2ff !important;
-  text-shadow: 0 0 10px rgba(95, 212, 255, 0.20);
-}
-
-/* ── 首列装饰光标 ── */
-body.dark .entry-content .arcaea-article-content table tbody td:first-child::before,
-.entry-content .arcaea-article-content table tbody td:first-child::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 18%;
-  bottom: 18%;
-  width: 3px;
-  border-radius: 999px;
-
-  background: linear-gradient(180deg,
-      rgba(139, 227, 255, 0.18),
-      rgba(139, 227, 255, 0.62),
-      rgba(169, 123, 255, 0.26));
-
-  box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.28),
-    0 0 14px rgba(169, 123, 255, 0.12);
-}
-
-/* ── Hover：整行提亮 + 左侧光轨增强 ── */
-body.dark .entry-content .arcaea-article-content table tbody tr:hover td,
-.entry-content .arcaea-article-content table tbody tr:hover td {
-  background: rgba(28, 58, 94, 0.78) !important;
-  color: #f5fbff !important;
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before,
-.entry-content .arcaea-article-content table tbody tr:hover td:first-child::before {
-  width: 4px;
-  box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.30),
-    0 0 14px rgba(255, 255, 255, 0.08);
-}
-
-/* ── 角落修圆 ── */
-body.dark .entry-content .arcaea-article-content table thead th:first-child,
-.entry-content .arcaea-article-content table thead th:first-child {
-  border-top-left-radius: var(--arc-glass-radius);
-}
-
-body.dark .entry-content .arcaea-article-content table thead th:last-child,
-.entry-content .arcaea-article-content table thead th:last-child {
-  border-top-right-radius: var(--arc-glass-radius);
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:last-child td:first-child,
-.entry-content .arcaea-article-content table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: var(--arc-glass-radius);
-}
-
-body.dark .entry-content .arcaea-article-content table tbody tr:last-child td:last-child,
-.entry-content .arcaea-article-content table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: var(--arc-glass-radius);
-}
-
-/* ── Table inner elements ── */
-body.dark .entry-content .arcaea-article-content table a,
-.entry-content .arcaea-article-content table a {
-  color: var(--arcaea-link, #9fc6ff) !important;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(159, 198, 255, 0.3);
-}
-
-body.dark .entry-content .arcaea-article-content table a:hover,
-.entry-content .arcaea-article-content table a:hover {
-  color: #c8edff !important;
-  border-bottom-color: rgba(200, 237, 255, 0.7);
-}
-
-body.dark .entry-content .arcaea-article-content table code,
-.entry-content .arcaea-article-content table code {
-  color: var(--arcaea-accent-light-soft, #8be3ff) !important;
-  background: rgba(15, 25, 44, 0.56) !important;
-  border: 1px solid rgba(139, 227, 255, 0.14);
-  border-radius: 5px;
-  padding: 0.12em 0.38em;
-  font-size: 0.88em;
-}
-
-body.dark .entry-content .arcaea-article-content table strong,
-.entry-content .arcaea-article-content table strong {
-  color: var(--arcaea-heading, #f2f6fc) !important;
-  font-weight: 600;
-}
-
-/* Prevent theme/github from forcing white on table sub-elements */
-body.dark .entry-content .arcaea-article-content table tr,
-body.dark .entry-content .arcaea-article-content table th,
-body.dark .entry-content .arcaea-article-content table td,
-body.dark .entry-content .arcaea-article-content table tbody,
-body.dark .entry-content .arcaea-article-content table thead,
-.entry-content .arcaea-article-content table tr,
-.entry-content .arcaea-article-content table th,
-.entry-content .arcaea-article-content table td,
-.entry-content .arcaea-article-content table tbody,
-.entry-content .arcaea-article-content table thead {
-  border-color: rgba(120, 160, 220, 0.14) !important;
-  font-family: inherit !important;
-  font-size: inherit !important;
 }
 
 /* =========================================================
@@ -1156,107 +918,6 @@ body.dark .entry-content .arcaea-article-content table thead,
   color: #ffc17a;
 }
 
-/* =========================================================
- * Table: .arcaea-table — High-transparency glass variant
- *
- * Opt-in class: add class="arcaea-table" to any <table> inside
- * .arcaea-article-content for enhanced glass effects:
- *   • Deeper transparency background
- *   • Outer glow + inner light
- *   • Rainbow gradient thead border
- *   • Left-side light rail on hover
- *   • Last-column accent highlight
- *
- * Inherits structural base from the main table rules above.
- * ======================================================= */
-
-.arcaea-article-content table.arcaea-table,
-body.dark .entry-content .arcaea-article-content table.arcaea-table {
-  background: rgba(8, 21, 42, 0.20) !important;
-  border-color: rgba(101, 215, 255, 0.35) !important;
-  border-radius: 16px;
-  box-shadow:
-    0 0 25px rgba(74, 168, 255, 0.12),
-    inset 0 0 20px rgba(101, 215, 255, 0.05),
-    0 8px 24px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* ── Table header: gradient + rainbow bottom border ──────── */
-
-.arcaea-article-content table.arcaea-table thead,
-.arcaea-article-content table.arcaea-table thead tr,
-body.dark .entry-content .arcaea-article-content table.arcaea-table thead,
-body.dark .entry-content .arcaea-article-content table.arcaea-table thead tr {
-  background: linear-gradient(90deg,
-      rgba(101, 215, 255, 0.15),
-      rgba(255, 142, 209, 0.06)) !important;
-}
-
-.arcaea-article-content table.arcaea-table th,
-body.dark .entry-content .arcaea-article-content table.arcaea-table th {
-  color: #EEF4FF !important;
-  font-weight: 700;
-  text-align: left;
-  padding: 12px 18px;
-  border-bottom: 2px solid transparent !important;
-  border-image: linear-gradient(90deg,
-      #65D7FF,
-      #FF8ED1,
-      #8A74FF) 1;
-  border-image-slice: 0 0 1 0;
-  text-transform: none;
-  letter-spacing: 0.02em;
-}
-
-/* ── Row backgrounds ─────────────────────────────────────── */
-
-.arcaea-article-content table.arcaea-table tbody tr:nth-child(odd) td,
-body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:nth-child(odd) td {
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-.arcaea-article-content table.arcaea-table tbody tr:nth-child(even) td,
-body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:nth-child(even) td {
-  background: rgba(101, 215, 255, 0.05) !important;
-}
-
-/* ── Cell base ───────────────────────────────────────────── */
-
-.arcaea-article-content table.arcaea-table td,
-body.dark .entry-content .arcaea-article-content table.arcaea-table td {
-  padding: 12px 18px;
-  color: #E0EAFB !important;
-}
-
-/* ── Last-column accent (percentage / highlight values) ──── */
-
-.arcaea-article-content table.arcaea-table td:last-child,
-body.dark .entry-content .arcaea-article-content table.arcaea-table td:last-child {
-  color: #65D7FF !important;
-  font-weight: 700;
-}
-
-/* ── Hover: left-side light rail ─────────────────────────── */
-
-.arcaea-article-content table.arcaea-table tbody tr:hover td,
-body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hover td {
-  background: rgba(101, 215, 255, 0.08) !important;
-  box-shadow: inset 4px 0 0 #65D7FF !important;
-  color: #f6fbff !important;
-}
-
-/* ── Responsive: compact padding on narrow screens ──────── */
-
-@media (max-width: 768px) {
-
-  .arcaea-article-content table.arcaea-table th,
-  .arcaea-article-content table.arcaea-table td {
-    padding: 10px 12px;
-  }
-}
-
 /* ── Links ─────────────────────────────────────────────────── */
 
 .arcaea-article-content a {
@@ -1364,13 +1025,6 @@ body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hov
   .arcaea-article-content .arcaea-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-
-  /* Glass table: preserve table display, scroll wrapper */
-  .arcaea-article-content table.arcaea-table,
-  body.dark .entry-content .arcaea-article-content table.arcaea-table {
-    display: table !important;
-    min-width: 520px;
   }
 
   .arcaea-article-content table th,
