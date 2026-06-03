@@ -23,21 +23,24 @@
 
   /* 玻璃拟态 — 对齐 Arcaea 设计 Token */
   /* Token: --arcaea-bg + backdrop-filter: blur(12px) saturate(130%) */
-  background: rgba(8, 21, 42, 0.42);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
-  backdrop-filter: blur(12px) saturate(130%);
+  background:
+    linear-gradient(180deg,
+      rgba(8, 16, 30, 0.86),
+      rgba(6, 12, 24, 0.84));
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+  backdrop-filter: blur(10px) saturate(112%);
 
   /* Token: --arcaea-border */
-  border: 1px solid rgba(230, 238, 255, 0.78);
+  border: 1px solid rgba(230, 238, 255, 0.52);
   border-radius: 10px;
 
   /* Token: 卡片投影 + 内嵌白色高光边 */
   box-shadow:
-    0 12px 36px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    0 14px 38px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
   margin: 2rem 0;
-  padding: 1rem;
+  padding: 1.1rem;
 
   /* 阻断 Sakurairo 主题继承链 */
   font-family:
@@ -66,10 +69,10 @@
 
 /* Hover — 仅增强边框与阴影，不做 scale（避免 SVG 重新光栅化） */
 .arcaea-mermaid-box:hover {
-  border-color: rgba(160, 220, 255, 0.42);
+  border-color: rgba(160, 220, 255, 0.48);
   box-shadow:
-    0 12px 36px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    0 14px 40px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* 禁用旧的发光伪元素 */
@@ -137,6 +140,8 @@ pre.mermaid foreignObject p {
   line-height: 1.4;
   box-sizing: border-box;
   font-size: 14px;
+  padding: 0.18em 0.36em;
+  overflow: visible;
 }
 
 /* ── SVG 基本样式 ──
@@ -182,6 +187,7 @@ pre.mermaid .noteText {
 
   font-size: 15px;
   font-weight: 500;
+  line-height: 1.45;
 
   font-family:
     "FiraCode Nerd Font",
@@ -200,6 +206,15 @@ pre.mermaid .node polygon,
 pre.mermaid .node path {
   stroke: rgba(160, 220, 255, 0.50);
   stroke-width: 1.6px;
+}
+
+pre.mermaid .node .label,
+pre.mermaid .node .nodeLabel,
+pre.mermaid .node foreignObject div,
+pre.mermaid .node foreignObject span {
+  line-height: 1.45;
+  padding: 0.16em 0.34em;
+  overflow: visible;
 }
 
 /* ── 连线 ── */

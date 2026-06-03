@@ -518,7 +518,7 @@
       theme: 'base',
       flowchart: {
         htmlLabels: false, useMaxWidth: true, curve: 'basis',
-        padding: 6, nodeSpacing: 10, rankSpacing: 16, subGraphMargin: 10
+        padding: 14, nodeSpacing: 28, rankSpacing: 34, subGraphMargin: 18
       },
       sequence: {
         useMaxWidth: true, mirrorActors: false, rightAngles: false,

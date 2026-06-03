@@ -18,9 +18,9 @@
   --arcaea-text-secondary: #b9c7da;
   --arcaea-text-dim: #8090a5;
   --arcaea-divider: rgba(120, 160, 220, 0.18);
-  --arcaea-bg: rgba(10, 18, 32, 0.88);
-  --arcaea-surface: rgba(16, 27, 45, 0.92);
-  --arcaea-surface-soft: rgba(22, 36, 59, 0.78);
+  --arcaea-bg: rgba(8, 14, 26, 0.94);
+  --arcaea-surface: rgba(12, 21, 38, 0.96);
+  --arcaea-surface-soft: rgba(18, 30, 50, 0.88);
   --arcaea-surface-row: rgba(14, 26, 46, 0.82);
   --arcaea-surface-row-alt: rgba(20, 34, 58, 0.82);
   --arcaea-surface-hover: rgba(42, 68, 104, 0.72);
@@ -39,6 +39,18 @@
   max-width: 100%;
   color: var(--arcaea-text);
   text-shadow: 0 1px 0 rgba(6, 10, 18, 0.18);
+  background:
+    linear-gradient(180deg,
+      rgba(10, 18, 32, 0.92),
+      rgba(7, 13, 24, 0.90)) !important;
+  border: 1px solid rgba(218, 232, 255, 0.20) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(108%) !important;
+  backdrop-filter: blur(10px) saturate(108%) !important;
+  padding: clamp(1.15rem, 3vw, 1.8rem) !important;
 }
 
 .arcaea-article-content::selection,
