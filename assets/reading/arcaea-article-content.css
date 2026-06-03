@@ -603,9 +603,9 @@ body.dark .entry-content .arcaea-article-content table,
   border-spacing: 0 !important;
 
   background: var(--arcaea-bg-main, #0a1220) !important;
-  color: var(--arcaea-text, rgba(242,246,252,0.94)) !important;
+  color: var(--arcaea-text, rgba(242, 246, 252, 0.94)) !important;
 
-  border: 1px solid var(--arcaea-border, rgba(120,160,220,0.18)) !important;
+  border: 1px solid var(--arcaea-border, rgba(120, 160, 220, 0.18)) !important;
   border-radius: 12px;
   overflow: hidden;
 
@@ -657,8 +657,8 @@ body.dark .entry-content .arcaea-article-content table td,
 .entry-content .arcaea-article-content table td {
   padding: 0.7em 1em !important;
 
-  color: var(--arcaea-text, rgba(242,246,252,0.94)) !important;
-  background: var(--arcaea-surface-row, rgba(14,26,46,0.82)) !important;
+  color: var(--arcaea-text, rgba(242, 246, 252, 0.94)) !important;
+  background: var(--arcaea-surface-row, rgba(14, 26, 46, 0.82)) !important;
 
   border: 1px solid rgba(120, 160, 220, 0.12) !important;
 
@@ -677,16 +677,16 @@ body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd),
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(odd),
 .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td {
-  background: var(--arcaea-surface-row, rgba(14,26,46,0.82)) !important;
-  color: var(--arcaea-text, rgba(242,246,252,0.94)) !important;
+  background: var(--arcaea-surface-row, rgba(14, 26, 46, 0.82)) !important;
+  color: var(--arcaea-text, rgba(242, 246, 252, 0.94)) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even),
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(even),
 .entry-content .arcaea-article-content table tbody tr:nth-child(even) td {
-  background: var(--arcaea-surface-row-alt, rgba(20,34,58,0.82)) !important;
-  color: var(--arcaea-text, rgba(242,246,252,0.94)) !important;
+  background: var(--arcaea-surface-row-alt, rgba(20, 34, 58, 0.82)) !important;
+  color: var(--arcaea-text, rgba(242, 246, 252, 0.94)) !important;
 }
 
 /* Hover — subtle highlight with transition-free instant change */
@@ -694,7 +694,7 @@ body.dark .entry-content .arcaea-article-content table tbody tr:hover,
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td,
 .entry-content .arcaea-article-content table tbody tr:hover,
 .entry-content .arcaea-article-content table tbody tr:hover td {
-  background: var(--arcaea-surface-hover, rgba(42,68,104,0.72)) !important;
+  background: var(--arcaea-surface-hover, rgba(42, 68, 104, 0.72)) !important;
   color: #f6fbff !important;
 }
 
