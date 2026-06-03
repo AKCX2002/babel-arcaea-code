@@ -212,8 +212,6 @@
   color: var(--arcaea-heading) !important;
   border: none !important;
 
-  transition: none !important;
-
   /* Block Sakurairo theme-injected mouse-tracking transforms */
   transform: none !important;
   translate: none !important;
@@ -221,15 +219,6 @@
 
   /* Modern anchor offset */
   scroll-margin-top: 80px;
-}
-
-/* ── H3 hover: keep heading position stable ── */
-
-.arcaea-article-content h3:hover {
-  padding-left: 0.95em !important;
-  transform: none !important;
-  translate: none !important;
-  filter: none !important;
 }
 
 /* Light pillar — ::before with visibility:visible beats Sakurairo */
@@ -253,14 +242,10 @@
   box-shadow: 0 0 12px rgba(95, 212, 255, 0.40);
 
   visibility: visible !important;
-
-  transition: none !important;
 }
 
-/* ── H3 hover: glow only, no heading/pillar movement ── */
-
+/* ── H3 hover: glow only, no heading movement ── */
 .arcaea-article-content h3:hover::before {
-  height: 1.05em !important;
   box-shadow:
     0 0 16px rgba(95, 212, 255, 0.60),
     0 0 30px rgba(169, 123, 255, 0.24) !important;
@@ -592,7 +577,7 @@ body.dark .entry-content .arcaea-article-content code {
   margin: 1.5em 0;
 }
 
-/* ── Table core — Arcaea Glass style ── */
+/* ── Table core — Arcaea Glass Table: row/column accents + light cursor ── */
 body.dark .entry-content .arcaea-article-content table,
 .entry-content .arcaea-article-content table {
   position: relative;
@@ -611,26 +596,26 @@ body.dark .entry-content .arcaea-article-content table,
 
   background:
     radial-gradient(circle at 12% 0%,
-      rgba(95, 212, 255, 0.12),
+      rgba(95, 212, 255, 0.075),
       transparent 32%),
     radial-gradient(circle at 92% 18%,
-      rgba(255, 142, 209, 0.10),
+      rgba(255, 142, 209, 0.055),
       transparent 34%),
     linear-gradient(135deg,
-      rgba(95, 212, 255, 0.07),
-      rgba(199, 182, 255, 0.045) 45%,
-      rgba(255, 142, 209, 0.035)),
-    rgba(10, 18, 32, 0.50) !important;
+      rgba(95, 212, 255, 0.038),
+      rgba(199, 182, 255, 0.026) 45%,
+      rgba(255, 142, 209, 0.020)),
+    rgba(10, 18, 32, 0.42) !important;
 
-  backdrop-filter: blur(16px) saturate(135%);
-  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(12px) saturate(118%);
+  -webkit-backdrop-filter: blur(12px) saturate(118%);
 
   box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    0 10px 28px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
 }
 
-/* ── 表头：柔和蓝紫分区 ── */
+/* ── 表头：更明显的蓝紫分区 ── */
 body.dark .entry-content .arcaea-article-content table thead th,
 .entry-content .arcaea-article-content table thead th {
   position: relative;
@@ -641,14 +626,14 @@ body.dark .entry-content .arcaea-article-content table thead th,
 
   background:
     linear-gradient(180deg,
-      rgba(255, 255, 255, 0.04),
-      rgba(255, 255, 255, 0.01)),
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.014)),
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.12),
-      rgba(199, 182, 255, 0.08),
-      rgba(255, 142, 209, 0.06)) !important;
+      rgba(95, 212, 255, 0.11),
+      rgba(199, 182, 255, 0.070),
+      rgba(255, 142, 209, 0.045)) !important;
 
-  border-bottom: 1px solid rgba(170, 205, 255, 0.22) !important;
+  border-bottom: 1px solid rgba(170, 205, 255, 0.24) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table thead,
@@ -678,13 +663,13 @@ body.dark .entry-content .arcaea-article-content table thead tr::after,
 
   background: linear-gradient(90deg,
       transparent,
-      rgba(95, 212, 255, 0.55),
-      rgba(255, 142, 209, 0.45),
+      rgba(95, 212, 255, 0.62),
+      rgba(255, 142, 209, 0.42),
       rgba(199, 182, 255, 0.50),
       transparent);
 
   box-shadow:
-    0 0 6px rgba(95, 212, 255, 0.25),
+    0 0 6px rgba(95, 212, 255, 0.26),
     0 0 10px rgba(255, 142, 209, 0.12);
 }
 
@@ -729,9 +714,9 @@ body.dark .entry-content .arcaea-article-content table tbody th,
   position: relative;
   background:
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.10),
-      rgba(95, 212, 255, 0.035) 72%),
-    rgba(12, 24, 42, 0.58) !important;
+      rgba(95, 212, 255, 0.060),
+      rgba(95, 212, 255, 0.020) 72%),
+    rgba(12, 24, 42, 0.42) !important;
   font-weight: 650 !important;
 }
 
@@ -751,14 +736,14 @@ body.dark .entry-content .arcaea-article-content table tbody tr:last-child td,
 /* ── 行区分 ── */
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td {
-  --arcaea-table-row-bg: rgba(255, 255, 255, 0.026);
-  background: rgba(255, 255, 255, 0.026) !important;
+  --arcaea-table-row-bg: rgba(255, 255, 255, 0.018);
+  background: rgba(255, 255, 255, 0.018) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(even) td {
-  --arcaea-table-row-bg: rgba(95, 212, 255, 0.045);
-  background: rgba(95, 212, 255, 0.045) !important;
+  --arcaea-table-row-bg: rgba(95, 212, 255, 0.028);
+  background: rgba(95, 212, 255, 0.028) !important;
 }
 
 /* ── 列区分：第 1 列偏蓝，最后一列偏粉紫 ── */
@@ -767,9 +752,9 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child,
   position: relative;
   background:
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.05),
+      rgba(95, 212, 255, 0.042),
       transparent 72%),
-    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.026)) !important;
+    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.018)) !important;
   font-weight: 650 !important;
 }
 
@@ -777,9 +762,9 @@ body.dark .entry-content .arcaea-article-content table tbody td:last-child,
 .entry-content .arcaea-article-content table tbody td:last-child {
   background:
     linear-gradient(90deg,
-      rgba(255, 142, 209, 0.04),
-      rgba(199, 182, 255, 0.03)),
-    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.026)) !important;
+      rgba(255, 142, 209, 0.032),
+      rgba(199, 182, 255, 0.024)),
+    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.018)) !important;
   font-weight: 700 !important;
   color: rgba(139, 227, 255, 0.98) !important;
 }
@@ -796,27 +781,27 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child::bef
   border-radius: 999px;
 
   background: linear-gradient(180deg,
-      rgba(95, 212, 255, 0.15),
-      rgba(95, 212, 255, 0.55),
-      rgba(255, 142, 209, 0.45));
+      rgba(95, 212, 255, 0.14),
+      rgba(95, 212, 255, 0.58),
+      rgba(255, 142, 209, 0.38));
 
   box-shadow:
-    0 0 6px rgba(95, 212, 255, 0.22),
+    0 0 6px rgba(95, 212, 255, 0.24),
     0 0 10px rgba(255, 142, 209, 0.10);
 }
 
 /* ── Hover：整行提亮 + 左侧光轨增强 ── */
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td,
 .entry-content .arcaea-article-content table tbody tr:hover td {
-  background: rgba(95, 212, 255, 0.06) !important;
+  background: rgba(95, 212, 255, 0.052) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before,
 .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before {
   width: 4px;
   box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.45),
-    0 0 14px rgba(255, 142, 209, 0.20);
+    0 0 8px rgba(95, 212, 255, 0.46),
+    0 0 14px rgba(255, 142, 209, 0.18);
 }
 
 /* ── 角落修圆 ── */
@@ -1391,6 +1376,66 @@ body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hov
   box-shadow: none !important;
 }
 
+/* Keep Arcaea heading decorations ahead of Sakurairo anchor placeholders. */
+body.dark .entry-content .arcaea-article-content h2::before,
+.entry-content .arcaea-article-content h2::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  bottom: -0.42em !important;
+  width: min(8.5rem, 58%) !important;
+  height: 2px !important;
+  margin-top: 0 !important;
+  visibility: visible !important;
+  background:
+    linear-gradient(90deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.72),
+      rgba(159, 198, 255, 0)) !important;
+  box-shadow:
+    0 0 14px rgba(95, 212, 255, 0.45),
+    0 0 28px rgba(169, 123, 255, 0.20) !important;
+}
+
+body.dark .entry-content .arcaea-article-content h3::before,
+.entry-content .arcaea-article-content h3::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0.22em !important;
+  width: 4px !important;
+  height: 1.05em !important;
+  margin-top: 0 !important;
+  visibility: visible !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg,
+      rgba(139, 227, 255, 0.95),
+      rgba(169, 123, 255, 0.75)) !important;
+  box-shadow: 0 0 12px rgba(95, 212, 255, 0.40) !important;
+}
+
+body.dark .entry-content .arcaea-article-content h4::before,
+.entry-content .arcaea-article-content h4::before {
+  content: "\25C7" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0.05em !important;
+  width: auto !important;
+  height: auto !important;
+  margin-top: 0 !important;
+  visibility: visible !important;
+  color: rgba(139, 227, 255, 0.92) !important;
+  background: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 0 10px rgba(95, 212, 255, 0.45),
+    0 0 18px rgba(169, 123, 255, 0.18) !important;
+}
+
 /* Restrict global `* { transition: all }` bleeding. */
 .arcaea-article-content table,
 .arcaea-article-content th,
@@ -1417,12 +1462,25 @@ body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hov
   transition-timing-function: ease-out;
 }
 
-.arcaea-article-content h3,
-.arcaea-article-content h3:hover,
-.arcaea-article-content h3::before,
-.arcaea-article-content h3::after,
-.arcaea-article-content h3:hover::before {
-  transition: none !important;
-  transform: none !important;
-  translate: none !important;
+body.dark .entry-content .arcaea-article-content h2:hover::before,
+.entry-content .arcaea-article-content h2:hover::before {
+  width: 100% !important;
+  box-shadow:
+    0 0 20px rgba(95, 212, 255, 0.65),
+    0 0 36px rgba(169, 123, 255, 0.32) !important;
+}
+
+body.dark .entry-content .arcaea-article-content h3:hover::before,
+.entry-content .arcaea-article-content h3:hover::before {
+  box-shadow:
+    0 0 16px rgba(95, 212, 255, 0.60),
+    0 0 30px rgba(169, 123, 255, 0.24) !important;
+}
+
+body.dark .entry-content .arcaea-article-content h4:hover::before,
+.entry-content .arcaea-article-content h4:hover::before {
+  color: rgba(162, 240, 255, 0.98) !important;
+  text-shadow:
+    0 0 14px rgba(95, 212, 255, 0.70),
+    0 0 24px rgba(169, 123, 255, 0.30) !important;
 }
