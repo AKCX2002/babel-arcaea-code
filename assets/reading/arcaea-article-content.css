@@ -952,6 +952,108 @@ body.dark .entry-content .arcaea-article-content table thead,
   color: #ffc17a;
 }
 
+/* =========================================================
+ * Table: .arcaea-table — High-transparency glass variant
+ *
+ * Opt-in class: add class="arcaea-table" to any <table> inside
+ * .arcaea-article-content for enhanced glass effects:
+ *   • Deeper transparency background
+ *   • Outer glow + inner light
+ *   • Rainbow gradient thead border
+ *   • Left-side light rail on hover
+ *   • Last-column accent highlight
+ *
+ * Inherits structural base from the main table rules above.
+ * ======================================================= */
+
+.arcaea-article-content table.arcaea-table,
+body.dark .entry-content .arcaea-article-content table.arcaea-table {
+  background: rgba(8, 21, 42, 0.20) !important;
+  border-color: rgba(101, 215, 255, 0.35) !important;
+  border-radius: 16px;
+  box-shadow:
+    0 0 25px rgba(74, 168, 255, 0.12),
+    inset 0 0 20px rgba(101, 215, 255, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Table header: gradient + rainbow bottom border ──────── */
+
+.arcaea-article-content table.arcaea-table thead,
+.arcaea-article-content table.arcaea-table thead tr,
+body.dark .entry-content .arcaea-article-content table.arcaea-table thead,
+body.dark .entry-content .arcaea-article-content table.arcaea-table thead tr {
+  background: linear-gradient(
+    90deg,
+    rgba(101, 215, 255, 0.15),
+    rgba(255, 142, 209, 0.06)) !important;
+}
+
+.arcaea-article-content table.arcaea-table th,
+body.dark .entry-content .arcaea-article-content table.arcaea-table th {
+  color: #EEF4FF !important;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 18px;
+  border-bottom: 2px solid transparent !important;
+  border-image: linear-gradient(
+    90deg,
+    #65D7FF,
+    #FF8ED1,
+    #8A74FF) 1;
+  border-image-slice: 0 0 1 0;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* ── Row backgrounds ─────────────────────────────────────── */
+
+.arcaea-article-content table.arcaea-table tbody tr:nth-child(odd) td,
+body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:nth-child(odd) td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+.arcaea-article-content table.arcaea-table tbody tr:nth-child(even) td,
+body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:nth-child(even) td {
+  background: rgba(101, 215, 255, 0.05) !important;
+}
+
+/* ── Cell base ───────────────────────────────────────────── */
+
+.arcaea-article-content table.arcaea-table td,
+body.dark .entry-content .arcaea-article-content table.arcaea-table td {
+  padding: 12px 18px;
+  color: #E0EAFB !important;
+}
+
+/* ── Last-column accent (percentage / highlight values) ──── */
+
+.arcaea-article-content table.arcaea-table td:last-child,
+body.dark .entry-content .arcaea-article-content table.arcaea-table td:last-child {
+  color: #65D7FF !important;
+  font-weight: 700;
+}
+
+/* ── Hover: left-side light rail ─────────────────────────── */
+
+.arcaea-article-content table.arcaea-table tbody tr:hover td,
+body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hover td {
+  background: rgba(101, 215, 255, 0.08) !important;
+  box-shadow: inset 4px 0 0 #65D7FF !important;
+  color: #f6fbff !important;
+}
+
+/* ── Responsive: compact padding on narrow screens ──────── */
+
+@media (max-width: 768px) {
+  .arcaea-article-content table.arcaea-table th,
+  .arcaea-article-content table.arcaea-table td {
+    padding: 10px 12px;
+  }
+}
+
 /* ── Links ─────────────────────────────────────────────────── */
 
 .arcaea-article-content a {
@@ -1055,6 +1157,13 @@ body.dark .entry-content .arcaea-article-content table thead,
     max-width: 100%;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Glass table: preserve table display, scroll wrapper */
+  .arcaea-article-content table.arcaea-table,
+  body.dark .entry-content .arcaea-article-content table.arcaea-table {
+    display: table !important;
+    min-width: 520px;
   }
 
   .arcaea-article-content table thead,
