@@ -121,7 +121,10 @@ jobs:
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-mermaid.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('mermaid_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('mermaid_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          if [ "$CUR" != "$LAT" ]; then
+            sed -i "s/\('mermaid_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+            sed -i "s/\('mermaid_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          fi
 
       # ── 2. Prism.js ──
       - name: Download Prism
@@ -133,7 +136,10 @@ jobs:
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-prism.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('prism_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('prism_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          if [ "$CUR" != "$LAT" ]; then
+            sed -i "s/\('prism_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+            sed -i "s/\('prism_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          fi
 
       # ── 3. MathJax ──
       - name: Download MathJax
@@ -146,7 +152,10 @@ jobs:
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${LAT}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
           echo "MathJax $LAT: $(du -sh assets/mathjax/es5/tex-chtml.js)"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('mathjax_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('mathjax_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          if [ "$CUR" != "$LAT" ]; then
+            sed -i "s/\('mathjax_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+            sed -i "s/\('mathjax_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          fi
 
       # ── 4. KaTeX ──
       - name: Download KaTeX
@@ -158,7 +167,10 @@ jobs:
           echo "latest=$LAT" >> "$GITHUB_OUTPUT"
           echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
           bash download-katex.sh "$LAT"
-          [ "$CUR" != "$LAT" ] && sed -i "s/\('katex_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php && sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          if [ "$CUR" != "$LAT" ]; then
+            sed -i "s/\('katex_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+            sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          fi
 
       # ── PR if any dep changed ──
       - name: Create PR
