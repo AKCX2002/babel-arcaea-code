@@ -18,9 +18,9 @@
   --arcaea-text-secondary: #b9c7da;
   --arcaea-text-dim: #8090a5;
   --arcaea-divider: rgba(120, 160, 220, 0.18);
-  --arcaea-bg: rgba(8, 14, 26, 0.94);
-  --arcaea-surface: rgba(12, 21, 38, 0.96);
-  --arcaea-surface-soft: rgba(18, 30, 50, 0.88);
+  --arcaea-bg: rgba(10, 18, 32, 0.88);
+  --arcaea-surface: rgba(16, 27, 45, 0.92);
+  --arcaea-surface-soft: rgba(22, 36, 59, 0.78);
   --arcaea-surface-row: rgba(14, 26, 46, 0.82);
   --arcaea-surface-row-alt: rgba(20, 34, 58, 0.82);
   --arcaea-surface-hover: rgba(42, 68, 104, 0.72);
@@ -39,18 +39,12 @@
   max-width: 100%;
   color: var(--arcaea-text);
   text-shadow: 0 1px 0 rgba(6, 10, 18, 0.18);
-  background:
-    linear-gradient(180deg,
-      rgba(10, 18, 32, 0.92),
-      rgba(7, 13, 24, 0.90)) !important;
-  border: 1px solid rgba(218, 232, 255, 0.20) !important;
-  border-radius: 14px !important;
-  box-shadow:
-    0 16px 42px rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(108%) !important;
-  backdrop-filter: blur(10px) saturate(108%) !important;
-  padding: clamp(1.15rem, 3vw, 1.8rem) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  padding: 0 !important;
 }
 
 .arcaea-article-content::selection,
@@ -387,16 +381,17 @@ body.dark .entry-content .arcaea-article-content h6 {
   text-wrap: balance;
   background-color: var(--arcaea-heading);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 280'%3E%3Cdefs%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .04' numOctaves='3' seed='36'/%3E%3CfeColorMatrix values='.72 0 0 0 .18 0 .82 0 0 .36 0 0 .92 0 .78 0 0 0 .72 0'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%23eef7ff'/%3E%3Cstop offset='.34' stop-color='%238be3ff'/%3E%3Cstop offset='.68' stop-color='%23c9aeff'/%3E%3Cstop offset='1' stop-color='%23f7fbff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='280' fill='url(%23g)'/%3E%3Crect width='900' height='280' filter='url(%23n)' opacity='.55'/%3E%3Cpath d='M34 230 230 42l70 58 105-72 115 122 86-54 240 144' fill='none' stroke='%23ffffff' stroke-width='18' stroke-linecap='round' opacity='.24'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 280'%3E%3Cdefs%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .04' numOctaves='3' seed='36'/%3E%3CfeColorMatrix values='.88 0 0 0 .20 0 .92 0 0 .40 0 0 1 0 .84 0 0 0 .92 0'/%3E%3C/filter%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%23ffffff'/%3E%3Cstop offset='.34' stop-color='%2399eeff'/%3E%3Cstop offset='.68' stop-color='%23d4c0ff'/%3E%3Cstop offset='1' stop-color='%23ffffff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='280' fill='url(%23g)'/%3E%3Crect width='900' height='280' filter='url(%23n)' opacity='.78'/%3E%3Cpath d='M34 230 230 42l70 58 105-72 115 122 86-54 240 144' fill='none' stroke='%23ffffff' stroke-width='18' stroke-linecap='round' opacity='.36'/%3E%3C/svg%3E"),
     linear-gradient(105deg, #f7fbff 0%, #8be3ff 34%, #c9aeff 66%, #f2f6fc 100%);
   background-size: cover, 100% 100%;
   background-position: 50% 45%, 0 0;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0.35px rgba(248, 252, 255, 0.22);
   filter:
-    drop-shadow(0 1px 0 rgba(7, 12, 22, 0.72))
-    drop-shadow(0 0 16px rgba(95, 212, 255, 0.18));
+    drop-shadow(0 1px 0 rgba(7, 12, 22, 0.84))
+    drop-shadow(0 0 18px rgba(95, 212, 255, 0.26));
   scroll-margin-top: 80px;
 }
 
@@ -416,13 +411,141 @@ body.dark .entry-content .arcaea-article-content h6 {
   background:
     linear-gradient(90deg,
       rgba(247, 251, 255, 0.72),
-      rgba(139, 227, 255, 0.52) 38%,
-      rgba(201, 174, 255, 0.28) 68%,
+      rgba(139, 227, 255, 0.70) 38%,
+      rgba(201, 174, 255, 0.44) 68%,
       rgba(201, 174, 255, 0)) !important;
   box-shadow:
-    0 0 20px rgba(95, 212, 255, 0.22),
-    0 0 34px rgba(169, 123, 255, 0.14);
+    0 0 20px rgba(95, 212, 255, 0.32),
+    0 0 34px rgba(169, 123, 255, 0.22);
   pointer-events: none;
+}
+
+/* ── Article title hero: left title + quote, lower-right tags ── */
+
+.arcaea-article-content .arcaea-title-hero {
+  position: relative;
+  min-height: clamp(18rem, 38vw, 27rem);
+  margin: 0 0 clamp(2rem, 5vw, 3.5rem);
+  padding: clamp(1rem, 3vw, 2rem) 0;
+  isolation: isolate;
+}
+
+.arcaea-article-content .arcaea-title-main {
+  display: flex;
+  align-items: center;
+  width: min(100%, 46rem);
+  margin: 0 0 1.65rem;
+}
+
+.arcaea-article-content .arcaea-title-main::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 2px;
+  margin-left: 0;
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.88),
+      rgba(255, 255, 255, 0.28) 55%,
+      rgba(255, 255, 255, 0));
+  box-shadow: 0 0 18px rgba(95, 212, 255, 0.22);
+}
+
+.arcaea-article-content .arcaea-title-main h1,
+body.dark .entry-content .arcaea-article-content .arcaea-title-main h1 {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.48rem;
+  flex: 0 0 auto;
+  margin: 0 !important;
+  padding: 0.18em 0.48em 0.22em !important;
+  color: #ffffff !important;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: clamp(1.85rem, 4.6vw, 2.7rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0;
+  background: rgba(20, 82, 190, 0.92) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow:
+    0 8px 22px rgba(5, 18, 52, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.38);
+  -webkit-text-fill-color: #ffffff;
+  -webkit-text-stroke: 0;
+  filter: none;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+}
+
+.arcaea-article-content .arcaea-title-main h1::before,
+.arcaea-article-content .arcaea-title-main h1::after {
+  content: none !important;
+  display: none !important;
+}
+
+.arcaea-article-content .arcaea-title-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35em;
+  color: rgba(230, 240, 255, 0.96);
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 0.82em;
+  line-height: 1;
+}
+
+.arcaea-article-content .arcaea-title-quote {
+  max-width: min(38rem, 72vw);
+  margin: 0;
+  color: #ffffff !important;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: clamp(1rem, 2vw, 1.22rem);
+  font-weight: 700;
+  line-height: 1.82;
+  text-indent: 0;
+}
+
+.arcaea-article-content .arcaea-title-quote span {
+  background: rgba(20, 82, 190, 0.88);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0.16em 0.28em 0.2em;
+  box-shadow:
+    0 5px 18px rgba(5, 18, 52, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.arcaea-article-content .arcaea-title-tags {
+  position: absolute;
+  right: clamp(1rem, 8vw, 7rem);
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.arcaea-article-content .arcaea-title-tags li {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.18em 0.42em 0.22em;
+  color: #ffffff !important;
+  background: rgba(20, 82, 190, 0.88);
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: clamp(1rem, 2.2vw, 1.28rem);
+  font-weight: 800;
+  line-height: 1.42;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.34);
+  box-shadow: 0 6px 18px rgba(5, 18, 52, 0.22);
+}
+
+.arcaea-article-content .arcaea-title-tags li:nth-child(2n) {
+  transform: translateX(-1.25rem);
 }
 
 /* ── Paragraphs, lists, text ──────────────────────────────── */
@@ -1047,6 +1170,37 @@ body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) 
     margin-bottom: 1.15rem;
     padding-bottom: 0.85rem;
     line-height: 1.24;
+  }
+
+  .arcaea-article-content .arcaea-title-hero {
+    min-height: auto;
+    padding: 0.75rem 0 1rem;
+  }
+
+  .arcaea-article-content .arcaea-title-main {
+    margin-bottom: 1.25rem;
+  }
+
+  .arcaea-article-content .arcaea-title-main h1,
+  body.dark .entry-content .arcaea-article-content .arcaea-title-main h1 {
+    white-space: normal;
+  }
+
+  .arcaea-article-content .arcaea-title-quote {
+    max-width: 100%;
+  }
+
+  .arcaea-article-content .arcaea-title-tags {
+    position: static;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 0.35rem;
+    margin-top: 1.6rem;
+  }
+
+  .arcaea-article-content .arcaea-title-tags li:nth-child(2n) {
+    transform: none;
   }
 
   .arcaea-article-content h2 {
