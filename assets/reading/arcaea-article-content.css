@@ -676,6 +676,29 @@ body.dark .entry-content .arcaea-article-content table thead tr::after,
     0 0 10px rgba(255, 142, 209, 0.12);
 }
 
+/* ── 第一行数据行顶部 Arcaea 轨道线 ── */
+body.dark .entry-content .arcaea-article-content table tbody tr:first-child,
+.entry-content .arcaea-article-content table tbody tr:first-child {
+  position: relative;
+}
+
+body.dark .entry-content .arcaea-article-content table tbody tr:first-child::before,
+.entry-content .arcaea-article-content table tbody tr:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+
+  background: linear-gradient(90deg,
+      transparent 2%,
+      rgba(120, 160, 220, 0.15) 20%,
+      rgba(120, 160, 220, 0.15) 80%,
+      transparent 98%);
+}
+
 /* ── 单元格基础 ── */
 body.dark .entry-content .arcaea-article-content table th,
 body.dark .entry-content .arcaea-article-content table td,
