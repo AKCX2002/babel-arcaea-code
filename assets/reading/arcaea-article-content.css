@@ -88,13 +88,15 @@
 
 .arcaea-article-content h2::before {
   content: "" !important;
+  display: block !important;
   position: absolute !important;
 
-  left: 0;
-  bottom: -0.42em;
+  left: 0 !important;
+  bottom: -0.42em !important;
 
-  width: min(8.5rem, 58%);
-  height: 2px;
+  width: min(8.5rem, 58%) !important;
+  height: 2px !important;
+  margin-top: 0 !important;
 
   border-radius: 999px;
 
@@ -106,7 +108,7 @@
 
   box-shadow:
     0 0 14px rgba(95, 212, 255, 0.45),
-    0 0 28px rgba(169, 123, 255, 0.20);
+    0 0 28px rgba(169, 123, 255, 0.20) !important;
 
   visibility: visible !important;
   z-index: 1;
@@ -224,22 +226,24 @@
 /* Light pillar — ::before with visibility:visible beats Sakurairo */
 .arcaea-article-content h3::before {
   content: "" !important;
+  display: block !important;
   position: absolute !important;
 
-  left: 0;
-  top: 0.22em;
+  left: 0 !important;
+  top: 0.22em !important;
 
-  width: 4px;
-  height: 1.05em;
+  width: 4px !important;
+  height: 1.05em !important;
+  margin-top: 0 !important;
 
-  border-radius: 999px;
+  border-radius: 999px !important;
 
   background:
     linear-gradient(180deg,
       rgba(139, 227, 255, 0.95),
       rgba(169, 123, 255, 0.75)) !important;
 
-  box-shadow: 0 0 12px rgba(95, 212, 255, 0.40);
+  box-shadow: 0 0 12px rgba(95, 212, 255, 0.40) !important;
 
   visibility: visible !important;
 }
@@ -281,16 +285,20 @@
 /* Diamond marker — ::before with visibility:visible beats Sakurairo */
 .arcaea-article-content h4::before {
   content: "\25C7" !important;
+  display: block !important;
   position: absolute !important;
 
-  left: 0;
-  top: 0.05em;
+  left: 0 !important;
+  top: 0.05em !important;
+  width: auto !important;
+  height: auto !important;
+  margin-top: 0 !important;
 
-  color: rgba(139, 227, 255, 0.92);
-  font-size: 1em;
+  color: rgba(139, 227, 255, 0.92) !important;
+  font-size: 1em !important;
   text-shadow:
     0 0 10px rgba(95, 212, 255, 0.45),
-    0 0 18px rgba(169, 123, 255, 0.18);
+    0 0 18px rgba(169, 123, 255, 0.18) !important;
 
   visibility: visible !important;
 
@@ -591,31 +599,23 @@ body.dark .entry-content .arcaea-article-content table,
   overflow: hidden;
 
   color: var(--arc-glass-text) !important;
-  border-radius: var(--arc-glass-radius) !important;
-  border: 1px solid var(--arc-glass-line) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--arcaea-border-strong) !important;
 
   background:
-    radial-gradient(circle at 12% 0%,
-      rgba(95, 212, 255, 0.075),
-      transparent 32%),
-    radial-gradient(circle at 92% 18%,
-      rgba(255, 142, 209, 0.055),
-      transparent 34%),
-    linear-gradient(135deg,
-      rgba(95, 212, 255, 0.038),
-      rgba(199, 182, 255, 0.026) 45%,
-      rgba(255, 142, 209, 0.020)),
-    rgba(10, 18, 32, 0.42) !important;
+    linear-gradient(180deg,
+      rgba(15, 25, 44, 0.66),
+      rgba(10, 18, 34, 0.54)) !important;
 
-  backdrop-filter: blur(12px) saturate(118%);
-  -webkit-backdrop-filter: blur(12px) saturate(118%);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
 
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.20),
-    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-/* ── 表头：更明显的蓝紫分区 ── */
+/* ── 表头：对齐代码框的轻玻璃层 ── */
 body.dark .entry-content .arcaea-article-content table thead th,
 .entry-content .arcaea-article-content table thead th {
   position: relative;
@@ -626,14 +626,10 @@ body.dark .entry-content .arcaea-article-content table thead th,
 
   background:
     linear-gradient(180deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(255, 255, 255, 0.014)),
-    linear-gradient(90deg,
-      rgba(95, 212, 255, 0.11),
-      rgba(199, 182, 255, 0.070),
-      rgba(255, 142, 209, 0.045)) !important;
+      rgba(180, 198, 234, 0.12),
+      rgba(180, 198, 234, 0.05)) !important;
 
-  border-bottom: 1px solid rgba(170, 205, 255, 0.24) !important;
+  border-bottom: 1px solid rgba(214, 226, 245, 0.14) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table thead,
@@ -663,14 +659,12 @@ body.dark .entry-content .arcaea-article-content table thead tr::after,
 
   background: linear-gradient(90deg,
       transparent,
-      rgba(95, 212, 255, 0.62),
-      rgba(255, 142, 209, 0.42),
-      rgba(199, 182, 255, 0.50),
+      rgba(255, 255, 255, 0.20),
+      rgba(139, 227, 255, 0.24),
+      rgba(255, 255, 255, 0.12),
       transparent);
 
-  box-shadow:
-    0 0 6px rgba(95, 212, 255, 0.26),
-    0 0 10px rgba(255, 142, 209, 0.12);
+  box-shadow: 0 0 8px rgba(95, 212, 255, 0.12);
 }
 
 /* ── 第一行数据行顶部 Arcaea 轨道线 ── */
@@ -691,8 +685,8 @@ body.dark .entry-content .arcaea-article-content table tbody tr:first-child::bef
 
   background: linear-gradient(90deg,
       transparent 2%,
-      rgba(120, 160, 220, 0.15) 20%,
-      rgba(120, 160, 220, 0.15) 80%,
+      rgba(214, 226, 245, 0.10) 20%,
+      rgba(214, 226, 245, 0.10) 80%,
       transparent 98%);
 }
 
@@ -705,8 +699,8 @@ body.dark .entry-content .arcaea-article-content table td,
   color: rgba(242, 246, 252, 0.94) !important;
   background-clip: padding-box;
 
-  border-right: 1px solid rgba(120, 160, 220, 0.18) !important;
-  border-bottom: 1px solid rgba(120, 160, 220, 0.18) !important;
+  border-right: 1px solid rgba(214, 226, 245, 0.10) !important;
+  border-bottom: 1px solid rgba(214, 226, 245, 0.10) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody th,
@@ -714,9 +708,9 @@ body.dark .entry-content .arcaea-article-content table tbody th,
   position: relative;
   background:
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.060),
-      rgba(95, 212, 255, 0.020) 72%),
-    rgba(12, 24, 42, 0.42) !important;
+      rgba(180, 198, 234, 0.09),
+      rgba(180, 198, 234, 0.03) 72%),
+    rgba(15, 25, 44, 0.42) !important;
   font-weight: 650 !important;
 }
 
@@ -736,14 +730,14 @@ body.dark .entry-content .arcaea-article-content table tbody tr:last-child td,
 /* ── 行区分 ── */
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(odd) td {
-  --arcaea-table-row-bg: rgba(255, 255, 255, 0.018);
-  background: rgba(255, 255, 255, 0.018) !important;
+  --arcaea-table-row-bg: rgba(255, 255, 255, 0.014);
+  background: rgba(255, 255, 255, 0.014) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:nth-child(even) td,
 .entry-content .arcaea-article-content table tbody tr:nth-child(even) td {
-  --arcaea-table-row-bg: rgba(95, 212, 255, 0.028);
-  background: rgba(95, 212, 255, 0.028) !important;
+  --arcaea-table-row-bg: rgba(180, 198, 234, 0.035);
+  background: rgba(180, 198, 234, 0.035) !important;
 }
 
 /* ── 列区分：第 1 列偏蓝，最后一列偏粉紫 ── */
@@ -752,9 +746,9 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child,
   position: relative;
   background:
     linear-gradient(90deg,
-      rgba(95, 212, 255, 0.042),
+      rgba(180, 198, 234, 0.050),
       transparent 72%),
-    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.018)) !important;
+    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.014)) !important;
   font-weight: 650 !important;
 }
 
@@ -762,11 +756,11 @@ body.dark .entry-content .arcaea-article-content table tbody td:last-child,
 .entry-content .arcaea-article-content table tbody td:last-child {
   background:
     linear-gradient(90deg,
-      rgba(255, 142, 209, 0.032),
-      rgba(199, 182, 255, 0.024)),
-    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.018)) !important;
+      rgba(180, 198, 234, 0.040),
+      rgba(180, 198, 234, 0.026)),
+    var(--arcaea-table-row-bg, rgba(255, 255, 255, 0.014)) !important;
   font-weight: 700 !important;
-  color: rgba(139, 227, 255, 0.98) !important;
+  color: rgba(225, 235, 250, 0.96) !important;
 }
 
 /* ── 首列装饰光标 ── */
@@ -781,27 +775,27 @@ body.dark .entry-content .arcaea-article-content table tbody td:first-child::bef
   border-radius: 999px;
 
   background: linear-gradient(180deg,
-      rgba(95, 212, 255, 0.14),
-      rgba(95, 212, 255, 0.58),
-      rgba(255, 142, 209, 0.38));
+      rgba(139, 227, 255, 0.10),
+      rgba(139, 227, 255, 0.38),
+      rgba(180, 198, 234, 0.18));
 
   box-shadow:
-    0 0 6px rgba(95, 212, 255, 0.24),
-    0 0 10px rgba(255, 142, 209, 0.10);
+    0 0 6px rgba(95, 212, 255, 0.16),
+    0 0 10px rgba(255, 255, 255, 0.06);
 }
 
 /* ── Hover：整行提亮 + 左侧光轨增强 ── */
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td,
 .entry-content .arcaea-article-content table tbody tr:hover td {
-  background: rgba(95, 212, 255, 0.052) !important;
+  background: rgba(180, 198, 234, 0.055) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before,
 .entry-content .arcaea-article-content table tbody tr:hover td:first-child::before {
   width: 4px;
   box-shadow:
-    0 0 8px rgba(95, 212, 255, 0.46),
-    0 0 14px rgba(255, 142, 209, 0.18);
+    0 0 8px rgba(95, 212, 255, 0.30),
+    0 0 14px rgba(255, 255, 255, 0.08);
 }
 
 /* ── 角落修圆 ── */
@@ -1376,66 +1370,6 @@ body.dark .entry-content .arcaea-article-content table.arcaea-table tbody tr:hov
   box-shadow: none !important;
 }
 
-/* Keep Arcaea heading decorations ahead of Sakurairo anchor placeholders. */
-body.dark .entry-content .arcaea-article-content h2::before,
-.entry-content .arcaea-article-content h2::before {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  left: 0 !important;
-  bottom: -0.42em !important;
-  width: min(8.5rem, 58%) !important;
-  height: 2px !important;
-  margin-top: 0 !important;
-  visibility: visible !important;
-  background:
-    linear-gradient(90deg,
-      rgba(139, 227, 255, 0.95),
-      rgba(169, 123, 255, 0.72),
-      rgba(159, 198, 255, 0)) !important;
-  box-shadow:
-    0 0 14px rgba(95, 212, 255, 0.45),
-    0 0 28px rgba(169, 123, 255, 0.20) !important;
-}
-
-body.dark .entry-content .arcaea-article-content h3::before,
-.entry-content .arcaea-article-content h3::before {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0.22em !important;
-  width: 4px !important;
-  height: 1.05em !important;
-  margin-top: 0 !important;
-  visibility: visible !important;
-  border-radius: 999px !important;
-  background:
-    linear-gradient(180deg,
-      rgba(139, 227, 255, 0.95),
-      rgba(169, 123, 255, 0.75)) !important;
-  box-shadow: 0 0 12px rgba(95, 212, 255, 0.40) !important;
-}
-
-body.dark .entry-content .arcaea-article-content h4::before,
-.entry-content .arcaea-article-content h4::before {
-  content: "\25C7" !important;
-  display: block !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0.05em !important;
-  width: auto !important;
-  height: auto !important;
-  margin-top: 0 !important;
-  visibility: visible !important;
-  color: rgba(139, 227, 255, 0.92) !important;
-  background: none !important;
-  box-shadow: none !important;
-  text-shadow:
-    0 0 10px rgba(95, 212, 255, 0.45),
-    0 0 18px rgba(169, 123, 255, 0.18) !important;
-}
-
 /* Restrict global `* { transition: all }` bleeding. */
 .arcaea-article-content table,
 .arcaea-article-content th,
@@ -1460,27 +1394,4 @@ body.dark .entry-content .arcaea-article-content h4::before,
     padding-left !important;
   transition-duration: 0.22s;
   transition-timing-function: ease-out;
-}
-
-body.dark .entry-content .arcaea-article-content h2:hover::before,
-.entry-content .arcaea-article-content h2:hover::before {
-  width: 100% !important;
-  box-shadow:
-    0 0 20px rgba(95, 212, 255, 0.65),
-    0 0 36px rgba(169, 123, 255, 0.32) !important;
-}
-
-body.dark .entry-content .arcaea-article-content h3:hover::before,
-.entry-content .arcaea-article-content h3:hover::before {
-  box-shadow:
-    0 0 16px rgba(95, 212, 255, 0.60),
-    0 0 30px rgba(169, 123, 255, 0.24) !important;
-}
-
-body.dark .entry-content .arcaea-article-content h4:hover::before,
-.entry-content .arcaea-article-content h4:hover::before {
-  color: rgba(162, 240, 255, 0.98) !important;
-  text-shadow:
-    0 0 14px rgba(95, 212, 255, 0.70),
-    0 0 24px rgba(169, 123, 255, 0.30) !important;
 }
