@@ -34,6 +34,25 @@
   --arcaea-glow: rgba(130, 180, 255, 0.24);
   --arcaea-link: #9fc6ff;
   --arcaea-line: rgba(120, 160, 220, 0.18);
+  --arcaea-table-bg: rgba(44, 66, 94, 0.46);
+  --arcaea-table-bg-deep: rgba(24, 39, 62, 0.44);
+  --arcaea-table-shell-top: rgba(62, 86, 118, 0.30);
+  --arcaea-table-shell-bottom: rgba(30, 48, 74, 0.28);
+  --arcaea-table-head: rgba(112, 142, 178, 0.38);
+  --arcaea-table-head-soft: rgba(178, 210, 238, 0.16);
+  --arcaea-table-row: rgba(48, 70, 98, 0.40);
+  --arcaea-table-row-alt: rgba(64, 86, 116, 0.34);
+  --arcaea-table-index: rgba(146, 220, 255, 0.105);
+  --arcaea-table-col: rgba(186, 226, 255, 0.05);
+  --arcaea-table-hover: rgba(92, 124, 158, 0.34);
+  --arcaea-table-border: rgba(218, 236, 255, 0.22);
+  --arcaea-table-border-soft: rgba(218, 236, 255, 0.135);
+  --arcaea-table-text: rgba(242, 248, 255, 0.94);
+  --arcaea-table-head-text: rgba(250, 253, 255, 0.97);
+  --arcaea-table-code-bg: rgba(34, 54, 78, 0.34);
+  --arcaea-table-code-border: rgba(218, 236, 255, 0.18);
+  --arcaea-table-glint-strong: rgba(198, 238, 255, 0.52);
+  --arcaea-table-glint-soft: rgba(166, 204, 255, 0.26);
 
   position: relative;
   z-index: 1;
@@ -561,41 +580,67 @@ body.dark .entry-content .arcaea-article-content code {
  * ======================================================= */
 
 /* ── Layer 6: Transition defense (same as Mermaid Layer 2) ──
- * Blocks Sakurairo * { transition:all 0.4s } from animating
- * table background, color, border-color, and opacity changes.
+ * Blocks Sakurairo * { transition:all 0.4s } from causing
+ * heavy glass flicker on tables, while preserving light hover.
  */
 .arcaea-article-content table,
 .arcaea-article-content table *,
 .arcaea-article-content table *::before,
 .arcaea-article-content table *::after {
-  transition: none !important;
+  transition-property: background-color, color, border-color, box-shadow, opacity !important;
+  transition-duration: 0.16s !important;
+  transition-timing-function: ease-out !important;
 }
 
 .arcaea-article-content .wp-block-table,
 .arcaea-article-content .arcaea-table-wrap {
+  position: relative;
   margin: 1.5em 0;
   overflow-x: auto;
-  border: 1px solid var(--arcaea-border);
-  border-radius: 12px;
-  background: rgba(11, 20, 36, 0.34);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--arcaea-table-border-soft);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(178, 230, 255, 0.18), transparent 36%),
+    radial-gradient(circle at 90% 8%, rgba(190, 216, 255, 0.13), transparent 40%),
+    linear-gradient(180deg, var(--arcaea-table-shell-top), var(--arcaea-table-shell-bottom));
+  box-shadow:
+    0 10px 26px rgba(4, 14, 28, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px) saturate(112%);
+  -webkit-backdrop-filter: blur(18px) saturate(112%);
+}
+
+.arcaea-article-content .wp-block-table::before,
+.arcaea-article-content .arcaea-table-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0 14px auto 14px;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--arcaea-table-glint-strong),
+    var(--arcaea-table-glint-soft),
+    transparent
+  );
+  pointer-events: none;
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
   width: 100% !important;
-  margin: 1.5em 0 !important;
-  border-collapse: collapse !important;
+  min-width: 680px;
+  margin: 0 !important;
+  border-collapse: separate !important;
   border-spacing: 0 !important;
   overflow: hidden;
-  background: var(--arcaea-bg) !important;
-  border: 1px solid var(--arcaea-border) !important;
-  border-radius: 10px !important;
-  backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: none !important;
+  border-radius: 15px !important;
+  background: linear-gradient(180deg, var(--arcaea-table-bg), var(--arcaea-table-bg-deep)) !important;
+  color: var(--arcaea-table-text) !important;
   box-shadow:
-    0 12px 36px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.13);
 }
 
 /* Markdown tables sometimes emit a blank first header for row labels.
@@ -609,20 +654,34 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) td,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) td {
-  padding: 0.72rem 0.9rem !important;
+  padding: 0.72rem 0.95rem !important;
   text-align: left;
   vertical-align: top;
-  color: var(--arcaea-text) !important;
+  color: var(--arcaea-table-text) !important;
   overflow-wrap: anywhere;
   word-break: normal;
-  border: 1px solid rgba(214, 226, 245, 0.16) !important;
+  border: 1px solid var(--arcaea-table-border-soft) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th {
-  background: rgba(164, 186, 236, 0.10) !important;
-  color: var(--arcaea-heading) !important;
-  font-weight: 650 !important;
+  position: relative;
+  background: linear-gradient(180deg, var(--arcaea-table-head), var(--arcaea-table-head-soft)) !important;
+  color: var(--arcaea-table-head-text) !important;
+  font-weight: 680 !important;
+  letter-spacing: 0.026em;
+  text-shadow: 0 1px 0 rgba(20, 32, 50, 0.18);
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th::after,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th::after {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(198, 238, 255, 0.48), transparent);
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:last-child td,
@@ -632,17 +691,67 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:first-child,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:first-child {
-  border-top-left-radius: 12px;
+  border-top-left-radius: 15px;
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:last-child,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead tr:first-child th:last-child {
-  border-top-right-radius: 12px;
+  border-top-right-radius: 15px;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(odd) td,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(odd) td {
+  background: var(--arcaea-table-row) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02) !important;
+  background: var(--arcaea-table-row-alt) !important;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:first-child,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:first-child {
+  color: rgba(248, 253, 255, 0.98) !important;
+  font-weight: 650;
+  background:
+    linear-gradient(90deg, var(--arcaea-table-index), rgba(146, 220, 255, 0.026)),
+    var(--arcaea-table-row) !important;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td:first-child,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td:first-child {
+  background:
+    linear-gradient(90deg, rgba(146, 220, 255, 0.095), rgba(146, 220, 255, 0.024)),
+    var(--arcaea-table-row-alt) !important;
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:nth-child(2),
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:nth-child(4),
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:nth-child(2),
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:nth-child(4) {
+  box-shadow: inset 999px 0 0 var(--arcaea-table-col);
+}
+
+body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:hover td,
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:hover td {
+  background:
+    linear-gradient(90deg, rgba(198, 238, 255, 0.075), rgba(176, 206, 255, 0.045)),
+    var(--arcaea-table-hover) !important;
+  border-color: rgba(228, 242, 255, 0.25) !important;
+}
+
+.arcaea-article-content table code {
+  border-color: var(--arcaea-table-code-border) !important;
+  background: var(--arcaea-table-code-bg) !important;
+  color: rgba(236, 248, 255, 0.96) !important;
+}
+
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 15px;
+}
+
+.entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 15px;
 }
 
 /* Compatibility widths for common four-column technical comparison tables. */
@@ -1015,21 +1124,28 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
     overflow-x: hidden;
   }
 
+  .arcaea-article-content .wp-block-table,
+  .arcaea-article-content .arcaea-table-wrap {
+    margin-left: -0.15rem;
+    margin-right: -0.15rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .arcaea-article-content table {
     display: table !important;
     width: 100% !important;
     max-width: 100%;
   }
 
-  .arcaea-article-content .wp-block-table,
-  .arcaea-article-content .arcaea-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
   .arcaea-article-content table th,
   .arcaea-article-content table td {
     white-space: nowrap;
+  }
+
+  body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
+  .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
+    min-width: 620px;
   }
 
   .arcaea-article-content h1 {
@@ -1056,7 +1172,7 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 
   .arcaea-article-content th,
   .arcaea-article-content td {
-    padding: 0.64rem 0.72rem;
+    padding: 0.64rem 0.78rem;
   }
 
   .arcaea-article-content table.arcaea-feature-matrix {
