@@ -586,7 +586,15 @@ body.dark .entry-content .arcaea-article-content code {
 .arcaea-article-content table,
 .arcaea-article-content table *,
 .arcaea-article-content table *::before,
-.arcaea-article-content table *::after {
+.arcaea-article-content table *::after,
+.arcaea-article-content .wp-block-table,
+.arcaea-article-content .wp-block-table *,
+.arcaea-article-content .wp-block-table *::before,
+.arcaea-article-content .wp-block-table *::after,
+.arcaea-article-content .arcaea-table-wrap,
+.arcaea-article-content .arcaea-table-wrap *,
+.arcaea-article-content .arcaea-table-wrap *::before,
+.arcaea-article-content .arcaea-table-wrap *::after {
   transition-property: background-color, color, border-color, box-shadow, opacity !important;
   transition-duration: 0.16s !important;
   transition-timing-function: ease-out !important;
@@ -629,6 +637,7 @@ body.dark .entry-content .arcaea-article-content code {
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
+  display: table !important;
   width: 100% !important;
   min-width: 680px;
   margin: 0 !important;
