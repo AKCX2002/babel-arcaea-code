@@ -595,6 +595,7 @@ body.dark .entry-content .arcaea-article-content code {
 .arcaea-article-content .arcaea-table-wrap *,
 .arcaea-article-content .arcaea-table-wrap *::before,
 .arcaea-article-content .arcaea-table-wrap *::after {
+  transition: none !important;
   transition-property: background-color, color, border-color, box-shadow, opacity !important;
   transition-duration: 0.16s !important;
   transition-timing-function: ease-out !important;
@@ -722,15 +723,16 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody td:first-child {
   color: rgba(248, 253, 255, 0.98) !important;
   font-weight: 650;
+  font-family: "FiraCode Nerd Font", "JetBrains Mono", monospace;
   background:
-    linear-gradient(90deg, var(--arcaea-table-index), rgba(146, 220, 255, 0.026)),
+    linear-gradient(90deg, var(--arcaea-table-index), rgba(146, 220, 255, 0.04)),
     var(--arcaea-table-row) !important;
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td:first-child,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) tbody tr:nth-child(even) td:first-child {
   background:
-    linear-gradient(90deg, rgba(146, 220, 255, 0.095), rgba(146, 220, 255, 0.024)),
+    linear-gradient(90deg, rgba(146, 220, 255, 0.12), rgba(146, 220, 255, 0.035)),
     var(--arcaea-table-row-alt) !important;
 }
 
