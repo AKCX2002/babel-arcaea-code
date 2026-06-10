@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: babel-arcaea-code-release
@@ -47,8 +46,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Refresh steps may dirty the worktree; stash first so rebase can proceed.
+          STASHED=0
+          if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            git stash push --include-untracked -m ci-autobump-pre-rebase
+            STASHED=1
+          fi
           # Pull latest to avoid race with parallel runs
           git pull --rebase origin main
+          if [ "$STASHED" -eq 1 ]; then
+            git stash pop
+          fi
           CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
           IFS=. read -r MAJ MIN PAT <<< "$CUR"
           NEW="$MAJ.$MIN.$((PAT+1))"
@@ -109,6 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Prepare release branch
+        run: git pull --ff-only origin main
 
       # ── 1. Mermaid ──
       - name: Download Mermaid
@@ -172,23 +183,66 @@ jobs:
             sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
           fi
 
-      # ── PR if any dep changed ──
-      - name: Create PR
+      # ── Release if any dep changed ──
+      - name: Commit synced deps and bump version
+        id: sync_release
         if: steps.mermaid.outputs.changed == 'true' || steps.prism.outputs.changed == 'true' || steps.mathjax.outputs.changed == 'true' || steps.katex.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ github.token }}
-          commit-message: "chore: update deps"
-          title: "chore: update deps${{ steps.mermaid.outputs.changed == 'true' && format(' Mermaid {0}', steps.mermaid.outputs.latest) || '' }}${{ steps.prism.outputs.changed == 'true' && format(' Prism {0}', steps.prism.outputs.latest) || '' }}${{ steps.mathjax.outputs.changed == 'true' && format(' MathJax {0}', steps.mathjax.outputs.latest) || '' }}${{ steps.katex.outputs.changed == 'true' && format(' KaTeX {0}', steps.katex.outputs.latest) || '' }}"
-          body: |
-            Automated daily dependency update.
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            | Dep | Current | Latest |
-            |---|---|---:|
-            | Mermaid | `${{ steps.mermaid.outputs.current }}` | `${{ steps.mermaid.outputs.latest }}` |
-            | Prism.js | `${{ steps.prism.outputs.current }}` | `${{ steps.prism.outputs.latest }}` |
-            | MathJax | `${{ steps.mathjax.outputs.current }}` | `${{ steps.mathjax.outputs.latest }}` |
-            | KaTeX | `${{ steps.katex.outputs.current }}` | `${{ steps.katex.outputs.latest }}` |
-          branch: chore/deps-bump
-          base: main
-          labels: automated, dependencies
+          CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
+          IFS=. read -r MAJ MIN PAT <<< "$CUR"
+          NEW="$MAJ.$MIN.$((PAT+1))"
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+          sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
+          sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
+          if test -f package.json; then
+            NEW="$NEW" node -e "const fs=require('fs'); const p='package.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); j.version=process.env.NEW; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');" || true
+          fi
+          if test -f package-lock.json; then
+            NEW="$NEW" node -e "const fs=require('fs'); const p='package-lock.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); j.version=process.env.NEW; if (j.packages && j.packages['']) j.packages[''].version=process.env.NEW; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');" || true
+          fi
+          cat > update-info.json <<EOF
+          {
+            "name": "Babel Arcaea Code",
+            "slug": "babel-arcaea-code",
+            "version": "$NEW",
+            "homepage": "https://github.com/${{ github.repository }}",
+            "author": "Babel36acl",
+            "author_homepage": "https://github.com/Babel36acl",
+            "download_url": "https://github.com/${{ github.repository }}/releases/download/v$NEW/babel-arcaea-code-$NEW.zip",
+            "requires_php": "7.4",
+            "sections": {
+              "description": "Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.",
+              "changelog": "<p>See the <a href=\"https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/${{ github.repository }}/releases/tag/v$NEW\">v$NEW release page</a> for release notes.</p>"
+            }
+          }
+          EOF
+
+          git add babel-arcaea-code.php package.json package-lock.json update-info.json includes assets blocks bin scripts
+          git commit -m "chore: sync deps and release $CUR → $NEW [skip ci]"
+          git push origin HEAD:main
+
+      - name: Build synced dependency release zip
+        id: sync_build
+        if: steps.sync_release.outputs.new_version != ''
+        run: |
+          VER="${{ steps.sync_release.outputs.new_version }}"
+          ZIPPATH="$(bash scripts/build-release.sh "$VER")"
+          ZIPNAME="$(basename "$ZIPPATH")"
+          echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
+          echo "zippath=$ZIPPATH" >> "$GITHUB_OUTPUT"
+
+      - name: Create synced dependency release
+        if: steps.sync_release.outputs.new_version != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.sync_release.outputs.new_version }}
+          ZIPPATH: ${{ steps.sync_build.outputs.zippath }}
+        run: |
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --generate-notes \
+            "$ZIPPATH"
