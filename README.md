@@ -14,6 +14,7 @@
 - **PJAX 支持**（Sakurairo）
 - **禁用 Sakurairo 自带 Prism**（可配置）
 - **GitHub 自动更新**（PUC library）
+- **WordPress Abilities / MCP**：按分组注册 `bac/*` abilities，可通过 `wordpress/mcp-adapter` 的默认 server 发现和执行
 
 ## 安装
 
@@ -23,6 +24,28 @@ git clone https://github.com/AKCX2002/babel-arcaea-code.git
 ```
 
 后台 → 插件 → 启用 → 设置 → Arcaea Code。
+
+## MCP / Abilities
+
+插件会在 WordPress Abilities API 可用时自动注册 `bac/*` abilities，不新增后台开关。
+
+当前分组：
+
+- `bac/content-types/list`
+- `bac/posts/*` 与 `bac/pages/*`
+- `bac/content/by-slug`
+- `bac/taxonomies/list`、`bac/terms/*`、`bac/content-terms/*`
+- `bac/media/*`
+- `bac/users/*`
+- `bac/comments/*`
+- `bac/plugins/*`
+
+说明：
+
+- 所有 ability 都通过 `meta.mcp.public = true` 暴露给 `mcp-adapter` 默认 server
+- `public` 只表示可被 MCP 发现；执行仍按当前 WordPress 用户的对象级 capability 校验
+- 正文写入只接受原始 HTML / Gutenberg blocks，不做 Markdown 转换
+- 首版只服务当前站点，不实现 InstaWP 风格的 multi-site / site-management
 
 ## 设置
 

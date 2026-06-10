@@ -193,7 +193,11 @@ class Plugin {
         require_once $base . '/class-bac-blocks.php';
         new Blocks();
 
-        // 10. Admin     — settings page (admin only)
+        // 10. Abilities — WordPress Abilities API + MCP adapter exposure
+        require_once $base . '/class-bac-abilities.php';
+        new Abilities();
+
+        // 11. Admin     — settings page (admin only)
         if (\is_admin()) {
             require_once $base . '/class-bac-admin.php';
             new Admin();

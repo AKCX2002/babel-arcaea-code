@@ -34,25 +34,25 @@
   --arcaea-glow: rgba(130, 180, 255, 0.24);
   --arcaea-link: #9fc6ff;
   --arcaea-line: rgba(120, 160, 220, 0.18);
-  --arcaea-table-bg: rgba(44, 66, 94, 0.46);
-  --arcaea-table-bg-deep: rgba(24, 39, 62, 0.44);
-  --arcaea-table-shell-top: rgba(62, 86, 118, 0.30);
-  --arcaea-table-shell-bottom: rgba(30, 48, 74, 0.28);
-  --arcaea-table-head: rgba(112, 142, 178, 0.38);
-  --arcaea-table-head-soft: rgba(178, 210, 238, 0.16);
-  --arcaea-table-row: rgba(48, 70, 98, 0.40);
-  --arcaea-table-row-alt: rgba(64, 86, 116, 0.34);
-  --arcaea-table-index: rgba(146, 220, 255, 0.105);
-  --arcaea-table-col: rgba(186, 226, 255, 0.05);
-  --arcaea-table-hover: rgba(92, 124, 158, 0.34);
-  --arcaea-table-border: rgba(218, 236, 255, 0.22);
-  --arcaea-table-border-soft: rgba(218, 236, 255, 0.135);
+  --arcaea-table-bg: rgba(26, 42, 66, 0.78);
+  --arcaea-table-bg-deep: rgba(16, 28, 48, 0.84);
+  --arcaea-table-shell-top: rgba(46, 70, 104, 0.48);
+  --arcaea-table-shell-bottom: rgba(18, 32, 54, 0.56);
+  --arcaea-table-head: rgba(42, 68, 104, 0.82);
+  --arcaea-table-head-soft: rgba(24, 42, 70, 0.88);
+  --arcaea-table-row: rgba(30, 48, 76, 0.74);
+  --arcaea-table-row-alt: rgba(38, 58, 88, 0.68);
+  --arcaea-table-index: rgba(146, 220, 255, 0.16);
+  --arcaea-table-col: rgba(186, 226, 255, 0.07);
+  --arcaea-table-hover: rgba(66, 94, 130, 0.62);
+  --arcaea-table-border: rgba(218, 236, 255, 0.28);
+  --arcaea-table-border-soft: rgba(218, 236, 255, 0.19);
   --arcaea-table-text: rgba(242, 248, 255, 0.94);
   --arcaea-table-head-text: rgba(250, 253, 255, 0.97);
   --arcaea-table-code-bg: rgba(34, 54, 78, 0.34);
   --arcaea-table-code-border: rgba(218, 236, 255, 0.18);
-  --arcaea-table-glint-strong: rgba(198, 238, 255, 0.52);
-  --arcaea-table-glint-soft: rgba(166, 204, 255, 0.26);
+  --arcaea-table-glint-strong: rgba(198, 238, 255, 0.58);
+  --arcaea-table-glint-soft: rgba(166, 204, 255, 0.30);
 
   position: relative;
   z-index: 1;
@@ -606,17 +606,21 @@ body.dark .entry-content .arcaea-article-content code {
   position: relative;
   margin: 1.5em 0;
   overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
   border: 1px solid var(--arcaea-table-border-soft);
   border-radius: 16px;
   background:
-    radial-gradient(circle at 12% 0%, rgba(178, 230, 255, 0.18), transparent 36%),
-    radial-gradient(circle at 90% 8%, rgba(190, 216, 255, 0.13), transparent 40%),
+    radial-gradient(circle at 12% 0%, rgba(178, 230, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 90% 8%, rgba(190, 216, 255, 0.11), transparent 38%),
     linear-gradient(180deg, var(--arcaea-table-shell-top), var(--arcaea-table-shell-bottom));
   box-shadow:
-    0 10px 26px rgba(4, 14, 28, 0.10),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(18px) saturate(112%);
-  -webkit-backdrop-filter: blur(18px) saturate(112%);
+    0 12px 30px rgba(4, 14, 28, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px) saturate(108%);
+  -webkit-backdrop-filter: blur(14px) saturate(108%);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(178, 230, 255, 0.52) rgba(12, 24, 42, 0.42);
 }
 
 .arcaea-article-content .wp-block-table::before,
@@ -636,6 +640,26 @@ body.dark .entry-content .arcaea-article-content code {
   pointer-events: none;
 }
 
+.arcaea-article-content .wp-block-table::-webkit-scrollbar,
+.arcaea-article-content .arcaea-table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.arcaea-article-content .wp-block-table::-webkit-scrollbar-track,
+.arcaea-article-content .arcaea-table-wrap::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(12, 24, 42, 0.42);
+}
+
+.arcaea-article-content .wp-block-table::-webkit-scrollbar-thumb,
+.arcaea-article-content .arcaea-table-wrap::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg,
+      rgba(139, 227, 255, 0.64),
+      rgba(169, 123, 255, 0.48));
+}
+
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
   display: table !important;
@@ -650,7 +674,8 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
   background: linear-gradient(180deg, var(--arcaea-table-bg), var(--arcaea-table-bg-deep)) !important;
   color: var(--arcaea-table-text) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.13);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035);
 }
 
 /* Markdown tables sometimes emit a blank first header for row labels.
@@ -671,16 +696,25 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
   overflow-wrap: anywhere;
   word-break: normal;
   border: 1px solid var(--arcaea-table-border-soft) !important;
+  text-shadow: 0 1px 0 rgba(4, 12, 24, 0.28);
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th,
 .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) th {
   position: relative;
-  background: linear-gradient(180deg, var(--arcaea-table-head), var(--arcaea-table-head-soft)) !important;
+  background:
+    linear-gradient(180deg,
+      rgba(80, 118, 162, 0.34),
+      rgba(18, 34, 58, 0.94)),
+    linear-gradient(90deg,
+      rgba(139, 227, 255, 0.08),
+      rgba(169, 123, 255, 0.06)) !important;
   color: var(--arcaea-table-head-text) !important;
   font-weight: 680 !important;
   letter-spacing: 0.026em;
-  text-shadow: 0 1px 0 rgba(20, 32, 50, 0.18);
+  text-shadow:
+    0 1px 0 rgba(4, 12, 24, 0.62),
+    0 0 10px rgba(139, 227, 255, 0.10);
 }
 
 body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) thead th::after,
@@ -1137,26 +1171,43 @@ body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matri
 
   .arcaea-article-content .wp-block-table,
   .arcaea-article-content .arcaea-table-wrap {
-    margin-left: -0.15rem;
-    margin-right: -0.15rem;
+    margin-left: -0.35rem;
+    margin-right: -0.35rem;
+    padding-bottom: 0.18rem;
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+  }
+
+  .arcaea-article-content .wp-block-table::after,
+  .arcaea-article-content .arcaea-table-wrap::after {
+    content: "";
+    position: sticky;
+    right: 0;
+    display: block;
+    float: right;
+    width: 2rem;
+    height: 100%;
+    min-height: 3rem;
+    margin-left: -2rem;
+    background: linear-gradient(90deg, transparent, rgba(10, 18, 32, 0.72));
+    pointer-events: none;
   }
 
   .arcaea-article-content table {
     display: table !important;
     width: 100% !important;
-    max-width: 100%;
+    max-width: none;
   }
 
   .arcaea-article-content table th,
   .arcaea-article-content table td {
-    white-space: nowrap;
+    white-space: normal;
   }
 
   body.dark .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix),
   .entry-content .arcaea-article-content table:not(.arcaea-feature-matrix) {
-    min-width: 620px;
+    min-width: 640px;
   }
 
   .arcaea-article-content h1 {

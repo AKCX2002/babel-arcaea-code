@@ -8,6 +8,7 @@
  * Priority layout:
  *   0  — normalizeCodeBlocks (fix Sakurairo <pre> stripping) + KaTeX protect
  *   11 — Mermaid / Markmap conversion (after wpautop=10)
+ *   13 — Article scaffold cleanup + table shell wrapping
  *
  * @package Babel_Arcaea_Code
  * @since   1.5.0
@@ -48,6 +49,9 @@ class Renderer {
         if (!empty($this->opts['latex_enabled'])) {
             \add_shortcode('latex', [$this, 'shortcodeLatex']);
         }
+
+        \add_filter('the_content', [$this, 'removeInlineArticleStylesheetLinks'], 13);
+        \add_filter('the_content', [$this, 'wrapArticleTables'], 13);
     }
 
     /* ════════════════════════════════════════════
@@ -260,6 +264,93 @@ class Renderer {
             },
             $content
         );
+    }
+
+    /**
+     * Remove old article-template stylesheet links accidentally pasted into
+     * post bodies. BAC enqueues this stylesheet globally, while relative links
+     * inside content resolve against the post permalink and produce MIME errors.
+     */
+    public function removeInlineArticleStylesheetLinks(string $content): string {
+        if (
+            \stripos($content, '<link') === false
+            || \stripos($content, 'arcaea-article-content.css') === false
+        ) {
+            return $content;
+        }
+
+        return (string) \preg_replace(
+            '/<link\b(?=[^>]*\barcaea-article-content\.css\b)[^>]*>\s*/i',
+            '',
+            $content
+        );
+    }
+
+    /**
+     * Wrap bare article tables in a scrollable Arcaea shell.
+     *
+     * Markdown and Classic Editor content can emit direct <table> nodes under
+     * .arcaea-article-content. The stylesheet expects .arcaea-table-wrap or
+     * .wp-block-table for mobile horizontal scrolling, so add the missing
+     * ownership layer here instead of requiring every article to hand-wrap
+     * technical tables.
+     */
+    public function wrapArticleTables(string $content): string {
+        if (
+            \stripos($content, '<table') === false
+            || \stripos($content, 'arcaea-article-content') === false
+            || !\class_exists(\DOMDocument::class)
+        ) {
+            return $content;
+        }
+
+        $previous = \libxml_use_internal_errors(true);
+        $dom = new \DOMDocument('1.0', 'UTF-8');
+        $wrapped = '<div id="bac-fragment-root">' . $content . '</div>';
+        $loaded = $dom->loadHTML(
+            '<?xml encoding="UTF-8">' . $wrapped,
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NONET
+        );
+        \libxml_clear_errors();
+        \libxml_use_internal_errors($previous);
+
+        if (!$loaded) return $content;
+
+        $xpath = new \DOMXPath($dom);
+        $tables = $xpath->query(
+            '//*[contains(concat(" ", normalize-space(@class), " "), " arcaea-article-content ")]//table'
+        );
+        if (!$tables || $tables->length === 0) return $content;
+
+        /** @var \DOMElement $table */
+        foreach (\iterator_to_array($tables) as $table) {
+            $parent = $table->parentNode;
+            if (!$parent instanceof \DOMElement) continue;
+
+            $parentClass = ' ' . $parent->getAttribute('class') . ' ';
+            if (
+                \strpos($parentClass, ' arcaea-table-wrap ') !== false
+                || \strpos($parentClass, ' wp-block-table ') !== false
+            ) {
+                continue;
+            }
+
+            $shell = $dom->createElement('div');
+            $shell->setAttribute('class', 'arcaea-table-wrap');
+            $shell->setAttribute('data-bac-table-shell', '1');
+            $parent->insertBefore($shell, $table);
+            $shell->appendChild($table);
+        }
+
+        $root = $dom->getElementById('bac-fragment-root');
+        if (!$root) return $content;
+
+        $html = '';
+        foreach ($root->childNodes as $child) {
+            $html .= $dom->saveHTML($child);
+        }
+
+        return $html !== '' ? $html : $content;
     }
 
     public function filterLatexBlocks(string $content): string {
