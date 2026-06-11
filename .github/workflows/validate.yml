@@ -6,6 +6,10 @@ on:
       - '**.php'
       - 'assets/**'
       - 'bin/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/validate.yml'
   push:
     branches:
       - main
@@ -13,6 +17,10 @@ on:
       - '**.php'
       - 'assets/**'
       - 'bin/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/validate.yml'
 
 jobs:
   php-lint:
