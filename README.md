@@ -31,14 +31,14 @@ git clone https://github.com/AKCX2002/babel-arcaea-code.git
 
 当前分组：
 
-- `bac/content-types/list`
-- `bac/posts/*` 与 `bac/pages/*`
-- `bac/content/by-slug`
-- `bac/taxonomies/list`、`bac/terms/*`、`bac/content-terms/*`
-- `bac/media/*`
-- `bac/users/*`
-- `bac/comments/*`
-- `bac/plugins/*`
+- `bac/content-types-list`
+- `bac/posts-*` 与 `bac/pages-*`
+- `bac/content-by-slug`
+- `bac/taxonomies-list`、`bac/terms-*`、`bac/content-terms-*`
+- `bac/media-*`
+- `bac/users-*`
+- `bac/comments-*`
+- `bac/plugins-*`
 
 说明：
 

@@ -43,7 +43,7 @@ class Abilities {
      */
     private function registerContentTypeAbilities(): void {
         $this->registerAbility(
-            'bac/content-types/list',
+            'bac/content-types-list',
             [
                 'label' => 'List content types',
                 'description' => 'List manageable WordPress content types exposed by the site.',
@@ -69,7 +69,7 @@ class Abilities {
         $edit_capability = $this->contentCapability($post_type);
 
         $this->registerAbility(
-            "bac/{$group}/list",
+            "bac/{$group}-list",
             [
                 'label' => 'List ' . $group,
                 'description' => 'List WordPress ' . $group . ' with pagination and optional filters.',
@@ -81,7 +81,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            "bac/{$group}/get",
+            "bac/{$group}-get",
             [
                 'label' => 'Get ' . $post_type,
                 'description' => 'Get a specific WordPress ' . $post_type . ' by ID.',
@@ -93,7 +93,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            "bac/{$group}/create",
+            "bac/{$group}-create",
             [
                 'label' => 'Create ' . $post_type,
                 'description' => 'Create a new WordPress ' . $post_type . ' using raw HTML or Gutenberg block content.',
@@ -105,7 +105,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            "bac/{$group}/update",
+            "bac/{$group}-update",
             [
                 'label' => 'Update ' . $post_type,
                 'description' => 'Update an existing WordPress ' . $post_type . ' without altering its raw content format.',
@@ -117,7 +117,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            "bac/{$group}/delete",
+            "bac/{$group}-delete",
             [
                 'label' => 'Delete ' . $post_type,
                 'description' => 'Delete a WordPress ' . $post_type . ' by ID.',
@@ -134,7 +134,7 @@ class Abilities {
      */
     private function registerContentLookupAbilities(): void {
         $this->registerAbility(
-            'bac/content/by-slug',
+            'bac/content-by-slug',
             [
                 'label' => 'Find content by slug',
                 'description' => 'Find a post or page by slug, optionally restricted to a post type.',
@@ -166,7 +166,7 @@ class Abilities {
         $manage_terms = fn() => \current_user_can('manage_categories');
 
         $this->registerAbility(
-            'bac/taxonomies/list',
+            'bac/taxonomies-list',
             [
                 'label' => 'List taxonomies',
                 'description' => 'List WordPress taxonomies that can be managed through BAC abilities.',
@@ -182,7 +182,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/terms/list',
+            'bac/terms-list',
             [
                 'label' => 'List terms',
                 'description' => 'List terms within a taxonomy.',
@@ -194,7 +194,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/terms/get',
+            'bac/terms-get',
             [
                 'label' => 'Get term',
                 'description' => 'Get a specific term by taxonomy and term ID.',
@@ -206,7 +206,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/terms/create',
+            'bac/terms-create',
             [
                 'label' => 'Create term',
                 'description' => 'Create a new term in an existing taxonomy.',
@@ -218,7 +218,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/terms/update',
+            'bac/terms-update',
             [
                 'label' => 'Update term',
                 'description' => 'Update an existing term by taxonomy and term ID.',
@@ -230,7 +230,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/terms/delete',
+            'bac/terms-delete',
             [
                 'label' => 'Delete term',
                 'description' => 'Delete an existing term from a taxonomy.',
@@ -242,7 +242,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/content-terms/get',
+            'bac/content-terms-get',
             [
                 'label' => 'Get content terms',
                 'description' => 'Get terms assigned to a post or page.',
@@ -271,7 +271,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/content-terms/assign',
+            'bac/content-terms-assign',
             [
                 'label' => 'Assign content terms',
                 'description' => 'Assign terms to a post or page within a compatible taxonomy.',
@@ -315,7 +315,7 @@ class Abilities {
         $can_manage_media = fn() => \current_user_can('upload_files');
 
         $this->registerAbility(
-            'bac/media/list',
+            'bac/media-list',
             [
                 'label' => 'List media',
                 'description' => 'List media items in the WordPress media library.',
@@ -327,7 +327,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/media/get',
+            'bac/media-get',
             [
                 'label' => 'Get media',
                 'description' => 'Get a specific media item by attachment ID.',
@@ -339,7 +339,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/media/create',
+            'bac/media-create',
             [
                 'label' => 'Create media',
                 'description' => 'Create a media item by sideloading a remote source URL.',
@@ -351,7 +351,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/media/update',
+            'bac/media-update',
             [
                 'label' => 'Update media',
                 'description' => 'Update media attachment fields such as title, alt text, caption, and description.',
@@ -363,7 +363,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/media/delete',
+            'bac/media-delete',
             [
                 'label' => 'Delete media',
                 'description' => 'Delete a media item by attachment ID.',
@@ -380,7 +380,7 @@ class Abilities {
      */
     private function registerUserAbilities(): void {
         $this->registerAbility(
-            'bac/users/list',
+            'bac/users-list',
             [
                 'label' => 'List users',
                 'description' => 'List WordPress users with pagination and optional role filters.',
@@ -392,7 +392,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/users/get',
+            'bac/users-get',
             [
                 'label' => 'Get user',
                 'description' => 'Get a specific WordPress user by ID.',
@@ -404,7 +404,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/users/create',
+            'bac/users-create',
             [
                 'label' => 'Create user',
                 'description' => 'Create a WordPress user with a single role.',
@@ -416,7 +416,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/users/update',
+            'bac/users-update',
             [
                 'label' => 'Update user',
                 'description' => 'Update an existing WordPress user.',
@@ -428,7 +428,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/users/delete',
+            'bac/users-delete',
             [
                 'label' => 'Delete user',
                 'description' => 'Delete an existing WordPress user, optionally reassigning content.',
@@ -447,7 +447,7 @@ class Abilities {
         $can_manage_comments = fn() => \current_user_can('moderate_comments') || \current_user_can('edit_posts');
 
         $this->registerAbility(
-            'bac/comments/list',
+            'bac/comments-list',
             [
                 'label' => 'List comments',
                 'description' => 'List WordPress comments with pagination and optional status filters.',
@@ -459,7 +459,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/comments/get',
+            'bac/comments-get',
             [
                 'label' => 'Get comment',
                 'description' => 'Get a specific WordPress comment by ID.',
@@ -471,7 +471,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/comments/create',
+            'bac/comments-create',
             [
                 'label' => 'Create comment',
                 'description' => 'Create a WordPress comment for a specific post or page.',
@@ -483,7 +483,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/comments/update',
+            'bac/comments-update',
             [
                 'label' => 'Update comment',
                 'description' => 'Update an existing WordPress comment.',
@@ -495,7 +495,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/comments/delete',
+            'bac/comments-delete',
             [
                 'label' => 'Delete comment',
                 'description' => 'Delete an existing WordPress comment.',
@@ -514,7 +514,7 @@ class Abilities {
         $can_manage_plugins = fn() => \current_user_can('activate_plugins');
 
         $this->registerAbility(
-            'bac/plugins/list',
+            'bac/plugins-list',
             [
                 'label' => 'List plugins',
                 'description' => 'List installed WordPress plugins and their activation status.',
@@ -526,7 +526,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/plugins/get',
+            'bac/plugins-get',
             [
                 'label' => 'Get plugin',
                 'description' => 'Get details about an installed WordPress plugin by plugin file slug.',
@@ -538,7 +538,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/plugins/activate',
+            'bac/plugins-activate',
             [
                 'label' => 'Activate plugin',
                 'description' => 'Activate an installed WordPress plugin by plugin file slug.',
@@ -550,7 +550,7 @@ class Abilities {
         );
 
         $this->registerAbility(
-            'bac/plugins/deactivate',
+            'bac/plugins-deactivate',
             [
                 'label' => 'Deactivate plugin',
                 'description' => 'Deactivate an installed WordPress plugin by plugin file slug.',
