@@ -1,14 +1,14 @@
 {
   "name": "Babel Arcaea Code",
   "slug": "babel-arcaea-code",
-  "version": "1.6.67",
+  "version": "1.6.68",
   "homepage": "https://github.com/AKCX2002/babel-arcaea-code",
   "author": "Babel36acl",
   "author_homepage": "https://github.com/Babel36acl",
-  "download_url": "https://github.com/AKCX2002/babel-arcaea-code/releases/download/v1.6.67/babel-arcaea-code-1.6.67.zip",
+  "download_url": "https://github.com/AKCX2002/babel-arcaea-code/releases/download/v1.6.68/babel-arcaea-code-1.6.68.zip",
   "requires_php": "7.4",
   "sections": {
     "description": "Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.",
-    "changelog": "<p>See the <a href=\"https://github.com/AKCX2002/babel-arcaea-code/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/AKCX2002/babel-arcaea-code/releases/tag/v1.6.67\">v1.6.67 release page</a> for release notes.</p>"
+    "changelog": "<p>See the <a href=\"https://github.com/AKCX2002/babel-arcaea-code/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/AKCX2002/babel-arcaea-code/releases/tag/v1.6.68\">v1.6.68 release page</a> for release notes.</p>"
   }
 }
