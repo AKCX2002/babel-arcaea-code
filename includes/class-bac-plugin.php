@@ -104,34 +104,35 @@ class Plugin {
 
         $pluginFile = __DIR__ . '/../babel-arcaea-code.php';
         $slug = 'babel-arcaea-code';
+        $githubUrl = 'https://github.com/AKCX2002/babel-arcaea-code/';
         $metadataUrl = 'https://raw.githubusercontent.com/AKCX2002/babel-arcaea-code/main/update-info.json';
 
         $uc = null;
         try {
             $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
-                $metadataUrl,
+                $githubUrl,
                 $pluginFile,
                 $slug
             );
+            $uc->setBranch('main');
+            $uc->getVcsApi()->enableReleaseAssets('/\.zip($|[?&#])/i');
+
+            if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
+                $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
+                if ($token) {
+                    $uc->setAuthentication($token);
+                }
+            }
         } catch (\Throwable $e) {
             try {
                 $uc = \YahnisElsts\PluginUpdateChecker\v5p7\PucFactory::buildUpdateChecker(
-                    'https://github.com/AKCX2002/babel-arcaea-code/',
+                    $metadataUrl,
                     $pluginFile,
                     $slug
                 );
-                $uc->setBranch('main');
-                $uc->getVcsApi()->enableReleaseAssets('/\.zip($|[?&#])/i');
-
-                if (\defined('BAC_ENABLE_GITHUB_TOKEN') && BAC_ENABLE_GITHUB_TOKEN) {
-                    $token = \getenv('GH_TOKEN') ?: \getenv('GITHUB_TOKEN');
-                    if ($token) {
-                        $uc->setAuthentication($token);
-                    }
-                }
             } catch (\Throwable $fallbackError) {
                 \error_log('[Babel Arcaea Code] Updater init failed: ' . $e->getMessage());
-                \error_log('[Babel Arcaea Code] GitHub fallback init failed: ' . $fallbackError->getMessage());
+                \error_log('[Babel Arcaea Code] Metadata fallback init failed: ' . $fallbackError->getMessage());
                 // Don't return — still register the cron safety net below.
             }
         }
