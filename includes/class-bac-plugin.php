@@ -45,8 +45,9 @@ class Plugin {
     /* ── Plugin-level hooks ── */
 
     private function registerHooks(): void {
+        $pluginFile = \realpath(__DIR__ . '/../babel-arcaea-code.php') ?: (__DIR__ . '/../babel-arcaea-code.php');
         \add_filter(
-            'plugin_action_links_' . \plugin_basename(__DIR__ . '/../babel-arcaea-code.php'),
+            'plugin_action_links_' . \plugin_basename($pluginFile),
             [$this, 'addSettingsLink']
         );
         \add_action('plugins_loaded', [$this, 'initUpdater']);
@@ -102,7 +103,7 @@ class Plugin {
         if (!\file_exists($lib)) return;
         require_once $lib;
 
-        $pluginFile = __DIR__ . '/../babel-arcaea-code.php';
+        $pluginFile = \realpath(__DIR__ . '/../babel-arcaea-code.php') ?: (__DIR__ . '/../babel-arcaea-code.php');
         $slug = 'babel-arcaea-code';
         $githubUrl = 'https://github.com/AKCX2002/babel-arcaea-code/';
         $metadataUrl = 'https://raw.githubusercontent.com/AKCX2002/babel-arcaea-code/main/update-info.json';

@@ -13,6 +13,7 @@
 - Hardened MCP-exposed abilities with execution-layer WordPress capability checks for object-level content/media/comment/user/term operations, metadata writes, role promotion, and remote media URL validation.
 - Fixed BAC ability names to use the WordPress Abilities API `namespace/name` format, replacing unsupported multi-segment names such as `bac/posts/list` with `bac/posts-list`.
 - Changed updater initialization to prefer GitHub release metadata and release zip assets, using raw `update-info.json` only as a fallback to avoid branch-file CDN cache lag.
+- Fixed the updater plugin file path normalization so PUC writes updates against `babel-arcaea-code/babel-arcaea-code.php` instead of an `includes/../` path that WordPress does not surface in plugin updates.
 - **Updater crash recovery**: After a WordPress crash or fatal error, the Plugin Update Checker (Puc) library's WP-Cron job may fail to run, leaving the `external_updates-babel-arcaea-code` option in a stale "no update" state. Added automatic detection: if the stored `lastCheck` is older than 13 hours (Puc default is 12 h), the updater now triggers an immediate `checkForUpdates()` call and clears the `update_plugins` transient so the next admin page load reflects the real remote version.
 - **WP-Cron safety net**: Registered an hourly `bac_hourly_update_probe` cron hook that clears the `update_plugins` transient, ensuring update detection works even when WP-Cron is disabled or broken.
 
