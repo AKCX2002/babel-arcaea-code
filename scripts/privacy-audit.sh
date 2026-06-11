@@ -28,6 +28,7 @@ scan_pattern() {
     local pattern="$1"
     local label="$2"
     local extra_exclude="${3:-}"
+    local safe_filter="${4:-}"
 
     # Use grep to find matches, excluding .git directory
     results=$(grep -RInE "$pattern" . \
@@ -49,6 +50,10 @@ scan_pattern() {
         $extra_exclude \
         2>/dev/null || true)
 
+    if [ -n "$safe_filter" ] && [ -n "$results" ]; then
+        results=$(printf '%s\n' "$results" | grep -Ev "$safe_filter" || true)
+    fi
+
     if [ -n "$results" ]; then
         echo -e "${RED}[!] ${label}${NC}"
         echo "$results"
@@ -66,9 +71,13 @@ echo ""
 # GH_TOKEN/GITHUB_TOKEN references in plugin code are env-var reads, not secrets.
 # Exclude the updater file that reads these from environment.
 scan_pattern "(GH_TOKEN|GITHUB_TOKEN)" "GitHub Token (plaintext)" "--exclude=class-bac-plugin.php"
-# Prism.js language definitions contain "password"/"passwd" as function/keyword names.
-# Exclude all component files and minified assets (already covered by --exclude-dir=components).
-scan_pattern '\b(password|passwd|secret)\b' "Password / Secret literal"
+# Schema field names and WordPress user field mappings are not hard-coded secrets.
+# Filter those known-safe cases while still flagging other password/secret literals.
+scan_pattern \
+    '\b(password|passwd|secret)\b' \
+    "Password / Secret literal" \
+    "" \
+    "^\./includes/class-bac-abilities\.php:[0-9]+:.*('password' => \[|'required' => \['username', 'email', 'password'\]|'user_pass' => \\\$input\['password'\]|'password' => 'user_pass')"
 scan_pattern "(api[_-]?key|api_key|apikey)" "API Key literal"
 scan_pattern "(bearer|authorization)" "Authorization / Bearer token"
 scan_pattern "(BEGIN (RSA|OPENSSH|PRIVATE) KEY)" "Private SSH/RSA key"
