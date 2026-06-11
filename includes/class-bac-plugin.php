@@ -19,6 +19,7 @@ class Plugin {
 
     private static ?Plugin $instance = null;
     private Options $options;
+    private $updateChecker = null;
 
     /* ── Singleton init ── */
 
@@ -49,14 +50,51 @@ class Plugin {
             [$this, 'addSettingsLink']
         );
         \add_action('plugins_loaded', [$this, 'initUpdater']);
+        \add_action('admin_post_bac_force_update_check', [$this, 'forceUpdateCheck']);
+        \add_action('admin_notices', [$this, 'showUpdateCheckNotice']);
     }
 
     public function addSettingsLink(array $links): array {
+        $checkUrl = \wp_nonce_url(
+            \admin_url('admin-post.php?action=bac_force_update_check'),
+            'bac_force_update_check'
+        );
         \array_unshift(
             $links,
-            '<a href="' . \esc_url(\admin_url('admin.php?page=bac-panel')) . '">设置</a>'
+            '<a href="' . \esc_url(\admin_url('admin.php?page=bac-panel')) . '">设置</a>',
+            '<a href="' . \esc_url($checkUrl) . '">检查更新</a>'
         );
         return $links;
+    }
+
+    public function forceUpdateCheck(): void {
+        if (!\current_user_can('update_plugins')) {
+            \wp_die(\esc_html__('You do not have permission to update plugins.', 'babel-arcaea-code'));
+        }
+        \check_admin_referer('bac_force_update_check');
+
+        \delete_site_option('external_updates-babel-arcaea-code');
+        \delete_site_transient('update_plugins');
+
+        if ($this->updateChecker !== null) {
+            try {
+                $this->updateChecker->checkForUpdates();
+            } catch (\Throwable $e) {
+                \error_log('[Babel Arcaea Code] Manual update check failed: ' . $e->getMessage());
+            }
+        }
+
+        \wp_safe_redirect(\admin_url('plugins.php?bac_update_check=1'));
+        exit;
+    }
+
+    public function showUpdateCheckNotice(): void {
+        if (!\is_admin() || empty($_GET['bac_update_check'])) {
+            return;
+        }
+        echo '<div class="notice notice-success is-dismissible"><p>'
+            . \esc_html__('Babel Arcaea Code update check has been refreshed.', 'babel-arcaea-code')
+            . '</p></div>';
     }
 
     public function initUpdater(): void {
@@ -108,6 +146,7 @@ class Plugin {
         // immediate on-demand update check so the next page load reflects
         // the real remote version.
         if ($uc !== null) {
+            $this->updateChecker = $uc;
             $stateOption = 'external_updates-' . $slug;
             $savedState  = \get_site_option($stateOption);
             $lastCheck   = 0;

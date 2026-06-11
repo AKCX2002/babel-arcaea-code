@@ -6,10 +6,12 @@
 
 - Added shared front-end article wrapper stylesheet `assets/reading/arcaea-article-content.css` for `.arcaea-article-content`, so Arcaea long-form post styling can be injected by the plugin instead of repeated inline per post.
 - Added a dedicated `Abilities` module that registers grouped `bac/*` WordPress abilities for `wordpress/mcp-adapter`, covering content types, posts/pages, slug lookup, taxonomies/terms, media, users, comments, and installed plugins.
+- Added a plugin list "检查更新" action that clears stale PUC state, clears WordPress update transients, and immediately runs an on-demand update check.
 
 ### Fixed
 
 - Hardened MCP-exposed abilities with execution-layer WordPress capability checks for object-level content/media/comment/user/term operations, metadata writes, role promotion, and remote media URL validation.
+- Fixed BAC ability names to use the WordPress Abilities API `namespace/name` format, replacing unsupported multi-segment names such as `bac/posts/list` with `bac/posts-list`.
 - **Updater crash recovery**: After a WordPress crash or fatal error, the Plugin Update Checker (Puc) library's WP-Cron job may fail to run, leaving the `external_updates-babel-arcaea-code` option in a stale "no update" state. Added automatic detection: if the stored `lastCheck` is older than 13 hours (Puc default is 12 h), the updater now triggers an immediate `checkForUpdates()` call and clears the `update_plugins` transient so the next admin page load reflects the real remote version.
 - **WP-Cron safety net**: Registered an hourly `bac_hourly_update_probe` cron hook that clears the `update_plugins` transient, ensuring update detection works even when WP-Cron is disabled or broken.
 
