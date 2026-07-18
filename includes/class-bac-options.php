@@ -6,7 +6,7 @@ class Options {
         'enabled'=>1,'prism_enabled'=>1,'mermaid_enabled'=>1,'mathjax_enabled'=>0,'markmap_enabled'=>0,
         'katex_enabled'=>0,'latex_enabled'=>0,'latex_renderer'=>'katex','mermaid_compat_mode'=>'auto',
         'markmap_runtime'=>'local','markmap_prerender'=>0,'mermaid_version'=>'11.16.0',
-        'prism_version'=>'1.30.0','mathjax_version'=>'4.1.3','katex_version'=>'0.17.0','prism_line_numbers'=>1,
+        'prism_version'=>'1.30.0','mathjax_version'=>'4.1.3','katex_version'=>'0.18.0','prism_line_numbers'=>1,
         'prism_copy'=>1,'prism_braces'=>1,'prism_previewers'=>1,'prism_theme'=>'arcaea_dark',
         'disable_sakurairo_prism'=>1,'disable_legacy_plugin_assets'=>1,'aplayer_safe_patch'=>0,'suppress_lightgallery_warn'=>0,
     ];
