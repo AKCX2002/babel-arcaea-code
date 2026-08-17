@@ -22,9 +22,14 @@
   },
   "homepage": "https://github.com/AKCX2002/babel-arcaea-code#readme",
   "dependencies": {
-    "markmap-lib": "0.18.12"
+    "d3": "7.9.0",
+    "markmap-lib": "0.18.12",
+    "markmap-view": "0.18.12"
   },
   "devDependencies": {
     "playwright": "^1.60.0"
+  },
+  "bin": {
+    "babel-arcaea-code": "bin/markmap-render.js"
   }
 }
