@@ -213,7 +213,10 @@ GPL-2.0-or-later
 # 页面资源与发布维护
 
 - WordPress 生成启用模块的资源清单，`assets/js/content-loader.js` 根据实际正文加载资源，并在 PJAX 完成后重新判断。首页摘要列表不加载代码、图表或公式引擎。
-- Prism、Mermaid 和图片缩放各自初始化；`bac:content-ready` 表示所需资源加载完成。保存时的检测 meta 不再决定前端资源加载，避免旧 meta 和切页状态成为第二事实来源。
+- `BAC_Lifecycle.register(name, mount)` 注册渲染模块。加载器负责首次加载和 PJAX 入口，按正文节点去重；`mount` 接收 `root`、`signal` 和 `cleanup(callback)`。离开正文时取消事件监听、释放观察器和实例，异步渲染按页面串行，避免旧页面任务竞争共享运行时。
+- `bac:content-ready` 是当前正文的初始化完成通知（`detail.root`），模块不再监听它来重复初始化。Prism 和 MathJax 的自动启动关闭，渲染由加载器调度。Mermaid 全屏交互统一归增强模块；图片缩放复用单个运行时并按页面绑定图片。
+- 保存时的检测 meta 仅供后台扫描保留，不决定前端资源加载；已删除无调用方的 `Detector::needsModule()` 及其前台缓存。外部集成若曾直接调用该方法，应改为使用渲染后的正文判断。
+- 浏览器回归：`npm ci --ignore-scripts`、`npx playwright install chromium`、`node scripts/lifecycle-regression.mjs`。覆盖两种公式引擎、图表/代码/思维导图、重复 PJAX 通知、窗口缩放、图片打开中离开页面、旧实例释放和延迟加载期间导航。可用 `PHP_BINARY` 指定 PHP，`BROWSER_CHANNEL` 指定已安装的浏览器。
 - Markdown 提示标记由 `Renderer::renderCallouts` 在 HTML 渲染边界统一转换，不修改文章原始内容。
 - `download-mermaid.sh VERSION` 从经过 npm 完整性校验的包安装整套入口和分片。`node scripts/validate-mermaid.mjs` 检查全部静态/动态相对依赖并导入入口。
 - MathJax 保持兼容的 3.x/es5 运行时，自动更新不跨到不同目录/API 的 4.x；完整包包含字体和延迟加载扩展。

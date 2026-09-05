@@ -5,6 +5,19 @@
   if (!manifest || window.BAC_ContentLoader) return;
   window.BAC_ContentLoader = true;
   const pending = new Map();
+  const modules = new Map();
+  let current = null;
+  let work = Promise.resolve();
+  window.BAC_Lifecycle = { register(name, mount) { modules.set(name, mount); } };
+
+  function leave() {
+    if (!current) return;
+    current.controller.abort();
+    for (const cleanup of current.cleanups.reverse()) {
+      try { cleanup(); } catch (error) { console.warn('[Babel Arcaea Code]', error); }
+    }
+    current = null;
+  }
   function inline(source) {
     const script = document.createElement('script');
     script.textContent = source;
@@ -32,7 +45,19 @@
   }
   async function boot() {
     const content = document.querySelector('.entry-content, .post-content');
+    if (current && current.root === content) return;
+    leave();
     if (!content) return;
+    const session = { root: content, controller: new AbortController(), cleanups: [] };
+    current = session;
+    const context = {
+      root: content,
+      signal: session.controller.signal,
+      cleanup(callback) {
+        if (session.controller.signal.aborted) callback();
+        else session.cleanups.push(callback);
+      },
+    };
     const required = {
       prism: Array.from(content.querySelectorAll('pre')).some(pre => !pre.closest('.arcaea-mermaid-box, .arcaea-markmap-box') && !pre.matches('.mermaid, .arcaea-markmap-source')),
       mermaid: !!content.querySelector('.mermaid, .arcaea-mermaid-box'),
@@ -40,16 +65,31 @@
       zoom: !!content.querySelector('img'),
       math: !!content.querySelector('.katex, .bac-latex-block, .math, .mathjax') || /\$|\\[([]/.test(content.textContent),
     };
-    try {
-      const results = await Promise.allSettled(Object.entries(required).filter(([name, needed]) => needed && manifest.groups[name]).map(async ([name]) => {
+    // Serialize renderers across replacements: an old async render must settle
+    // before another page uses a shared Mermaid or MathJax runtime.
+    work = work.then(async () => {
+      if (context.signal.aborted) return;
+      const selected = Object.entries(required).filter(([name, needed]) => needed && manifest.groups[name]);
+      const results = await Promise.allSettled(selected.map(async ([name]) => {
         const group = manifest.groups[name];
         await Promise.all(group.styles.map(handle => load('styles', handle)));
-        // Registration order is significant for Prism plugins as well as deps.
         for (const handle of group.scripts) await load('scripts', handle);
       }));
-      results.filter(result => result.status === 'rejected').forEach(result => console.warn('[Babel Arcaea Code]', result.reason));
-      if (content.isConnected) document.dispatchEvent(new Event('bac:content-ready'));
-    } catch (error) { console.warn('[Babel Arcaea Code]', error); }
+      if (context.signal.aborted || !content.isConnected) return;
+      for (let index = 0; index < selected.length; index++) {
+        if (results[index].status === 'rejected') {
+          console.warn('[Babel Arcaea Code]', results[index].reason);
+          continue;
+        }
+        for (const [name, mount] of [...modules].sort(([a], [b]) => Number(a.includes(':')) - Number(b.includes(':')))) {
+          if (name.split(':')[0] !== selected[index][0]) continue;
+          if (context.signal.aborted) return;
+          try { await mount(context); }
+          catch (error) { console.warn('[Babel Arcaea Code]', error); }
+        }
+      }
+      if (!context.signal.aborted) document.dispatchEvent(new CustomEvent('bac:content-ready', { detail: { root: content } }));
+    }).catch(error => console.warn('[Babel Arcaea Code]', error));
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

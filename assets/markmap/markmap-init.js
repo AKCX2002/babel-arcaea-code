@@ -67,15 +67,8 @@
     if (!box || !box.__bacMarkmap || typeof box.__bacMarkmap.fit !== 'function') return;
     window.clearTimeout(box.__bacMarkmapFitTimer);
     box.__bacMarkmapFitTimer = window.setTimeout(function () {
-      window.requestAnimationFrame(function () {
-        window.requestAnimationFrame(function () {
-          try {
-            box.__bacMarkmap.fit();
-          } catch (e) {
-            console.warn(LOG, 'Markmap fit error:', e);
-          }
-        });
-      });
+      if (!box.isConnected || !box.__bacMarkmap) return;
+      box.__bacMarkmap.fit().catch(error => console.warn(LOG, error));
     }, delay || 0);
   }
 
@@ -102,7 +95,7 @@
     }
   }
 
-  function renderOne(box) {
+  async function renderOne(box, signal) {
     if (!box || box.dataset.bacMarkmapReady === '1' || box.dataset.bacMarkmapRendering === '1') return;
 
     const source = box.querySelector('.arcaea-markmap-source');
@@ -149,14 +142,15 @@
         spacingHorizontal: 72,
         spacingVertical: 14,
         paddingX: 24,
-      }, root);
+      });
 
       box.__bacMarkmap = mm;
+      await mm.setData(root);
+      if (signal.aborted) return;
       box.__bacMarkmapHeight = estimatedHeight;
       box.dataset.bacMarkmapReady = '1';
       delete box.dataset.bacMarkmapRendering;
       observeBox(box);
-      scheduleFit(box, 20);
       scheduleFit(box, 180);
     } catch (e) {
       delete box.dataset.bacMarkmapRendering;
@@ -172,32 +166,28 @@
     }
   }
 
-  function initMarkmaps(root) {
+  function initMarkmaps(root, signal) {
     const scope = root && root.querySelectorAll ? root : document;
-    scope.querySelectorAll('.arcaea-markmap-box:not([data-bac-markmap-ready="1"])')
-      .forEach(renderOne);
+    return Promise.all(Array.from(scope.querySelectorAll('.arcaea-markmap-box:not([data-bac-markmap-ready="1"])')).map(box => renderOne(box, signal)));
   }
 
-  function fitAll() {
-    document.querySelectorAll('.arcaea-markmap-box[data-bac-markmap-ready="1"]').forEach(function (box) {
-      scheduleFit(box, 0);
-    });
-  }
-
-  function boot() {
-    initMarkmaps(document);
-    fitAll();
-  }
-
-  document.addEventListener('DOMContentLoaded', boot);
-  window.addEventListener('load', function () {
-    boot();
-    setTimeout(fitAll, 120);
-  });
-  document.addEventListener('bac:content-ready', boot);
-  document.addEventListener('pjax:end', boot);
-  window.addEventListener('resize', function () {
-    window.clearTimeout(window.__bacMarkmapResizeTimer);
-    window.__bacMarkmapResizeTimer = window.setTimeout(fitAll, 160);
+  window.BAC_Lifecycle.register('markmap', async ({ root, signal, cleanup }) => {
+    const boxes = Array.from(root.querySelectorAll('.arcaea-markmap-box'));
+    cleanup(() => boxes.forEach(box => {
+      window.clearTimeout(box.__bacMarkmapFitTimer);
+      box.__bacMarkmapResizeObserver?.disconnect();
+      box.__bacMarkmapIntersectionObserver?.disconnect();
+      const svg = box.querySelector('svg');
+      // Markmap.destroy removes handlers but does not cancel D3 transitions.
+      window.d3.select(svg).interrupt().selectAll('*').interrupt();
+      box.__bacMarkmap?.destroy();
+      delete box.__bacMarkmap;
+      delete box.__bacMarkmapObserversReady;
+      delete box.dataset.bacMarkmapReady;
+      delete box.dataset.bacMarkmapRendering;
+    }));
+    await initMarkmaps(root, signal);
+    if (signal.aborted) return;
+    window.addEventListener('resize', () => boxes.forEach(box => scheduleFit(box, 160)), { signal });
   });
 })();

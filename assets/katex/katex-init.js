@@ -78,20 +78,5 @@
         }
     }
 
-    /* ── Boot ── */
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        renderKatex(document);
-    } else {
-        document.addEventListener('DOMContentLoaded', function () {
-            renderKatex(document);
-        });
-    }
-
-    /* PJAX support */
-    document.addEventListener('bac:content-ready', function () {
-        renderKatex(document);
-    });
-    document.addEventListener('pjax:end', function () {
-        renderKatex(document);
-    });
+    window.BAC_Lifecycle.register('math', ({ root }) => renderKatex(root));
 })();

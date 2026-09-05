@@ -3,7 +3,7 @@
  * Babel Arcaea Code — Content Detector
  *
  * Scans post content at save time to determine which JS rendering
- * modules are needed. Stores post meta for conditional frontend loading.
+ * modules are needed. Stores legacy post meta for the admin scan; frontend loading uses rendered DOM.
  *
  * Pattern: githuber-md's detect_code_languages() + ModuleAbstract::is_module_should_be_loaded().
  * No editor capability — frontend-only.
@@ -26,9 +26,6 @@ class Detector {
     public const META_MARKMAP     = '_bac_needs_markmap';
     public const META_FLOWCHART   = '_bac_needs_flowchart';
     public const META_SEQUENCE    = '_bac_needs_sequence';
-
-    /** Cached post ID for frontend queries. */
-    private static int $frontPostId = 0;
 
     /** Global toggle flags (set from Options). */
     private bool $prismEnabled;
@@ -124,38 +121,6 @@ class Detector {
     /* ─────────────────────────────────────────────
      * Frontend: conditional loading check
      * ───────────────────────────────────────────── */
-
-    /**
-     * Check if a module should be loaded for the current post.
-     * Mirrors githuber-md's ModuleAbstract::is_module_should_be_loaded().
-     *
-     * @param string $metaKey Post meta key (one of Detector::META_* constants).
-     * @return bool True if module is needed.
-     */
-    public static function needsModule(string $metaKey): bool {
-        if (empty(self::$frontPostId)) {
-            self::$frontPostId = self::getCurrentPostId();
-        }
-
-        if (empty(self::$frontPostId)) {
-            // Can't determine — load everything (safe fallback).
-            return true;
-        }
-
-        $meta = \get_post_meta(self::$frontPostId, $metaKey, true);
-        // Not yet scanned (legacy post) — load to be safe.
-        if ($meta === '') return true;
-        return ($meta === '1');
-    }
-
-    /** Get current post ID on the frontend. */
-    private static function getCurrentPostId(): int {
-        if (\is_singular()) {
-            $id = \get_queried_object_id();
-            return $id ?: 0;
-        }
-        return 0;
-    }
 
     /* ─────────────────────────────────────────────
      * Bulk scan: run for existing posts (CLI / admin trigger)

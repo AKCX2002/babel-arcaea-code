@@ -3,7 +3,6 @@
 
   var LOG = '[Babel Arcaea Code]';
   var config = window.BAC_Config || {};
-  var bootTimer = null;
 
   function asBool(value, fallback) {
     if (typeof value === 'boolean') return value;
@@ -299,126 +298,12 @@
     if (host) host.dataset.bacMermaidScaleMode = intrinsicWidth > hostWidth ? 'fit' : 'natural';
   }
 
-  function ensureFullscreenOverlay() {
-    var overlay = document.querySelector('.arcaea-mermaid-overlay');
-    if (overlay) return overlay;
-
-    overlay = document.createElement('div');
-    overlay.className = 'arcaea-mermaid-overlay';
-    overlay.innerHTML =
-      '<button type="button" class="arcaea-mermaid-overlay-close" aria-label="关闭全屏预览">×</button>' +
-      '<div class="arcaea-mermaid-overlay-stage">' +
-        '<div class="arcaea-mermaid-overlay-viewport" role="dialog" aria-modal="true"></div>' +
-      '</div>' +
-      '<div class="arcaea-mermaid-overlay-hint">点击背景或 ESC 关闭</div>';
-    document.body.appendChild(overlay);
-
-    overlay.addEventListener('click', function (event) {
-      if (
-        event.target === overlay ||
-        event.target.classList.contains('arcaea-mermaid-overlay-stage') ||
-        event.target.closest('.arcaea-mermaid-overlay-close')
-      ) {
-        closeFullscreenOverlay();
-      }
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && overlay.classList.contains('active')) {
-        closeFullscreenOverlay();
-      }
-    });
-
-    return overlay;
-  }
-
-  function closeFullscreenOverlay() {
-    var overlay = document.querySelector('.arcaea-mermaid-overlay');
-    if (!overlay) return;
-    overlay.classList.remove('active');
-    var content = overlay.querySelector('.arcaea-mermaid-overlay-viewport');
-    if (content) content.innerHTML = '';
-    document.documentElement.classList.remove('bac-mermaid-overlay-open');
-    document.body.classList.remove('bac-mermaid-overlay-open');
-  }
-
-  function openMermaidFullscreen(box) {
-    if (!box) return;
-    var svg = box.querySelector('pre.mermaid > svg');
-    if (!svg) return;
-
-    var overlay = ensureFullscreenOverlay();
-    var content = overlay.querySelector('.arcaea-mermaid-overlay-viewport');
-    if (!content) return;
-
-    var clone = svg.cloneNode(true);
-    var viewBox = parseViewBox(svg);
-    var viewportWidth = Math.max(320, window.innerWidth - 64);
-    var viewportHeight = Math.max(240, window.innerHeight - 96);
-    var scale = viewBox && viewBox.width > 0 && viewBox.height > 0
-      ? Math.min(1, viewportWidth / viewBox.width, viewportHeight / viewBox.height)
-      : 1;
-    clone.style.maxWidth = 'none';
-    clone.style.minWidth = '0';
-    clone.style.width = viewBox && viewBox.width > 0
-      ? Math.max(1, viewBox.width) + 'px'
-      : 'auto';
-    clone.style.height = 'auto';
-    content.innerHTML = '';
-    content.appendChild(clone);
-    content.style.transform =
-      'translate(-50%, -50%) scale(' + scale + ')';
-
-    overlay.classList.add('active');
-    document.documentElement.classList.add('bac-mermaid-overlay-open');
-    document.body.classList.add('bac-mermaid-overlay-open');
-  }
-
-  function ensureFullscreenTrigger(box) {
-    if (!box || box.dataset.bacMermaidFullscreenReady === '1') return;
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'arcaea-mermaid-fullscreen-btn';
-    button.setAttribute('aria-label', '全屏查看 Mermaid 图表');
-    button.textContent = '⤢';
-    button.addEventListener('click', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      openMermaidFullscreen(box);
-    });
-    box.appendChild(button);
-
-    box.addEventListener('click', function (event) {
-      if (
-        event.target.closest('.arcaea-mermaid-fullscreen-btn') ||
-        event.target.closest('.arcaea-mermaid-error-message')
-      ) {
-        return;
-      }
-      if (event.target.closest('svg') || event.target.closest('pre.mermaid')) {
-        openMermaidFullscreen(box);
-      }
-    });
-
-    box.dataset.bacMermaidFullscreenReady = '1';
-  }
-
-  function refreshMermaidLayouts(root) {
-    var scope = root && root.querySelectorAll ? root : document;
-    scope.querySelectorAll('.arcaea-mermaid-box').forEach(function (box) {
-      var svg = box.querySelector('pre.mermaid > svg');
-      if (!svg) return;
-      applyResponsiveSvgSize(svg, box);
-    });
-  }
-
   function enhanceRenderedMermaidBoxes(root) {
     var scope = root && root.querySelectorAll ? root : document;
     scope.querySelectorAll('.arcaea-mermaid-box').forEach(function (box) {
       var svg = box.querySelector('pre.mermaid > svg');
       if (!svg) return;
       applyResponsiveSvgSize(svg, box);
-      ensureFullscreenTrigger(box);
     });
   }
 
@@ -428,11 +313,11 @@
    * Strategy: let Mermaid own the SVG lifecycle.  We only:
    *   1. Provide Arcaea dark theme via mermaid.initialize()
    *   2. Call mermaid.run({ nodes }) targeting unrendered .mermaid elements
-   *   3. Add a fullscreen button to each rendered diagram
+   *   3. Notify the enhancement module after rendering
    *   4. Crop viewBox to visible content (tighten from computed bboxes)
    * ════════════════════════════════════════════ */
 
-  async function renderMermaid(root) {
+  async function renderMermaid(root, signal) {
     if (!asBool(config.mermaidEnabled, true)) return;
     var scope = root && root.querySelectorAll ? root : document;
     prepareMermaidContainers(scope);
@@ -452,6 +337,7 @@
       return;
     }
 
+    if (signal.aborted) return;
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
@@ -517,6 +403,7 @@
             delete diagrams[i].dataset.bacMermaidCompat;
           }
           await mermaid.parse(compatible);
+          if (signal.aborted) return;
           validDiagrams.push(diagrams[i]);
         } catch (parseErr) {
           markMermaidError(diagrams[i], parseErr);
@@ -525,6 +412,7 @@
       if (!validDiagrams.length) return;
 
       await mermaid.run({ nodes: validDiagrams, suppressErrors: true });
+      if (signal.aborted) return;
       validDiagrams.forEach(function (el) {
         var svg = el.querySelector('svg');
         if (!svg) { markMermaidError(el, new Error('Mermaid did not produce SVG.')); return; }
@@ -588,7 +476,6 @@
         var box = el.closest('.arcaea-mermaid-box');
         applyResponsiveSvgSize(svg, box);
         if (box) {
-          ensureFullscreenTrigger(box);
           box.dispatchEvent(new CustomEvent('bac:mermaid-rendered', {
             bubbles: true,
             detail: { box: box, svg: svg }
@@ -606,40 +493,17 @@
    * Boot sequence
    * ════════════════════════════════════════════ */
 
-  async function boot(root) {
-    var scope = root && root.querySelectorAll ? root : document;
-    await renderMermaid(scope);
-    enhanceRenderedMermaidBoxes(scope);
-  }
-
-  function scheduleBoot(root) {
-    window.clearTimeout(bootTimer);
-    bootTimer = window.setTimeout(function () {
-      boot(root || document).catch(function (e) { console.warn(LOG, e); });
-    }, 80);
-  }
-
-  window.addEventListener('resize', function () {
-    window.requestAnimationFrame(function () {
-      enhanceRenderedMermaidBoxes(document);
+  window.BAC_Lifecycle.register('mermaid', async ({ root, signal, cleanup }) => {
+    let frame = 0;
+    cleanup(() => {
+      cancelAnimationFrame(frame);
+      root.querySelectorAll('[data-bac-mermaid-rendering]').forEach(el => delete el.dataset.bacMermaidRendering);
     });
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => enhanceRenderedMermaidBoxes(root));
+    }, { signal });
+    await renderMermaid(root, signal);
+    if (!signal.aborted) enhanceRenderedMermaidBoxes(root);
   });
-
-  /* ── Startup: DOMContentLoaded (full boot) ── */
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    scheduleBoot(document);
-  } else {
-    document.addEventListener('DOMContentLoaded', function () { scheduleBoot(document); });
-  }
-
-  document.addEventListener('bac:content-ready', function () { scheduleBoot(document); });
-
-  /* ── PJAX: render diagrams in the replacement content ── */
-  document.addEventListener('pjax:complete', function () {
-    scheduleBoot(document);
-  });
-  document.addEventListener('pjax:end', function () {
-    scheduleBoot(document);
-  });
-
 })();

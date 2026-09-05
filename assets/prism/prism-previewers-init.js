@@ -14,12 +14,5 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkPreviewers);
-  } else {
-    checkPreviewers();
-  }
-
-  document.addEventListener('pjax:complete', checkPreviewers);
-  document.addEventListener('pjax:end', checkPreviewers);
+  window.BAC_Lifecycle.register('prism:previewers', checkPreviewers);
 })();

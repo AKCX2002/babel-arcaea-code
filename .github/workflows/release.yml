@@ -44,6 +44,8 @@ jobs:
           node scripts/validate-mermaid.mjs
           bash scripts/frontend-smoke.sh
           npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
+          node scripts/lifecycle-regression.mjs
           printf '# Test\n' | node bin/markmap-render.js > /tmp/bac-markmap.svg
           grep -q '<svg' /tmp/bac-markmap.svg
       - name: Detect source or asset changes

@@ -32,18 +32,7 @@
     });
   }
 
-  function schedule(root) {
-    window.requestAnimationFrame(function () {
-      decorateCodeBlocks(root || document);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { schedule(document); });
-  } else {
-    schedule(document);
-  }
-
-  document.addEventListener('pjax:complete', function () { schedule(document); });
-  document.addEventListener('pjax:end', function () { schedule(document); });
+  window.BAC_Lifecycle.register('prism:titlebar', ({ root, signal, cleanup }) => {
+    decorateCodeBlocks(root);
+  });
 })();

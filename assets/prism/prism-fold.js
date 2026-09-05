@@ -67,19 +67,13 @@
     });
   }
 
-  function schedule(root) {
-    window.requestAnimationFrame(function () {
-      decorate(root || document);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { schedule(document); });
-  } else {
-    schedule(document);
-  }
-
-  window.addEventListener('resize', function () { schedule(document); });
-  document.addEventListener('pjax:complete', function () { schedule(document); });
-  document.addEventListener('pjax:end', function () { schedule(document); });
+  window.BAC_Lifecycle.register('prism:fold', ({ root, signal, cleanup }) => {
+    decorate(root);
+    let frame = 0;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => decorate(root));
+    }, { signal });
+    cleanup(() => cancelAnimationFrame(frame));
+  });
 })();

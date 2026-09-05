@@ -115,7 +115,11 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: |
-          test -f package.json && npm install --ignore-scripts 2>/dev/null || true
+          npm ci --ignore-scripts
+      - name: Browser lifecycle regression
+        run: |
+          npx playwright install --with-deps chromium
+          node scripts/lifecycle-regression.mjs
       - name: Verify CLI renderer
         run: |
           set -e

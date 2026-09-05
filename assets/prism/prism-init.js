@@ -57,6 +57,5 @@
       }
     });
   }
-  function boot() { preparePrism(document); }
-  document.addEventListener('bac:content-ready', boot);
+  window.BAC_Lifecycle.register('prism', ({ root }) => preparePrism(root));
 })();

@@ -329,25 +329,14 @@
     });
   }
 
-  function schedule(root) {
-    window.requestAnimationFrame(function () {
-      enhance(root || document);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { schedule(document); });
-  } else {
-    schedule(document);
-  }
-
-  document.addEventListener('bac:mermaid-rendered', function (event) {
-    if (event.detail && event.detail.box) {
-      enhance(event.detail.box);
-    } else {
-      schedule(document);
-    }
+  window.BAC_Lifecycle.register('mermaid:enhance', ({ root, signal, cleanup }) => {
+    enhance(root);
+    root.addEventListener('click', event => {
+      if (event.target.closest('button')) return;
+      const diagram = event.target.closest('pre.mermaid');
+      const svg = diagram && diagram.querySelector('svg');
+      if (svg) openOverlay(svg);
+    }, { signal });
+    cleanup(closeOverlay);
   });
-  document.addEventListener('bac:content-ready', function () { schedule(document); });
-  document.addEventListener('pjax:end', function () { schedule(document); });
 })();

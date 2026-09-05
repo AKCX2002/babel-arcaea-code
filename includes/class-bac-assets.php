@@ -8,9 +8,6 @@ class Assets {
     public function __construct() { $this->opts = Plugin::init()->options()->get(); \add_action('wp_enqueue_scripts', [$this,'enqueueAll']); }
 
     /**
-     * Conditional enqueue: only load modules detected as needed for current post.
-     * Pattern: githuber-md's Githuber::init() + ModuleAbstract::is_module_should_be_loaded().
-     *
      * WordPress registers module URLs/dependencies; the content loader chooses
      * the rendered page requirements on initial load and PJAX navigation.
      */
@@ -94,6 +91,7 @@ class Assets {
 
     private function enqueuePrismJs(): void {
         if (!$this->script('assets/prism/prism.js', self::PRISM_CORE)) return;
+        \wp_add_inline_script(self::PRISM_CORE, 'window.Prism=window.Prism||{};window.Prism.manual=true;', 'before');
         $this->script('assets/prism/prism-toolbar.js','bac-prism-toolbar',[self::PRISM_CORE]);
         $this->script('assets/prism/prism-show-language.js','bac-prism-lang',['bac-prism-toolbar']);
         $this->script('assets/prism/prism-normalize-whitespace.js','bac-prism-norm',[self::PRISM_CORE]);
@@ -148,7 +146,7 @@ class Assets {
 
     private function enqueueMathJax(): void {
         if (empty($this->opts['mathjax_enabled'])) return;
-        $mathConfig = 'window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]],displayMath:[["$$","$$"],["\\\\[","\\\\]"]]},options:{ignoreHtmlClass:"no-mathjax"}};';
+        $mathConfig = 'window.MathJax={startup:{typeset:false},tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]],displayMath:[["$$","$$"],["\\\\[","\\\\]"]]},options:{ignoreHtmlClass:"no-mathjax"}};';
         $this->style('assets/css/bac-latex.css', 'bac-latex');
         if (!$this->script('assets/mathjax/es5/tex-chtml.js','bac-mathjax')) return;
         \wp_add_inline_script('bac-mathjax', $mathConfig, 'before');
