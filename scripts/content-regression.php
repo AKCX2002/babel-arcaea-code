@@ -36,12 +36,13 @@ $options = BabelArcaeaCode\Options::DEFAULTS;
 $options['katex_enabled'] = !in_array('--mathjax', $argv, true);
 $options['mathjax_enabled'] = in_array('--mathjax', $argv, true);
 $options['markmap_enabled'] = 1;
-$options['markmap_prerender'] = 0;
+$options['markmap_prerender'] = in_array('--prerender', $argv, true);
 $property->setValue($assets, $options);
 $assets->enqueueAll();
 check(wp_scripts()->queue === ['bac-reading-progress', 'bac-content-loader'], 'Archive must not enqueue render engines');
 $manifest = $GLOBALS['localized']['BAC_Assets'];
 check(isset($manifest['groups']['prism'], $manifest['groups']['mermaid'], $manifest['groups']['math']), 'Missing lazy modules');
+check(isset($manifest['scripts']['bac-markmap-init']), 'Prerender failures must retain client runtime registration');
 check(!in_array('bac-prism-core', $manifest['scripts']['bac-mermaid-init']['deps'], true), 'Mermaid must not depend on Prism');
 foreach (['scripts', 'styles'] as $kind) {
     $registry = $kind === 'scripts' ? wp_scripts() : wp_styles();

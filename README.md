@@ -220,5 +220,12 @@ GPL-2.0-or-later
 - Markdown 提示标记由 `Renderer::renderCallouts` 在 HTML 渲染边界统一转换，不修改文章原始内容。
 - `download-mermaid.sh VERSION` 从经过 npm 完整性校验的包安装整套入口和分片。`node scripts/validate-mermaid.mjs` 检查全部静态/动态相对依赖并导入入口。
 - MathJax 保持兼容的 3.x/es5 运行时，自动更新不跨到不同目录/API 的 4.x；完整包包含字体和延迟加载扩展。
+
+### 生产配置与依赖核实（2026-09-06）
+
+- 使用本插件渲染公式时，关闭 Sakurairo 的 `enable_theme_mathjax`，避免主题 MathJax 与插件选择的 KaTeX/MathJax 竞争。本站已关闭该主题开关，真实步进电机文章的三个公式由 KaTeX 渲染。
+- Markmap 预渲染成功时仅输出 SVG；失败时输出源码及客户端容器，加载器据源码加载运行时。不能因预渲染开关为真就跳过客户端资源注册。本站容器无 Node，保留该失败路径；没有为此安装服务器工具。
+- 锁文件将 `linkify-it` 升至 5.0.2、`undici` 升至 6.28.1，`npm audit` 无告警。两者是 Markmap 的传递依赖：当前 Transformer 的 `linkify` 为 false，正常 CLI 转换未加载 undici；本站也未部署 Node/node_modules，未确认这两项漏洞存在当前可达攻击路径。浏览器预打包资源不属于 npm audit 的扫描范围，不能将零告警解释为全站安全证明。
+- 线上鼠标菜单导航使用 fetch 且文档 timeOrigin 保持不变，确认为 PJAX；此前键盘激活侧栏链接产生 document 请求，属于整页导航。测试报告应区分这两条路径。
 - `Release & Sync` 的推送、每日同步、手动运行共用验证和发布步骤。相同依赖版本的资源修复也触发发布；校验和打包成功后才提交版本，Release 明确指向已验证提交。
 - 验证：`php scripts/content-regression.php`、`node scripts/validate-mermaid.mjs`、`bash scripts/frontend-smoke.sh`、`bash scripts/build-release.sh`。线上验收仍需检查首页进入文章、往返切页、图表 SVG 和手机导航。

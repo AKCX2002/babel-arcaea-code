@@ -61,7 +61,7 @@
     const required = {
       prism: Array.from(content.querySelectorAll('pre')).some(pre => !pre.closest('.arcaea-mermaid-box, .arcaea-markmap-box') && !pre.matches('.mermaid, .arcaea-markmap-source')),
       mermaid: !!content.querySelector('.mermaid, .arcaea-mermaid-box'),
-      markmap: !!content.querySelector('.markmap, .arcaea-markmap-box, .arcaea-markmap-source'),
+      markmap: !!content.querySelector('.arcaea-markmap-source'),
       zoom: !!content.querySelector('img'),
       math: !!content.querySelector('.katex, .bac-latex-block, .math, .mathjax') || /\$|\\[([]/.test(content.textContent),
     };

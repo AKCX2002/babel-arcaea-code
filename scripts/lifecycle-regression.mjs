@@ -13,8 +13,8 @@ const article = `<div class="entry-content">
 <p>Formula: \\(x^2+1\\)</p>
 <img width="40" height="40" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='blue'/%3E%3C/svg%3E">
 </div>`;
-const manifests = new Map(['katex', 'mathjax'].map(mode => [mode, JSON.parse(execFileSync(
-  process.env.PHP_BINARY || 'php', ['scripts/content-regression.php', '--manifest', ...(mode === 'mathjax' ? ['--mathjax'] : [])],
+const manifests = new Map(['katex', 'mathjax', 'prerender'].map(mode => [mode, JSON.parse(execFileSync(
+  process.env.PHP_BINARY || 'php', ['scripts/content-regression.php', '--manifest', ...(mode === 'mathjax' ? ['--mathjax'] : []), ...(mode === 'prerender' ? ['--prerender'] : [])],
   { cwd: root, encoding: 'utf8' }
 ))]));
 const server = createServer(async (req, res) => {
@@ -27,7 +27,7 @@ const server = createServer(async (req, res) => {
 <button id="article">Article</button><button id="home">Home</button><main></main>
 <script>var BAC_Assets=${JSON.stringify(assets)}, BAC_Config=${JSON.stringify(config)};
 window.readyCount=0;document.addEventListener('bac:content-ready',()=>readyCount++);
-const article=${JSON.stringify(article)};
+const article=${JSON.stringify(url.searchParams.has('renderedOnly') ? '<div class="entry-content"><div class="arcaea-markmap-box arcaea-markmap-prerendered"><svg><text>Rendered</text></svg></div></div>' : article)};
 document.querySelector('#article').onclick=()=>{document.querySelector('main').innerHTML=article;document.dispatchEvent(new Event('pjax:complete'));document.dispatchEvent(new Event('pjax:end'));};
 document.querySelector('#home').onclick=()=>{window.oldContent=document.querySelector('.entry-content');document.querySelector('main').innerHTML='Home';document.dispatchEvent(new Event('pjax:complete'));};
 if(new URL(location.href).searchParams.has('initial')) document.querySelector('main').innerHTML=article;
@@ -56,7 +56,7 @@ try {
       assert.equal(await page.locator('pre.mermaid svg').count(), 1);
       assert.ok(await page.locator('code .token').count() > 0);
       assert.ok(await page.locator('.arcaea-markmap-diagram g').count() > 0);
-      assert.ok(await page.locator(mode === 'katex' ? '.katex' : 'mjx-container').count() > 0);
+      assert.ok(await page.locator(mode === 'mathjax' ? 'mjx-container' : '.katex').count() > 0);
       assert.equal(await page.locator('.bac-code-shell .bac-code-shell').count(), 0);
       await page.setViewportSize({ width: round % 2 ? 390 : 1280, height: 844 });
       await page.locator('.arcaea-mermaid-toolbar button').first().click();
@@ -79,6 +79,10 @@ try {
     console.log(`${mode}: initial render, repeated PJAX events, 3 visits, resize, overlays and instance cleanup passed`);
   }
   const page = await browser.newPage();
+  await page.goto(`${base}/?mode=prerender&initial=1&renderedOnly=1`);
+  await page.waitForFunction(() => window.readyCount === 1);
+  assert.equal(await page.locator('script[src*="markmap"]').count(), 0, 'Successful prerender must not load client runtime');
+  console.log('Successful prerender uses SVG without client runtime');
   let release;
   const gate = new Promise(resolve => { release = resolve; });
   await page.route('**/mermaid-init.js*', async route => { await gate; await route.continue(); });

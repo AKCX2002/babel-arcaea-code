@@ -138,7 +138,6 @@ class Assets {
     private function enqueueMarkmap(): void {
         if (empty($this->opts['markmap_enabled'])) return;
         $this->style('assets/markmap/markmap.css','bac-markmap');
-        if (!empty($this->opts['markmap_prerender'])) return;
         $r = $this->opts['markmap_runtime']??'local'; $v='assets/markmap/vendor/';
         if ($r==='cdn') { \wp_enqueue_script('bac-markmap-d3','https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js',[],'7.9.0',true); \wp_enqueue_script('bac-markmap-view','https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js',['bac-markmap-d3'],'0.18.12',true); \wp_enqueue_script('bac-markmap-lib','https://cdn.jsdelivr.net/npm/markmap-lib@0.18.12/dist/browser/index.js',['bac-markmap-view'],'0.18.12',true); $this->script('assets/markmap/markmap-init.js','bac-markmap-init',['bac-markmap-lib']); }
         else { if (!$this->script($v.'d3.min.js','bac-markmap-d3')) return; if (!$this->script($v.'markmap-view.min.js','bac-markmap-view',['bac-markmap-d3'])) return; if (!$this->script($v.'markmap-lib.min.js','bac-markmap-lib',['bac-markmap-view'])) return; $this->script('assets/markmap/markmap-init.js','bac-markmap-init',['bac-markmap-lib']); }
