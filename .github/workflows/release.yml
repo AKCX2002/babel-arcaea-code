@@ -1,248 +1,87 @@
 name: Release & Sync
-
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
+    paths-ignore: ['**.md', '.gitignore']
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
-
 permissions:
   contents: write
-
 concurrency:
   group: babel-arcaea-code-release
   cancel-in-progress: false
-
 jobs:
-  bump-and-release:
-    if: github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]')
+  release:
+    if: github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip ci]')
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.bump.outputs.new_version }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Refresh Mermaid assets
-        run: bash download-mermaid.sh $(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-
-      - name: Refresh Prism assets
-        run: bash download-prism.sh $(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-
-      - name: Refresh MathJax
-        run: |
-          VER=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${VER}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
-          echo "MathJax $VER: $(du -sh assets/mathjax/es5/tex-chtml.js)"
-
-      - name: Refresh KaTeX
-        run: bash download-katex.sh $(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-
-      - name: Auto-bump
-        id: bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Refresh steps may dirty the worktree; stash first so rebase can proceed.
-          STASHED=0
-          if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
-            git stash push --include-untracked -m ci-autobump-pre-rebase
-            STASHED=1
-          fi
-          # Pull latest to avoid race with parallel runs
-          git pull --rebase origin main
-          if [ "$STASHED" -eq 1 ]; then
-            git stash pop
-          fi
-          CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
-          IFS=. read -r MAJ MIN PAT <<< "$CUR"
-          NEW="$MAJ.$MIN.$((PAT+1))"
-          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
-          sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
-          sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
-          if test -f package.json; then
-            sed -i "s/\"version\": \"$CUR\"/\"version\": \"$NEW\"/" package.json || true
-          fi
-          if test -f package-lock.json; then
-            sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
-            sed -i "0,/\"version\": \"$CUR\"/s//\"version\": \"$NEW\"/" package-lock.json || true
-          fi
-          cat > update-info.json <<EOF
-          {
-            "name": "Babel Arcaea Code",
-            "slug": "babel-arcaea-code",
-            "version": "$NEW",
-            "homepage": "https://github.com/${{ github.repository }}",
-            "author": "Babel36acl",
-            "author_homepage": "https://github.com/Babel36acl",
-            "download_url": "https://github.com/${{ github.repository }}/releases/download/v$NEW/babel-arcaea-code-$NEW.zip",
-            "requires_php": "7.4",
-            "sections": {
-              "description": "Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.",
-              "changelog": "<p>See the <a href=\"https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/${{ github.repository }}/releases/tag/v$NEW\">v$NEW release page</a> for release notes.</p>"
-            }
-          }
-          EOF
-          git add babel-arcaea-code.php package.json package-lock.json update-info.json includes assets blocks bin scripts
-          git commit -m "chore: bump $CUR → $NEW [skip ci]"
-          git push
-
-      - name: Build zip
-        id: build
-        run: |
-          VER="${{ steps.bump.outputs.new_version }}"
-          ZIPPATH="$(bash scripts/build-release.sh "$VER")"
-          ZIPNAME="$(basename "$ZIPPATH")"
-          echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
-          echo "zippath=$ZIPPATH" >> "$GITHUB_OUTPUT"
-
-      - name: Create Release
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Refresh supported dependency assets
         env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.bump.outputs.new_version }}
-          ZIPNAME: ${{ steps.build.outputs.zipname }}
-          ZIPPATH: ${{ steps.build.outputs.zippath }}
+          EVENT: ${{ github.event_name }}
         run: |
-          gh release create "v$VERSION" \
-            --title "v$VERSION" \
-            --generate-notes \
-            "$ZIPPATH"
-
-  # ── Daily sync ALL deps ──
-  sync-deps:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Prepare release branch
-        run: git pull --ff-only origin main
-
-      # ── 1. Mermaid ──
-      - name: Download Mermaid
-        id: mermaid
+          set -euo pipefail
+          if [ "$EVENT" = push ]; then
+            python3 scripts/refresh-dependencies.py
+          else
+            python3 scripts/refresh-dependencies.py --latest
+          fi
+      - name: Validate release inputs
         run: |
-          CUR=$(grep -oP "'mermaid_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          LAT=$(curl -fsSL "https://registry.npmjs.org/mermaid/latest" | grep -oP '"version":"\K[0-9.]+')
-          test -n "$LAT"
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-          bash download-mermaid.sh "$LAT"
-          if [ "$CUR" != "$LAT" ]; then
-            sed -i "s/\('mermaid_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-            sed -i "s/\('mermaid_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-          fi
-
-      # ── 2. Prism.js ──
-      - name: Download Prism
-        id: prism
+          set -euo pipefail
+          find includes -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l babel-arcaea-code.php
+          php scripts/content-regression.php
+          node --check assets/js/content-loader.js
+          node --check assets/prism/prism-init.js
+          node --check assets/js/image-zoom-init.js
+          node scripts/validate-mermaid.mjs
+          bash scripts/frontend-smoke.sh
+          npm ci --ignore-scripts
+          printf '# Test\n' | node bin/markmap-render.js > /tmp/bac-markmap.svg
+          grep -q '<svg' /tmp/bac-markmap.svg
+      - name: Detect source or asset changes
+        id: changes
+        env:
+          EVENT: ${{ github.event_name }}
         run: |
-          CUR=$(grep -oP "'prism_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          LAT=$(curl -sL "https://registry.npmjs.org/prismjs/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-          bash download-prism.sh "$LAT"
-          if [ "$CUR" != "$LAT" ]; then
-            sed -i "s/\('prism_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-            sed -i "s/\('prism_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
+          if [ "$EVENT" = push ] || [ -n "$(git status --porcelain)" ]; then
+            echo 'release=true' >> "$GITHUB_OUTPUT"
           fi
-
-      # ── 3. MathJax ──
-      - name: Download MathJax
-        id: mathjax
+      - name: Prepare and validate package
+        id: package
+        if: steps.changes.outputs.release == 'true'
         run: |
-          CUR=$(grep -oP "'mathjax_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          LAT=$(curl -sL "https://registry.npmjs.org/mathjax/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-          curl -sL "https://cdn.jsdelivr.net/npm/mathjax@${LAT}/es5/tex-chtml.js" -o assets/mathjax/es5/tex-chtml.js
-          echo "MathJax $LAT: $(du -sh assets/mathjax/es5/tex-chtml.js)"
-          if [ "$CUR" != "$LAT" ]; then
-            sed -i "s/\('mathjax_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-            sed -i "s/\('mathjax_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-          fi
-
-      # ── 4. KaTeX ──
-      - name: Download KaTeX
-        id: katex
+          set -euo pipefail
+          VERSION=$(python3 scripts/bump-release.py)
+          ZIPPATH=$(bash scripts/build-release.sh "$VERSION")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "path=$ZIPPATH" >> "$GITHUB_OUTPUT"
+      - name: Commit validated release
+        id: commit
+        if: steps.changes.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
         run: |
-          CUR=$(grep -oP "'katex_version'\s*=>\s*'\K[0-9.]+" includes/class-bac-options.php)
-          LAT=$(curl -sL "https://registry.npmjs.org/katex/latest" | grep -oP '"version":"\K[0-9.]+')
-          echo "current=$CUR" >> "$GITHUB_OUTPUT"
-          echo "latest=$LAT" >> "$GITHUB_OUTPUT"
-          echo "changed=$([ "$CUR" = "$LAT" ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-          bash download-katex.sh "$LAT"
-          if [ "$CUR" != "$LAT" ]; then
-            sed -i "s/\('katex_version'\s*=>\s*'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-            sed -i "s/\('katex_version'=>'\)[0-9.]\+/\1$LAT/" includes/class-bac-options.php
-          fi
-
-      # ── Release if any dep changed ──
-      - name: Commit synced deps and bump version
-        id: sync_release
-        if: steps.mermaid.outputs.changed == 'true' || steps.prism.outputs.changed == 'true' || steps.mathjax.outputs.changed == 'true' || steps.katex.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          CUR=$(grep -oP "Version:\s*\K[0-9.]+" babel-arcaea-code.php | head -1)
-          IFS=. read -r MAJ MIN PAT <<< "$CUR"
-          NEW="$MAJ.$MIN.$((PAT+1))"
-          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
-
-          sed -i "s/^ \* Version: $CUR/ * Version: $NEW/" babel-arcaea-code.php
-          sed -i "s/^define('BAC_VERSION', '$CUR');/define('BAC_VERSION', '$NEW');/" babel-arcaea-code.php
-          if test -f package.json; then
-            NEW="$NEW" node -e "const fs=require('fs'); const p='package.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); j.version=process.env.NEW; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');" || true
-          fi
-          if test -f package-lock.json; then
-            NEW="$NEW" node -e "const fs=require('fs'); const p='package-lock.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); j.version=process.env.NEW; if (j.packages && j.packages['']) j.packages[''].version=process.env.NEW; fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n');" || true
-          fi
-          cat > update-info.json <<EOF
-          {
-            "name": "Babel Arcaea Code",
-            "slug": "babel-arcaea-code",
-            "version": "$NEW",
-            "homepage": "https://github.com/${{ github.repository }}",
-            "author": "Babel36acl",
-            "author_homepage": "https://github.com/Babel36acl",
-            "download_url": "https://github.com/${{ github.repository }}/releases/download/v$NEW/babel-arcaea-code-$NEW.zip",
-            "requires_php": "7.4",
-            "sections": {
-              "description": "Unified Prism.js + Mermaid + MathJax + Markmap renderer. Local assets, no CDN by default. CI auto-syncs all assets. Replaces Sakurairo's built-in Prism.",
-              "changelog": "<p>See the <a href=\"https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md\">CHANGELOG.md</a> and the <a href=\"https://github.com/${{ github.repository }}/releases/tag/v$NEW\">v$NEW release page</a> for release notes.</p>"
-            }
-          }
-          EOF
-
-          git add babel-arcaea-code.php package.json package-lock.json update-info.json includes assets blocks bin scripts
-          git commit -m "chore: sync deps and release $CUR → $NEW [skip ci]"
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add babel-arcaea-code.php package.json package-lock.json update-info.json includes assets
+          git commit -m "chore: release $VERSION [skip ci]"
+          # Reject concurrent source changes instead of rebasing validated assets.
           git push origin HEAD:main
-
-      - name: Build synced dependency release zip
-        id: sync_build
-        if: steps.sync_release.outputs.new_version != ''
-        run: |
-          VER="${{ steps.sync_release.outputs.new_version }}"
-          ZIPPATH="$(bash scripts/build-release.sh "$VER")"
-          ZIPNAME="$(basename "$ZIPPATH")"
-          echo "zipname=$ZIPNAME" >> "$GITHUB_OUTPUT"
-          echo "zippath=$ZIPPATH" >> "$GITHUB_OUTPUT"
-
-      - name: Create synced dependency release
-        if: steps.sync_release.outputs.new_version != ''
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Publish validated commit
+        if: steps.changes.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.sync_release.outputs.new_version }}
-          ZIPPATH: ${{ steps.sync_build.outputs.zippath }}
-        run: |
-          gh release create "v$VERSION" \
-            --title "v$VERSION" \
-            --generate-notes \
-            "$ZIPPATH"
+          VERSION: ${{ steps.package.outputs.version }}
+          ZIPPATH: ${{ steps.package.outputs.path }}
+          RELEASE_SHA: ${{ steps.commit.outputs.sha }}
+        run: gh release create "v$VERSION" --target "$RELEASE_SHA" --title "v$VERSION" --generate-notes "$ZIPPATH"

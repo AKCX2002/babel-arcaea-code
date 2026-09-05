@@ -39,10 +39,11 @@ test -f "${PKG_DIR}/blocks/mermaid/block.json"
 test -f "${PKG_DIR}/assets/mathjax/mathjax-init.js"
 test -f "${PKG_DIR}/assets/css/bac-latex.css"
 test -f "${PKG_DIR}/includes/class-bac-markmap.php"
+node "${ROOT_DIR}/scripts/validate-mermaid.mjs" "${PKG_DIR}/assets/mermaid" >&2
 
 (
   cd "${DIST_ROOT}"
-  zip -rq "$(basename "${ZIP_PATH}")" "babel-arcaea-code"
+  python3 -m zipfile -c "$(basename "${ZIP_PATH}")" "babel-arcaea-code"
 )
 
 echo "${ZIP_PATH}"

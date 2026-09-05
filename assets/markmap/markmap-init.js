@@ -194,7 +194,7 @@
     boot();
     setTimeout(fitAll, 120);
   });
-  document.addEventListener('pjax:complete', boot);
+  document.addEventListener('bac:content-ready', boot);
   document.addEventListener('pjax:end', boot);
   window.addEventListener('resize', function () {
     window.clearTimeout(window.__bacMarkmapResizeTimer);

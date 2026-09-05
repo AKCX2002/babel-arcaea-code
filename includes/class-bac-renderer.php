@@ -52,6 +52,23 @@ class Renderer {
 
         \add_filter('the_content', [$this, 'removeInlineArticleStylesheetLinks'], 13);
         \add_filter('the_content', [$this, 'wrapArticleTables'], 13);
+        \add_filter('the_content', [$this, 'renderCallouts'], 13);
+    }
+
+    /** Convert published Markdown alert markers once, at the HTML boundary. */
+    public function renderCallouts(string $html): string {
+        return \preg_replace_callback(
+            '~<blockquote([^>]*)>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:\s*<br\s*/?>|\s*</p>)~i',
+            static function (array $match): string {
+                $kind = \strtolower($match[2]);
+                $labels = ['note' => '说明', 'tip' => '提示', 'important' => '重要', 'warning' => '警告', 'caution' => '注意'];
+                // Existing attributes are retained; data attributes avoid a
+                // competing class/style repair path in individual articles.
+                $prefix = '<blockquote' . $match[1] . ' data-bac-callout="' . $kind . '"><p class="bac-callout-title">' . $labels[$kind] . '</p>';
+                return $prefix . (\preg_match('~</p>\s*$~i', $match[0]) ? '' : '<p>');
+            },
+            $html
+        ) ?? $html;
     }
 
     /* ════════════════════════════════════════════

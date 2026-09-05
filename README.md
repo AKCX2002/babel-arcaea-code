@@ -210,3 +210,12 @@ lib/plugin-update-checker.php
 ## License
 
 GPL-2.0-or-later
+# 页面资源与发布维护
+
+- WordPress 生成启用模块的资源清单，`assets/js/content-loader.js` 根据实际正文加载资源，并在 PJAX 完成后重新判断。首页摘要列表不加载代码、图表或公式引擎。
+- Prism、Mermaid 和图片缩放各自初始化；`bac:content-ready` 表示所需资源加载完成。保存时的检测 meta 不再决定前端资源加载，避免旧 meta 和切页状态成为第二事实来源。
+- Markdown 提示标记由 `Renderer::renderCallouts` 在 HTML 渲染边界统一转换，不修改文章原始内容。
+- `download-mermaid.sh VERSION` 从经过 npm 完整性校验的包安装整套入口和分片。`node scripts/validate-mermaid.mjs` 检查全部静态/动态相对依赖并导入入口。
+- MathJax 保持兼容的 3.x/es5 运行时，自动更新不跨到不同目录/API 的 4.x；完整包包含字体和延迟加载扩展。
+- `Release & Sync` 的推送、每日同步、手动运行共用验证和发布步骤。相同依赖版本的资源修复也触发发布；校验和打包成功后才提交版本，Release 明确指向已验证提交。
+- 验证：`php scripts/content-regression.php`、`node scripts/validate-mermaid.mjs`、`bash scripts/frontend-smoke.sh`、`bash scripts/build-release.sh`。线上验收仍需检查首页进入文章、往返切页、图表 SVG 和手机导航。

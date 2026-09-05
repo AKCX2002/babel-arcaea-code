@@ -29,6 +29,6 @@
     document.addEventListener('DOMContentLoaded', function () { renderMathJax(document); });
   }
 
-  document.addEventListener('pjax:complete', function () { renderMathJax(document); });
+  document.addEventListener('bac:content-ready', function () { renderMathJax(document); });
   document.addEventListener('pjax:end', function () { renderMathJax(document); });
 })();

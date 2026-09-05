@@ -348,6 +348,6 @@
       schedule(document);
     }
   });
-  document.addEventListener('pjax:complete', function () { schedule(document); });
+  document.addEventListener('bac:content-ready', function () { schedule(document); });
   document.addEventListener('pjax:end', function () { schedule(document); });
 })();

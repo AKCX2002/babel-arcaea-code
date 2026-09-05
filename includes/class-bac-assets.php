@@ -11,40 +11,73 @@ class Assets {
      * Conditional enqueue: only load modules detected as needed for current post.
      * Pattern: githuber-md's Githuber::init() + ModuleAbstract::is_module_should_be_loaded().
      *
-     * On non-singular pages (home, archive) needsModule() returns true → load all.
-     * On singular posts, only loads modules whose post meta flag is '1'.
+     * WordPress registers module URLs/dependencies; the content loader chooses
+     * the rendered page requirements on initial load and PJAX navigation.
      */
     public function enqueueAll(): void {
         if (\is_admin() || empty($this->opts['enabled'])) return;
 
         $this->enqueueReadingEnhancements();
 
-        if ($this->opts['prism_enabled'] && Detector::needsModule(Detector::META_PRISM)) {
+        // Register enabled modules once. The shared loader selects them from
+        // rendered content on both initial load and subsequent PJAX navigation.
+        $scriptsBefore = \wp_scripts()->queue;
+        $stylesBefore = \wp_styles()->queue;
+        $groups = [];
+        $capture = function (string $name, callable $enqueue) use (&$groups): void {
+            $scripts = \wp_scripts()->queue;
+            $styles = \wp_styles()->queue;
+            $enqueue();
+            $groups[$name] = [
+                'scripts' => \array_values(\array_diff(\wp_scripts()->queue, $scripts)),
+                'styles' => \array_values(\array_diff(\wp_styles()->queue, $styles)),
+            ];
+        };
+        if ($this->opts['prism_enabled']) {
+            $capture('prism', function (): void {
             $this->enqueuePrismCss(); $this->enqueuePrismJs(); $this->enqueuePrismEnhancements();
+            $this->script('assets/prism/prism-init.js', 'bac-prism-init', ['bac-prism-titlebar']);
+            });
         }
-        // mediumZoom always loads (lightweight, no post-meta gate)
-        $this->enqueueMediumZoom();
-
-        // mermaid-init is the unified frontend boot script; load if any
-        // visual module (prism, mermaid, katex) is needed.
-        $needsBoot = Detector::needsModule(Detector::META_PRISM)
-                  || Detector::needsModule(Detector::META_MERMAID)
-                  || Detector::needsModule(Detector::META_KATEX);
-        if ($needsBoot) $this->enqueueFrontendInit();
-
-        if ($this->opts['mermaid_enabled'] && Detector::needsModule(Detector::META_MERMAID)) {
-            $this->enqueueMermaidEnhancements();
+        $capture('zoom', function (): void {
+            $this->enqueueMediumZoom();
+            $this->script('assets/js/image-zoom-init.js', 'bac-image-zoom-init', ['bac-medium-zoom']);
+        });
+        if ($this->opts['mermaid_enabled']) {
+            $capture('mermaid', function (): void { $this->enqueueFrontendInit(); $this->enqueueMermaidEnhancements(); });
         }
-
-        if ($this->opts['markmap_enabled'] && Detector::needsModule(Detector::META_MARKMAP)) {
-            $this->enqueueMarkmap();
+        if ($this->opts['markmap_enabled']) {
+            $capture('markmap', function (): void { $this->enqueueMarkmap(); });
         }
-        if (!empty($this->opts['mathjax_enabled']) && Detector::needsModule(Detector::META_MATHJAX)) {
-            $this->enqueueMathJax();
+        if (!empty($this->opts['mathjax_enabled'])) {
+            $capture('math', function (): void { $this->enqueueMathJax(); });
         }
-        if (!empty($this->opts['katex_enabled']) && Detector::needsModule(Detector::META_KATEX)) {
-            $this->enqueueKatex();
+        if (!empty($this->opts['katex_enabled'])) {
+            $capture('math', function (): void { $this->enqueueKatex(); });
         }
+        $manifest = ['groups' => $groups, 'scripts' => [], 'styles' => []];
+        foreach (['scripts' => $scriptsBefore, 'styles' => $stylesBefore] as $kind => $before) {
+            $registry = $kind === 'scripts' ? \wp_scripts() : \wp_styles();
+            foreach (\array_diff($registry->queue, $before) as $handle) {
+                $item = $registry->registered[$handle];
+                $manifest[$kind][$handle] = [
+                    'src' => $item->ver ? \add_query_arg('ver', $item->ver, $item->src) : $item->src,
+                    'deps' => $item->deps,
+                    'before' => \array_merge(isset($item->extra['data']) ? [$item->extra['data']] : [], $item->extra['before'] ?? []),
+                    'after' => $item->extra['after'] ?? [],
+                ];
+                $kind === 'scripts' ? \wp_dequeue_script($handle) : \wp_dequeue_style($handle);
+            }
+        }
+        $this->script('assets/js/content-loader.js', 'bac-content-loader');
+        \wp_localize_script('bac-content-loader', 'BAC_Config', [
+            'lineNumbers' => !empty($this->opts['prism_line_numbers']),
+            'prismEnabled' => !empty($this->opts['prism_enabled']),
+            'mermaidEnabled' => !empty($this->opts['mermaid_enabled']),
+            'katexEnabled' => !empty($this->opts['katex_enabled']),
+            'mermaidCompatMode' => $this->opts['mermaid_compat_mode'] ?? 'auto',
+        ]);
+        \wp_localize_script('bac-content-loader', 'BAC_Assets', $manifest);
     }
 
     private function enqueuePrismCss(): void {
@@ -93,18 +126,9 @@ class Assets {
     private function enqueueMediumZoom(): void { $this->script('assets/js/medium-zoom.min.js','bac-medium-zoom',[],'1.1.0'); }
 
     private function enqueueFrontendInit(): void {
-        if (!$this->opts['mermaid_enabled'] && !$this->opts['prism_enabled']) return;
+        if (!$this->opts['mermaid_enabled']) return;
         $deps = [];
-        if ($this->opts['prism_enabled'] && \wp_script_is(self::PRISM_CORE,'registered')) $deps[] = self::PRISM_CORE;
-        if (\wp_script_is('bac-medium-zoom','registered')) $deps[] = 'bac-medium-zoom';
         if (!$this->script('assets/mermaid/mermaid-init.js','bac-mermaid-init',$deps)) return;
-        \wp_localize_script('bac-mermaid-init','BAC_Config',[
-            'lineNumbers'=>!empty($this->opts['prism_line_numbers']),
-            'prismEnabled'=>!empty($this->opts['prism_enabled']),
-            'mermaidEnabled'=>!empty($this->opts['mermaid_enabled']),
-            'katexEnabled'=>!empty($this->opts['katex_enabled']),
-            'mermaidCompatMode'=>\in_array(($this->opts['mermaid_compat_mode'] ?? 'auto'), ['off','auto','force'], true) ? $this->opts['mermaid_compat_mode'] : 'auto',
-        ]);
         if ($this->opts['mermaid_enabled']) { $this->style('assets/mermaid/mermaid.css','bac-mermaid'); \wp_localize_script('bac-mermaid-init','BAC_Mermaid',['mermaidUrl'=>\esc_url(BAC_PLUGIN_URL.'assets/mermaid/mermaid.esm.min.mjs')]); }
     }
 
@@ -124,9 +148,10 @@ class Assets {
 
     private function enqueueMathJax(): void {
         if (empty($this->opts['mathjax_enabled'])) return;
-        \add_action('wp_head',fn()=>print('<script>window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]],displayMath:[["$$","$$"],["\\\\[","\\\\]"]]},svg:{fontCache:"global"},options:{ignoreHtmlClass:"no-mathjax",renderActions:{addMenu:[]}}}</script>'),0);
+        $mathConfig = 'window.MathJax={tex:{inlineMath:[["$","$"],["\\\\(","\\\\)"]],displayMath:[["$$","$$"],["\\\\[","\\\\]"]]},options:{ignoreHtmlClass:"no-mathjax"}};';
         $this->style('assets/css/bac-latex.css', 'bac-latex');
         if (!$this->script('assets/mathjax/es5/tex-chtml.js','bac-mathjax')) return;
+        \wp_add_inline_script('bac-mathjax', $mathConfig, 'before');
         $this->script('assets/mathjax/mathjax-init.js','bac-mathjax-init',['bac-mathjax']);
     }
 

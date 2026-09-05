@@ -6,11 +6,11 @@ class Options {
         'enabled'=>1,'prism_enabled'=>1,'mermaid_enabled'=>1,'mathjax_enabled'=>0,'markmap_enabled'=>0,
         'katex_enabled'=>0,'latex_enabled'=>0,'latex_renderer'=>'katex','mermaid_compat_mode'=>'auto',
         'markmap_runtime'=>'local','markmap_prerender'=>0,'mermaid_version'=>'11.17.2',
-        'prism_version'=>'1.30.0','mathjax_version'=>'4.1.3','katex_version'=>'0.18.5','prism_line_numbers'=>1,
+        'prism_version'=>'1.30.0','mathjax_version'=>'3.2.2','katex_version'=>'0.18.5','prism_line_numbers'=>1,
         'prism_copy'=>1,'prism_braces'=>1,'prism_previewers'=>1,'prism_theme'=>'arcaea_dark',
         'disable_sakurairo_prism'=>1,'disable_legacy_plugin_assets'=>1,'aplayer_safe_patch'=>0,'suppress_lightgallery_warn'=>0,
     ];
-    private const ALLOWED = ['markmap_runtime'=>['cdn','local'],'mermaid_version'=>['11.15.0'],'prism_theme'=>['arcaea_dark','arcaea_light'],'latex_renderer'=>['katex','mathjax'],'mermaid_compat_mode'=>['off','auto','force']];
+    private const ALLOWED = ['markmap_runtime'=>['cdn','local'],'prism_theme'=>['arcaea_dark','arcaea_light'],'latex_renderer'=>['katex','mathjax'],'mermaid_compat_mode'=>['off','auto','force']];
     private ?array $cache = null;
 
     public function defaults(): array { return self::DEFAULTS; }
@@ -29,6 +29,7 @@ class Options {
         $in = \is_array($in) ? $in : []; $out = [];
         foreach (['enabled','prism_enabled','mermaid_enabled','markmap_enabled','markmap_prerender','prism_line_numbers','prism_copy','prism_braces','prism_previewers','disable_sakurairo_prism','disable_legacy_plugin_assets','aplayer_safe_patch','suppress_lightgallery_warn','latex_enabled'] as $f) { $out[$f] = empty($in[$f]) ? 0 : 1; }
         foreach (self::ALLOWED as $f => $vals) { $v = $in[$f] ?? ''; $out[$f] = \in_array($v, $vals, true) ? \sanitize_key($v) : self::DEFAULTS[$f]; }
+        $out['mermaid_version'] = self::DEFAULTS['mermaid_version'];
         $out['prism_version'] = self::DEFAULTS['prism_version'];
         $out['mathjax_version'] = self::DEFAULTS['mathjax_version'];
         $out['katex_version'] = self::DEFAULTS['katex_version'];

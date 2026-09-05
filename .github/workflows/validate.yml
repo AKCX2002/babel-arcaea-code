@@ -9,7 +9,8 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/validate.yml'
+      - '.github/workflows/**'
+      - 'download-*.sh'
   push:
     branches:
       - main
@@ -20,13 +21,16 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
-      - '.github/workflows/validate.yml'
+      - '.github/workflows/**'
+      - 'download-*.sh'
 
 jobs:
   php-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Content regression
+        run: php scripts/content-regression.php
       - name: PHP lint
         run: find . -name "*.php" -not -path "./vendor/*" -print0 | xargs -0 -n1 php -l
 
@@ -46,9 +50,7 @@ jobs:
           echo "=== Mermaid ==="
           test -f assets/mermaid/mermaid.esm.min.mjs
           echo "  ✓ mermaid.esm.min.mjs"
-          count=$(find assets/mermaid/chunks/mermaid.esm.min/ -name '*.mjs' | wc -l)
-          test "$count" -gt 0 || exit 1
-          echo "  ✓ $count mermaid chunks"
+          node scripts/validate-mermaid.mjs
 
           echo "=== MathJax ==="
           test -f assets/mathjax/es5/tex-chtml.js
@@ -96,6 +98,9 @@ jobs:
           node-version: '22'
       - name: Check frontend JS syntax
         run: |
+          node --check assets/js/content-loader.js
+          node --check assets/prism/prism-init.js
+          node --check assets/js/image-zoom-init.js
           node --check assets/mermaid/mermaid-init.js
           node --check assets/markmap/markmap-init.js
           node --check assets/katex/katex-init.js

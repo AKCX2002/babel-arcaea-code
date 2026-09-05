@@ -88,7 +88,7 @@
     }
 
     /* PJAX support */
-    document.addEventListener('pjax:complete', function () {
+    document.addEventListener('bac:content-ready', function () {
         renderKatex(document);
     });
     document.addEventListener('pjax:end', function () {
